@@ -1,3 +1,6 @@
+Aqui está a spec atualizada com as novas informações:
+
+---
 
 # Spec: BJJ Tournament Manager
 
@@ -9,6 +12,40 @@ Armazenamento: múltiplos arquivos JSON locais via sistema de arquivos do servid
 
 **UI Library:** [shadcn/ui](https://ui.shadcn.com) — componentes acessíveis e customizáveis via Radix UI + Tailwind CSS.
 **Ícones:** [Lucide React](https://lucide.dev) — conjunto consistente de ícones SVG.
+
+---
+
+## Paleta de Cores
+
+O sistema utiliza a seguinte paleta de cores base, inspirada no BJJ:
+
+| Cor | Uso |
+|---|---|
+| **Amarelo (Gold)** | Destaques, botões principais, títulos, elementos de ação |
+| **Azul (Blue)** | Fundos secundários, hover states, links, bordas de destaque |
+| **Branco (White)** | Texto principal, fundos claros (modo claro) |
+| **Preto (Black)** | Fundo principal (modo escuro), textos secundários, contraste |
+
+### Configuração Tailwind
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'bjj-gold': '#FFD700',
+        'bjj-gold-dark': '#DAA520',
+        'bjj-blue': '#1E3A8A',
+        'bjj-blue-light': '#3B82F6',
+        'bjj-white': '#FFFFFF',
+        'bjj-black': '#111111',
+        'bjj-gray': '#2A2A2A',
+      }
+    }
+  }
+}
+```
 
 ---
 
@@ -28,6 +65,7 @@ Armazenamento: múltiplos arquivos JSON locais via sistema de arquivos do servid
 | Punição | Penalidade que conta no placar do adversário |
 | Vantagem | Ponto parcial registrado individualmente |
 | Árbitro | Profissional responsável por arbitrar as lutas em uma área |
+| Soft Delete | Exclusão lógica — mantém o registro no sistema com flag `isActive: false` |
 
 ---
 
@@ -76,6 +114,7 @@ Armazenamento: múltiplos arquivos JSON locais via sistema de arquivos do servid
 | `belt` | enum Belt | Sim | Ver enum abaixo |
 | `coach` | string | Não | Nome do técnico |
 | `registrationDate` | string (ISO datetime) | Sim | Data de inscrição |
+| `isActive` | boolean | Sim | Soft delete — `true` por padrão |
 
 **Enum Belt (ordem de graduação):**
 ```
@@ -87,12 +126,13 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - Peso deve ser > 0 e < 300.
 - Idade deve ser >= 4 e <= 100.
 - Todos os campos obrigatórios são exigidos.
+- **Exclusão é sempre soft delete:** competidor não é removido do banco, apenas marcado como `isActive: false`. Impede que o competidor seja incluído em novas chaves, mas mantém histórico.
 
 **Ações:**
 - `Criar competidor`
 - `Editar competidor`
-- `Excluir competidor` (somente se não estiver em uma chave ativa)
-- `Listar competidores` com filtro por faixa, equipe e nome
+- `Excluir competidor` (soft delete — marca como inativo)
+- `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
 - `Importar competidores` (CSV/JSON)
 - `Exportar competidores`
 
@@ -111,11 +151,12 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 | `belt` | enum Belt | Sim | Graduação mínima recomendada: Roxa |
 | `certification` | string | Não | Certificação / federação |
 | `experience` | number | Não | Anos de experiência |
+| `isActive` | boolean | Sim | Soft delete — `true` por padrão |
 
 **Ações:**
 - `Criar árbitro`
 - `Editar árbitro`
-- `Excluir árbitro` (somente se não estiver associado a uma chave/área)
+- `Excluir árbitro` (soft delete — somente se não estiver associado a uma chave/área ativa)
 - `Listar árbitros`
 - `Atribuir árbitro a área`
 
@@ -291,6 +332,8 @@ O usuário define manualmente os limites de peso para criar uma categoria. Não 
 - `Finalizar luta` (com vencedor por tempo ou por finalização)
 - Ao finalizar: avança o bracket automaticamente
 
+**Nota sobre persistência do cronômetro:** O estado do cronômetro é armazenado apenas em memória durante a luta ativa. Não há persistência entre abas, pois as pontuações são marcadas ao vivo e o sistema oferece a opção de desfazer ações quando necessário.
+
 ---
 
 ### 8. Módulo de Relatórios e Exportação
@@ -312,6 +355,8 @@ O usuário define manualmente os limites de peso para criar uma categoria. Não 
 - `Exportar dados (torneio + competidores + chaves + áreas + árbitros)`
 - `Importar dados` (para consolidar informações de múltiplas fontes)
 - `Consolidar dados` (juntar informações de arquivos locais diferentes)
+
+**Importante:** O sistema **não** permite resetar o torneio após iniciado. Dados são imutáveis uma vez registrados. Para um novo torneio, deve-se iniciar uma nova instância/arquivo.
 
 ---
 
@@ -366,7 +411,8 @@ data/
       "age": 28,
       "belt": "BLUE",
       "coach": "Fábio Gurgel",
-      "registrationDate": "2025-07-01T09:00:00Z"
+      "registrationDate": "2025-07-01T09:00:00Z",
+      "isActive": true
     }
   ]
 }
@@ -473,7 +519,8 @@ data/
       "name": "Carlos Eduardo",
       "belt": "PURPLE",
       "certification": "CBJJ Nível 2",
-      "experience": 5
+      "experience": 5,
+      "isActive": true
     }
   ]
 }
@@ -546,7 +593,7 @@ data/
 | `GET` | `/api/competitors` | Lista competidores |
 | `POST` | `/api/competitors` | Cria competidor |
 | `PUT` | `/api/competitors/[id]` | Atualiza competidor |
-| `DELETE` | `/api/competitors/[id]` | Remove competidor |
+| `DELETE` | `/api/competitors/[id]` | Soft delete competidor |
 | `GET` | `/api/brackets` | Lista chaves |
 | `POST` | `/api/brackets` | Cria chave |
 | `POST` | `/api/brackets/[id]/generate` | Gera bracket |
@@ -561,7 +608,8 @@ data/
 | `POST` | `/api/results/finalize` | Finaliza torneio e gera relatório |
 | `POST` | `/api/export` | Exporta todos os dados |
 | `POST` | `/api/import` | Importa dados consolidados |
-| `DELETE` | `/api/reset` | Reseta todos os dados (confirmação dupla) |
+
+**Nota:** Não há rota de reset. O torneio não pode ser resetado após iniciado.
 
 ---
 
@@ -569,7 +617,7 @@ data/
 
 | Rota | Tela |
 |---|---|
-| `/` | Dashboard — resumo do torneio |
+| `/` | Dashboard — resumo do torneio (TELA INICIAL com todos os menus) |
 | `/tournament/setup` | Configuração inicial do torneio |
 | `/competitors` | Lista e cadastro de competidores |
 | `/competitors/import` | Importação de competidores |
@@ -598,6 +646,7 @@ data/
 - Categorias de peso pré-definidas por federação
 - Notificações em tempo real via WebSocket
 - Aplicação mobile nativa
+- **Reset do torneio** (não implementado — dados são imutáveis)
 
 ---
 
@@ -607,9 +656,11 @@ data/
 - A aplicação deve funcionar sem internet (dados locais).
 - O placar em `/scoreboard/[areaId]` deve ser utilizável em tela cheia (projetado para TV/monitor).
 - Listas com mais de 20 itens devem ter paginação ou scroll virtual.
-- O sistema não deve perder estado do cronômetro ao navegar entre abas do mesmo browser (usar `localStorage` como fallback de cronômetro ativo).
+- O sistema deve oferecer opção de desfazer última ação do placar.
 - É possível exportar e importar dados para consolidação entre diferentes instâncias.
 - O relatório final deve conter todas as informações do torneio: competidores, chaves, resultados por área e sumário de árbitros.
+- **Não é possível resetar o torneio** — dados são permanentes.
+- **Exclusão de competidores e árbitros é soft delete** — mantém histórico.
 
 ---
 
@@ -621,13 +672,13 @@ data/
 |---|---|
 | Framework | Next.js 14 (App Router) |
 | Linguagem | TypeScript |
-| Estilização | Tailwind CSS + **shadcn/ui** |
+| Estilização | Tailwind CSS + **shadcn/ui** + cores customizadas |
 | Componentes | **shadcn/ui** (Button, Card, Dialog, Input, Select, Table, Tabs, etc.) |
 | Ícones | **Lucide React** |
 | Formulários | React Hook Form + Zod (validação) |
 | Persistência | Múltiplos JSONs locais via `fs` em API Routes |
 | Estado cliente | `useState` + `useReducer` + `Context API` |
-| Cronômetro | `useRef` + `setInterval` com fallback `localStorage` |
+| Cronômetro | `useRef` + `setInterval` (sem persistência entre abas) |
 | Geração de UUID | `crypto.randomUUID()` |
 | Testes | Vitest (unitário) |
 | Notificações | **shadcn/ui Toast** ou **Sonner** |
@@ -651,6 +702,7 @@ data/
   npx shadcn-ui@latest init
   # Selecionar: Estilo New York, Neutral, CSS variables, yes
   ```
+- [ ] Configurar cores customizadas no `tailwind.config.js` (amarelo, azul, branco, preto)
 - [ ] Instalar **Lucide React**:
   ```bash
   npm install lucide-react
@@ -666,16 +718,16 @@ data/
 **1.2 — Definição de Tipos**
 - [ ] Criar `src/types/index.ts` com todos os tipos necessários
 - [ ] Tipos: `Tournament`, `Belt`, `Competitor`, `ScoreData`, `Match`, `MatchStatus`, `FinishType`, `Bracket`, `BracketStatus`, `Area`, `ScheduledMatch`, `Referee`, `MarriedMatch`, `TournamentData`, `ResultsData`
+- [ ] Incluir `isActive` nos tipos que suportam soft delete
 - [ ] Exportar todos os tipos de um barrel `src/types/index.ts`
 
 **1.3 — Camada de Persistência**
 - [ ] Criar `src/lib/storage.ts` com funções para cada arquivo JSON
-- [ ] Criar `src/lib/atomicWrite.ts` para escrita atômica
+- [ ] Criar `src/lib/atomicWrite.ts` para escrita atômica (evitar corrupção)
 - [ ] Garantir que todos os arquivos são inicializados caso não existam
 
 **1.4 — API Routes Base**
 - [ ] Criar rotas para cada entidade usando os padrões do Next.js App Router
-- [ ] Criar `/api/reset` com validação de confirmação
 
 **1.5 — Setup de UI Base**
 - [ ] Adicionar componentes shadcn/ui essenciais:
@@ -689,113 +741,147 @@ data/
 
 ---
 
-### FASE 2 — Módulo de Torneio
+### FASE 2 — Tela Inicial (Dashboard com Todos os Menus)
+
+**Objetivo:** Criar a tela inicial contemplando todos os menus que serão implementados futuramente.
+
+#### Tarefas
+
+**2.1 — Componentes do Dashboard**
+- [ ] Criar `src/components/dashboard/MenuCard.tsx` — card com ícone Lucide, título, descrição e link
+- [ ] Criar `src/components/dashboard/StatsCard.tsx` — card com estatísticas (total competidores, chaves, etc.)
+
+**2.2 — Página Inicial**
+- [ ] `src/app/page.tsx` — Dashboard com:
+  - Cabeçalho com nome do torneio (se configurado)
+  - Grid de cards para cada módulo:
+    - Torneio (configuração)
+    - Competidores
+    - Árbitros
+    - Chaves (Brackets)
+    - Áreas de Luta
+    - Lutas Casadas
+    - Placar (Scoreboard)
+    - Programação
+    - Resultados
+    - Exportar/Importar
+  - Cards com estatísticas principais (competidores, chaves ativas, áreas, lutas finalizadas)
+
+**2.3 — Estados**
+- [ ] Estado vazio (nenhum torneio configurado) — exibir botão para criar torneio
+- [ ] Loading skeleton para estatísticas
+
+**Critério de aceite:** Tela inicial exibe todos os menus do sistema, mesmo que as funcionalidades ainda não estejam implementadas. Clicar em um menu navega para a respectiva rota (algumas rotas podem exibir "Em breve").
+
+---
+
+### FASE 3 — Módulo de Torneio
 
 **Objetivo:** Configuração inicial do torneio.
 
 #### Tarefas
 
-**2.1 — Hook de Torneio**
+**3.1 — Hook de Torneio**
 - [ ] Criar `src/hooks/useTournament.ts` com: `tournament`, `createTournament`, `updateTournament`, `activateTournament`, `finalizeTournament`
 
-**2.2 — Componentes**
+**3.2 — Componentes**
 - [ ] `TournamentForm` — usando `react-hook-form` + `zod` + shadcn/ui `Form`
 - [ ] `TournamentStatusBadge` — usando shadcn/ui `Badge`
 
-**2.3 — Página**
+**3.3 — Página**
 - [ ] `src/app/tournament/setup/page.tsx` — configuração inicial
 
 **Critério de aceite:** É possível criar e editar o torneio. Status reflete no dashboard.
 
 ---
 
-### FASE 3 — Módulo de Competidores
+### FASE 4 — Módulo de Competidores
 
 **Objetivo:** CRUD completo de competidores com componentes shadcn/ui.
 
 #### Tarefas
 
-**3.1 — Hook de Competidores**
-- [ ] Criar `src/hooks/useCompetitors.ts` com operações CRUD + import/export
+**4.1 — Hook de Competidores**
+- [ ] Criar `src/hooks/useCompetitors.ts` com operações CRUD + import/export (soft delete)
 
-**3.2 — Componentes**
+**4.2 — Componentes**
 - [ ] `CompetitorForm` — shadcn/ui `Dialog` + `Form` com validação Zod
 - [ ] `CompetitorCard` — shadcn/ui `Card` com Lucide ícones (`User`, `Weight`, `Award`)
-- [ ] `CompetitorList` — shadcn/ui `Table` com filtros (shadcn/ui `Input` + `Select`)
+- [ ] `CompetitorList` — shadcn/ui `Table` com filtros e toggle para mostrar inativos
 - [ ] `BeltBadge` — componente customizado com cores mapeadas para cada faixa
 - [ ] `CompetitorImportModal` — shadcn/ui `Dialog` com upload de arquivo
 
-**3.3 — Páginas**
+**4.3 — Páginas**
 - [ ] `src/app/competitors/page.tsx` — lista com botão "Novo Competidor"
 - [ ] `src/app/competitors/import/page.tsx` — importação
 
-**Critério de aceite:** CRUD completo, filtros funcionando, dados persistem. Interface consistente com shadcn/ui.
+**Critério de aceite:** CRUD completo com soft delete, filtros funcionando, dados persistem.
 
 ---
 
-### FASE 4 — Módulo de Árbitros
+### FASE 5 — Módulo de Árbitros
 
-**Objetivo:** CRUD de árbitros.
+**Objetivo:** CRUD de árbitros com soft delete.
 
 #### Tarefas
 
-**4.1 — Hook de Árbitros**
-- [ ] Criar `src/hooks/useReferees.ts` com operações CRUD
+**5.1 — Hook de Árbitros**
+- [ ] Criar `src/hooks/useReferees.ts` com operações CRUD (soft delete)
 
-**4.2 — Componentes**
+**5.2 — Componentes**
 - [ ] `RefereeForm` — shadcn/ui `Form` + `Dialog`
 - [ ] `RefereeList` — shadcn/ui `Table`
 - [ ] `RefereeBadge` — componente com ícone Lucide `Shield`
 
-**4.3 — Página**
+**5.3 — Página**
 - [ ] `src/app/referees/page.tsx`
 
-**Critério de aceite:** CRUD completo de árbitros.
+**Critério de aceite:** CRUD completo de árbitros com soft delete.
 
 ---
 
-### FASE 5 — Módulo de Chaves (Brackets)
+### FASE 6 — Módulo de Chaves (Brackets)
 
 **Objetivo:** Criar e gerenciar brackets de eliminação simples.
 
 #### Tarefas
 
-**5.1 — Lógica de Bracket**
-- [ ] Criar `src/lib/bracket.ts` com função `generateBracket`
+**6.1 — Lógica de Bracket**
+- [ ] Criar `src/lib/bracket.ts` com função `generateBracket` (bloquear com menos de 2 competidores)
 - [ ] Criar `src/lib/bracketUtils.ts` com `advanceBracket`
 - [ ] Criar `src/lib/placementCalculator.ts` com `calculatePlacements`
 
-**5.2 — Hook de Brackets**
+**6.2 — Hook de Brackets**
 - [ ] Criar `src/hooks/useBrackets.ts` com operações
 
-**5.3 — Componentes**
+**6.3 — Componentes**
 - [ ] `BracketForm` — shadcn/ui `Form` com `Select` para faixa, `Input` para pesos
 - [ ] `EligibleCompetitorsList` — shadcn/ui `Checkbox` + `Table`
 - [ ] `BracketTree` — visualização responsiva (CSS Grid + shadcn/ui `Card`)
 - [ ] `BracketCard` — shadcn/ui `Card` com ícones
 
-**5.4 — Páginas**
+**6.4 — Páginas**
 - [ ] `src/app/brackets/page.tsx`
 - [ ] `src/app/brackets/[id]/page.tsx`
 - [ ] `src/app/brackets/[id]/referee/page.tsx`
 
-**Critério de aceite:** Criação de chave funcional, bracket gerado corretamente, visualização em árvore.
+**Critério de aceite:** Criação de chave funcional, bracket gerado corretamente, erro se menos de 2 competidores.
 
 ---
 
-### FASE 6 — Módulo de Áreas de Luta e Lutas Casadas
+### FASE 7 — Módulo de Áreas de Luta e Lutas Casadas
 
 **Objetivo:** Gerenciar tatames e programar lutas.
 
 #### Tarefas
 
-**6.1 — Hook de Áreas**
+**7.1 — Hook de Áreas**
 - [ ] Criar `src/hooks/useAreas.ts` com operações
 
-**6.2 — Hook de Lutas Casadas**
+**7.2 — Hook de Lutas Casadas**
 - [ ] Criar `src/hooks/useMarriedMatches.ts`
 
-**6.3 — Componentes**
+**7.3 — Componentes**
 - [ ] `AreaCard` — shadcn/ui `Card` com status indicator
 - [ ] `AreaForm` — shadcn/ui `Dialog` + `Form`
 - [ ] `MatchAssignModal` — shadcn/ui `Dialog` com `Select`
@@ -803,7 +889,7 @@ data/
 - [ ] `MarriedMatchForm` — shadcn/ui `Form` com `DateTimePicker` customizado
 - [ ] `ScheduleView` — grade usando CSS Grid + shadcn/ui `Card`
 
-**6.4 — Páginas**
+**7.4 — Páginas**
 - [ ] `src/app/areas/page.tsx`
 - [ ] `src/app/areas/[id]/schedule/page.tsx`
 - [ ] `src/app/married-matches/page.tsx`
@@ -813,65 +899,68 @@ data/
 
 ---
 
-### FASE 7 — Módulo de Placar
+### FASE 8 — Módulo de Placar
 
-**Objetivo:** Placar interativo com cronômetro.
+**Objetivo:** Placar interativo com cronômetro e undo.
 
 #### Tarefas
 
-**7.1 — Hook de Cronômetro**
-- [ ] Criar `src/hooks/useTimer.ts` com persistência em `localStorage`
+**8.1 — Hook de Cronômetro**
+- [ ] Criar `src/hooks/useTimer.ts` com: `elapsed`, `isRunning`, `start`, `pause`, `reset`, `setDuration`
+- [ ] Usar `useRef` + `setInterval` — **sem persistência entre abas**
+- [ ] Apenas estado em memória durante a luta ativa
 
-**7.2 — Hook de Placar**
-- [ ] Criar `src/hooks/useScoreboard.ts` com histórico de ações
+**8.2 — Hook de Placar**
+- [ ] Criar `src/hooks/useScoreboard.ts` com: `match`, `addPoints`, `addAdvantage`, `addPenalty`, `undo`, `finishMatch`
+- [ ] Implementar histórico de ações (stack) para suporte a `undo`
+- [ ] Ao chamar `finishMatch`: persistir resultado via API, atualizar bracket
 
-**7.3 — Componentes**
+**8.3 — Componentes**
 - [ ] `ScorePanel` — shadcn/ui `Card` com design otimizado para TV
-- [ ] `ScoreButton` — shadcn/ui `Button` com ícones Lucide (`Plus`, `Minus`)
+- [ ] `ScoreButton` — shadcn/ui `Button` com ícones Lucide
 - [ ] `TimerDisplay` — componente com `font-mono` e tamanho responsivo
-- [ ] `TimerControls` — shadcn/ui `Button` com ícones (`Play`, `Pause`, `RotateCcw`)
+- [ ] `TimerControls` — shadcn/ui `Button` com ícones
 - [ ] `AreaSelector` — shadcn/ui `Select`
 - [ ] `FinishMatchModal` — shadcn/ui `Dialog` com opções de finalização
+- [ ] `UndoButton` — botão específico para desfazer última ação
 
-**7.4 — Páginas**
+**8.4 — Páginas**
 - [ ] `src/app/scoreboard/page.tsx`
-- [ ] `src/app/scoreboard/[areaId]/page.tsx` — layout fullscreen, sem navbar quando `?fullscreen=true`
+- [ ] `src/app/scoreboard/[areaId]/page.tsx` — layout fullscreen
 
-**Critério de aceite:** Placar funcional, cronômetro persistente, undo funcionando.
+**Critério de aceite:** Placar funcional, undo funcionando, cronômetro funciona sem persistência entre abas.
 
 ---
 
-### FASE 8 — Dashboard, Resultados e Exportação
+### FASE 9 — Dashboard, Resultados e Exportação
 
-**Objetivo:** Dashboard, relatórios finais e funcionalidades de exportação/importação.
+**Objetivo:** Refinamento do dashboard, relatórios finais e funcionalidades de exportação/importação.
 
 #### Tarefas
 
-**8.1 — Dashboard**
-- [ ] `src/app/page.tsx` — shadcn/ui `Card` grid com estatísticas e links rápidos
+**9.1 — Refinamento do Dashboard**
+- [ ] Integrar estatísticas reais (competidores, chaves, lutas, áreas)
+- [ ] Exibir torneio ativo e status
 
-**8.2 — Página de Resultados**
-- [ ] `src/app/results/page.tsx` — shadcn/ui `Tabs` para navegar entre: Pódios, Histórico por Área, Sumário de Árbitros, Estatísticas
+**9.2 — Página de Resultados**
+- [ ] `src/app/results/page.tsx` — shadcn/ui `Tabs` para: Pódios, Histórico por Área, Sumário de Árbitros, Estatísticas
+- [ ] Botão "Finalizar Torneio" — gera relatório completo e muda status para COMPLETED
 
-**8.3 — Exportação e Importação**
+**9.3 — Exportação e Importação**
 - [ ] `src/app/results/export/page.tsx`
 - [ ] `src/app/import/page.tsx`
-- [ ] Lógica de merge/consolidação
+- [ ] Lógica de merge/consolidação baseada em timestamps e UUIDs
 
-**8.4 — Reset do Torneio**
-- [ ] Modal de confirmação com input para digitar "RESETAR" (shadcn/ui `Dialog` + `Input`)
-
-**8.5 — Layout e Navegação**
-- [ ] Navbar com shadcn/ui `NavigationMenu`
-- [ ] Tema escuro com shadcn/ui `ThemeProvider` (modo escuro como padrão para placar)
-
-**8.6 — Tratamento de Erros**
+**9.4 — Tratamento de Erros**
 - [ ] Toast do Sonner para feedback de operações
 - [ ] Empty states com ícones Lucide
 - [ ] Loading skeletons (shadcn/ui `Skeleton`)
 
-**8.7 — Testes Unitários**
-- [ ] Testes para funções puras (bracket, pontuação, placement)
+**9.5 — Testes Unitários**
+- [ ] Testes para `generateBracket` (casos: 2, 3, 4, 5, 8 competidores — erro com 1)
+- [ ] Testes para `advanceBracket`
+- [ ] Testes para lógica de pontuação e undo
+- [ ] Testes para `calculatePlacements`
 
 ---
 
@@ -881,7 +970,7 @@ data/
 |---|---|
 | `Button` | Todas as ações do sistema |
 | `Card` | Dashboard, listagens, ScorePanel |
-| `Dialog` | Formulários modais (competidor, árbitro, chave, área) |
+| `Dialog` | Formulários modais |
 | `Form` | Todos os formulários com validação |
 | `Input` | Campos de texto, busca, filtros |
 | `Select` | Seleção de faixa, área, árbitro |
@@ -913,26 +1002,27 @@ data/
 | `Undo` | Desfazer ação |
 | `Check` | Confirmar |
 | `X` | Cancelar |
-| `Trash` | Excluir |
+| `Trash` | Soft delete |
 | `Edit` | Editar |
 | `Upload`, `Download` | Importar/Exportar |
 | `Calendar` | Datas |
 | `Weight` | Categoria de peso |
 | `Award` | Faixa/graduação |
 | `Flag` | Finalização |
-| `RefreshCw` | Reset |
 | `LayoutGrid` | Dashboard |
 | `List` | Listagens |
+| `Settings` | Configurações do torneio |
+| `Home` | Home/Dashboard |
 
 ---
 
 ## Ordem de Entrega Recomendada
 
 ```
-Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fase 8
+Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fase 8 → Fase 9
 ```
 
-Cada fase é independente e entregável. É possível usar a aplicação a partir da Fase 3.
+**Importante:** A Fase 2 (Tela Inicial) deve ser entregue logo após a Fase 1 para que o cliente já visualize a estrutura completa do sistema.
 
 ---
 
@@ -941,32 +1031,11 @@ Cada fase é independente e entregável. É possível usar a aplicação a parti
 | Risco | Decisão |
 |---|---|
 | Concorrência de escrita no JSON | Uso de escrita atômica para evitar corrupção |
-| Persistência do cronômetro em múltiplas abas | `localStorage` + `BroadcastChannel` para sincronização |
-| Bracket com 1 competidor | Bloquear geração — erro "Mínimo 2 competidores" |
-| Competidor excluído que está em bracket ativo | Impedir exclusão |
+| Persistência do cronômetro em múltiplas abas | **Não implementar** — pontos são marcados ao vivo, com opção de desfazer |
+| Bracket com 1 competidor | Bloquear geração — exibir erro "Mínimo 2 competidores" |
+| Competidor excluído que está em bracket ativo | **Soft delete** — impedir reativação, mas manter no histórico |
+| Resetar torneio acidentalmente | **Não implementar reset** — dados são imutáveis |
 | Tela de placar em TV | Rota `?fullscreen=true` oculta navbar e usa CSS fullscreen |
 | Corrupção de JSON por escrita parcial | Write atômico (temp file + rename) |
-| Resetar torneio acidentalmente | Confirmação dupla com digitação de "RESETAR" |
 | Consolidação de dados de múltiplas fontes | Merge strategy baseada em timestamps e UUIDs |
 | Acessibilidade | shadcn/ui já fornece componentes acessíveis (Radix UI) |
-
-Novas informações que devem ser adicionadas ao spec a cima:
-
-
-tailwind para a estilização adicionais
-cores, amarelo, azul, branco e preto
-
-primeira task tem que ser ciar a tela inicial contemplando todos os menus que serão implementados futuramente
-
-Concorrência de escrita no JSON	Uso de escrita atômica para evitar corrupção
-
-Persistência do cronômetro em múltiplas abas	localStorage + BroadcastChannel para sincronização -> não pois os pontos são marcados ao vivo, ou seja tem que ter a opção de desfazer a pontuação caso necessario
-
-Bracket com 1 competidor	Bloquear geração — erro "Mínimo 2 competidores"
-
-Competidor excluído que está em bracket ativo	Impedir exclusão (sempre soft delete)
-
-Resetar torneio acidentalmente	Confirmação dupla com digitação de "RESETAR" / não pode resetar o torneio
-
-Consolidação de dados de múltiplas fontes	Merge strategy baseada em timestamps e UUIDs
-Acessibilidade	shadcn/ui já fornece componentes acessíveis (Radix UI)
