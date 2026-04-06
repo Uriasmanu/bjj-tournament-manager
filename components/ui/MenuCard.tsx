@@ -1,16 +1,18 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
-import { ChevronRight, HdIcon, type LucideIcon } from 'lucide-react'
+import { ChevronRight, type LucideIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils' // Utilitário padrão do Shadcn para manipular classes
+import { cn } from '@/lib/utils'
 
 interface MenuCardProps {
   href: string
   title: string
   description: string
-  /** Ícone do Lucide passado como componente ou elemento React */
-  icon: React.ReactNode | LucideIcon
+  /** Ícone do Lucide (componente, não elemento) */
+  icon: LucideIcon
   highlight?: boolean
   badge?: string
   status?: string
@@ -22,7 +24,7 @@ export function MenuCard({
   href,
   title,
   description,
-  icon: Icon,
+  icon: Icon, // Renomeando para Icon (maiúsculo)
   highlight = false,
   badge,
   status,
@@ -43,30 +45,29 @@ export function MenuCard({
         highlight && "ring-1 ring-bjj-gold/30 bg-zinc-900/90"
       )}>
         
-        {/* Detalhe visual de destaque (Lado esquerdo) */}
+        {/* Linha de destaque */}
         {highlight && (
           <div className="absolute top-0 left-0 w-1 h-full bg-bjj-gold shadow-[2px_0_15px_rgba(212,175,55,0.3)]" />
         )}
 
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between mb-4">
-            {/* Container do Ícone */}
+            {/* Container do ícone - Agora Icon é usado diretamente como componente */}
             <div className={cn(
               "p-2.5 rounded-lg transition-all duration-500",
               highlight 
                 ? "bg-bjj-gold text-black scale-110 rotate-3 shadow-[0_0_20px_rgba(212,175,55,0.2)]" 
                 : "bg-zinc-800 text-zinc-400 group-hover:text-bjj-gold group-hover:bg-bjj-gold/10 group-hover:scale-110"
             )}>
-              {/* Renderiza o ícone independentemente de como foi passado */}
-              {React.isValidElement(Icon) ? Icon : <HdIcon size={24} />}
+              <Icon size={24} />
             </div>
             
-            {/* Tags e Status */}
+            {/* Badge e Status */}
             <div className="flex flex-col items-end gap-2">
               {badge && (
                 <Badge 
                   variant="outline" 
-                  className="bg-bjj-gold/10 border-bjj-gold/30 text-bjj-gold text-[10px] uppercase tracking-widest font-bold animate-in fade-in zoom-in duration-500"
+                  className="bg-bjj-gold/10 border-bjj-gold/30 text-bjj-gold text-[10px] uppercase tracking-widest font-bold"
                 >
                   {badge}
                 </Badge>
@@ -82,18 +83,18 @@ export function MenuCard({
             </div>
           </div>
 
-          {/* Título com transição de cor */}
+          {/* Título */}
           <CardTitle className="text-lg font-bold text-zinc-100 group-hover:text-white transition-colors">
             {title}
           </CardTitle>
 
-          {/* Descrição com limite de linhas (line-clamp) */}
+          {/* Descrição */}
           <CardDescription className="text-zinc-400 text-sm leading-relaxed mt-2 line-clamp-2 group-hover:text-zinc-300 transition-colors">
             {description}
           </CardDescription>
         </CardHeader>
 
-        {/* Footer/Ação: Transformado em DIV para evitar erro de aninhamento de botões */}
+        {/* Ação */}
         <CardContent>
           <div className="flex items-center text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 group-hover:text-bjj-gold transition-all duration-300">
             <span className="relative">
