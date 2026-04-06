@@ -1,0 +1,972 @@
+
+# Spec: BJJ Tournament Manager
+
+## Visão Geral
+
+Aplicação web em Next.js para gerenciamento de torneios de Brazilian Jiu-Jitsu (BJJ). Permite cadastrar competidores, organizar chaves de luta por faixa e categoria de peso, gerenciar áreas de luta, controlar placar em tempo real com cronômetro, suporte a lutas casadas, registro de árbitros por área, e geração de relatórios finais do torneio.
+
+Armazenamento: múltiplos arquivos JSON locais via sistema de arquivos do servidor Next.js (API Routes), simulando um banco de dados relacional.
+
+**UI Library:** [shadcn/ui](https://ui.shadcn.com) — componentes acessíveis e customizáveis via Radix UI + Tailwind CSS.
+**Ícones:** [Lucide React](https://lucide.dev) — conjunto consistente de ícones SVG.
+
+---
+
+## Domínio e Terminologia
+
+| Termo | Definição |
+|---|---|
+| Torneio | Evento principal, contém todas as configurações e metadados do campeonato |
+| Competidor | Atleta inscrito no torneio |
+| Faixa | Graduação do atleta (Branca, Cinza, Amarela, Laranja, Verde, Azul, Roxa, Marrom, Preta) |
+| Categoria de Peso | Faixa de peso (ex: Pluma, Leve, Médio, Pesado, Super Pesado, Pesadíssimo) |
+| Chave | Bracket de eliminação simples entre competidores da mesma faixa e categoria |
+| Área de Luta | Tatame físico numerado onde as lutas acontecem |
+| Luta | Confronto entre dois competidores com placar e tempo |
+| Luta Casada | Luta previamente definida que será atribuída a uma área específica |
+| Placar | Pontuação corrente de uma luta ativa |
+| Punição | Penalidade que conta no placar do adversário |
+| Vantagem | Ponto parcial registrado individualmente |
+| Árbitro | Profissional responsável por arbitrar as lutas em uma área |
+
+---
+
+## Módulos do Sistema
+
+### 1. Módulo de Torneio
+
+**Objetivo:** Gerenciar o torneio principal e suas configurações.
+
+**Dados do Torneio:**
+
+| Campo | Tipo | Obrigatório | Observação |
+|---|---|---|---|
+| `id` | UUID | Sim | Gerado automaticamente |
+| `name` | string | Sim | Nome do torneio |
+| `startDate` | string (ISO date) | Sim | Data de início |
+| `endDate` | string (ISO date) | Sim | Data de término |
+| `location` | string | Sim | Local do evento |
+| `organization` | string | Sim | Organizador/ federação |
+| `status` | enum TournamentStatus | Sim | DRAFT / ACTIVE / COMPLETED |
+| `createdAt` | string (ISO datetime) | Sim | Data de criação |
+| `updatedAt` | string (ISO datetime) | Sim | Última atualização |
+
+**Ações:**
+- `Criar torneio`
+- `Editar torneio`
+- `Ativar torneio`
+- `Finalizar torneio`
+- `Gerar relatório final`
+
+---
+
+### 2. Módulo de Competidores
+
+**Objetivo:** Cadastrar e gerenciar os atletas inscritos.
+
+**Dados do competidor:**
+
+| Campo | Tipo | Obrigatório | Observação |
+|---|---|---|---|
+| `id` | UUID | Sim | Gerado automaticamente |
+| `name` | string | Sim | Nome completo |
+| `team` | string | Sim | Nome da academia/equipe |
+| `weight` | number (kg) | Sim | Peso em quilogramas |
+| `age` | number | Sim | Idade em anos |
+| `belt` | enum Belt | Sim | Ver enum abaixo |
+| `coach` | string | Não | Nome do técnico |
+| `registrationDate` | string (ISO datetime) | Sim | Data de inscrição |
+
+**Enum Belt (ordem de graduação):**
+```
+WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
+```
+
+**Regras:**
+- Não é permitido cadastrar dois competidores com o mesmo nome na mesma equipe.
+- Peso deve ser > 0 e < 300.
+- Idade deve ser >= 4 e <= 100.
+- Todos os campos obrigatórios são exigidos.
+
+**Ações:**
+- `Criar competidor`
+- `Editar competidor`
+- `Excluir competidor` (somente se não estiver em uma chave ativa)
+- `Listar competidores` com filtro por faixa, equipe e nome
+- `Importar competidores` (CSV/JSON)
+- `Exportar competidores`
+
+---
+
+### 3. Módulo de Árbitros
+
+**Objetivo:** Cadastrar e gerenciar os árbitros do torneio.
+
+**Dados do Árbitro:**
+
+| Campo | Tipo | Obrigatório | Observação |
+|---|---|---|---|
+| `id` | UUID | Sim | Gerado automaticamente |
+| `name` | string | Sim | Nome completo |
+| `belt` | enum Belt | Sim | Graduação mínima recomendada: Roxa |
+| `certification` | string | Não | Certificação / federação |
+| `experience` | number | Não | Anos de experiência |
+
+**Ações:**
+- `Criar árbitro`
+- `Editar árbitro`
+- `Excluir árbitro` (somente se não estiver associado a uma chave/área)
+- `Listar árbitros`
+- `Atribuir árbitro a área`
+
+---
+
+### 4. Módulo de Chaves (Brackets)
+
+**Objetivo:** Organizar os competidores em brackets de eliminação simples por faixa e categoria de peso.
+
+**Categoria de peso (por faixa etária e faixa de graduação — simplificado para o sistema):**
+
+O usuário define manualmente os limites de peso para criar uma categoria. Não há categorias pré-fixadas.
+
+**Dados da Chave:**
+
+| Campo | Tipo | Observação |
+|---|---|---|
+| `id` | UUID | Gerado automaticamente |
+| `belt` | enum Belt | Faixa dos competidores |
+| `weightMin` | number | Peso mínimo em kg |
+| `weightMax` | number | Peso máximo em kg |
+| `label` | string | Nome da categoria (ex: "Azul - Leve") |
+| `competitors` | Competitor[] | Competidores elegíveis filtrados automaticamente |
+| `matches` | Match[] | Lutas geradas pelo bracket |
+| `status` | enum: PENDING / IN_PROGRESS / FINISHED | Status da chave |
+| `refereeId` | UUID ou null | Árbitro responsável pela chave |
+| `areaId` | UUID ou null | Área preferencial para esta chave |
+
+**Regras:**
+- Ao criar uma chave, o sistema filtra automaticamente os competidores cadastrados que correspondem à faixa e ao intervalo de peso definidos.
+- O usuário pode remover ou adicionar competidores manualmente antes de gerar as lutas.
+- O bracket é de eliminação simples (single elimination).
+- Com número ímpar de competidores, o sistema distribui bye automaticamente.
+- Uma chave não pode ser editada após o status mudar para `IN_PROGRESS`.
+- Cada chave pode ter um árbitro designado.
+
+**Ações:**
+- `Criar chave` (definir faixa + faixa de peso + árbitro)
+- `Ver competidores elegíveis`
+- `Adicionar/remover competidor da chave`
+- `Gerar bracket` (cria as lutas)
+- `Visualizar bracket` (exibição em árvore)
+- `Atribuir árbitro à chave`
+- `Excluir chave` (somente se PENDING)
+
+---
+
+### 5. Módulo de Áreas de Luta
+
+**Objetivo:** Gerenciar os tatames físicos disponíveis no evento e suas lutas programadas.
+
+**Dados da Área:**
+
+| Campo | Tipo | Observação |
+|---|---|---|
+| `id` | UUID | Gerado automaticamente |
+| `name` | string | Ex: "Tatame 1", "Área A" |
+| `currentMatchId` | UUID ou null | Luta atualmente em curso |
+| `scheduledMatches` | ScheduledMatch[] | Fila de lutas programadas para esta área |
+| `refereeId` | UUID ou null | Árbitro principal da área |
+| `assistantRefereeId` | UUID ou null | Árbitro assistente (opcional) |
+
+**ScheduledMatch:**
+
+| Campo | Tipo | Observação |
+|---|---|---|
+| `matchId` | UUID | ID da luta agendada |
+| `order` | number | Ordem na fila |
+| `estimatedTime` | string | Horário estimado (opcional) |
+| `isMarried` | boolean | Se é uma luta casada |
+
+**Regras:**
+- Uma área pode ter no máximo uma luta ativa por vez.
+- Ao atribuir uma luta a uma área, o status da luta muda para `IN_PROGRESS`.
+- Lutas casadas podem ser pré-definidas para uma área específica.
+
+**Ações:**
+- `Criar área`
+- `Editar nome da área`
+- `Atribuir árbitro à área`
+- `Programar luta na área` (incluindo lutas casadas)
+- `Remover luta programada`
+- `Avançar para próxima luta`
+- `Excluir área` (somente se sem luta ativa)
+- `Listar áreas` com status atual e fila de lutas
+- `Exportar programação de áreas`
+- `Importar programação de áreas`
+
+---
+
+### 6. Módulo de Lutas Casadas
+
+**Objetivo:** Permitir a definição antecipada de lutas específicas em áreas determinadas.
+
+**Dados da Luta Casada:**
+
+| Campo | Tipo | Observação |
+|---|---|---|
+| `id` | UUID | Gerado automaticamente |
+| `competitorAId` | UUID | ID do competidor A |
+| `competitorBId` | UUID | ID do competidor B |
+| `areaId` | UUID | Área designada para a luta |
+| `scheduledTime` | string (ISO datetime) | Horário agendado |
+| `bracketId` | UUID ou null | Chave a que pertence (se aplicável) |
+| `notes` | string | Observações adicionais |
+
+**Regras:**
+- Ao criar uma luta casada, ela é automaticamente adicionada à fila da área designada.
+- A luta casada pode ser movida para outra área antes de iniciar.
+- Os competidores devem estar cadastrados no sistema.
+
+**Ações:**
+- `Criar luta casada`
+- `Editar luta casada`
+- `Remover luta casada`
+- `Mover para outra área`
+- `Listar lutas casadas`
+
+---
+
+### 7. Módulo de Placar (Scoreboard)
+
+**Objetivo:** Controlar o placar e o cronômetro de uma luta ativa em uma área.
+
+**Dados da Luta (Match):**
+
+| Campo | Tipo | Observação |
+|---|---|---|
+| `id` | UUID | Gerado automaticamente |
+| `bracketId` | UUID | Chave a que pertence |
+| `competitorA` | Competitor | Lutador do lado A |
+| `competitorB` | Competitor | Lutador do lado B |
+| `areaId` | UUID ou null | Área onde ocorre |
+| `status` | enum: PENDING / IN_PROGRESS / FINISHED | |
+| `scoreA` | ScoreData | Pontuação do competidor A |
+| `scoreB` | ScoreData | Pontuação do competidor B |
+| `duration` | number (segundos) | Tempo total da luta |
+| `elapsedTime` | number (segundos) | Tempo decorrido |
+| `winner` | UUID ou null | ID do vencedor |
+| `isMarried` | boolean | Indica se é uma luta casada |
+| `refereeId` | UUID | Árbitro que arbitrou a luta |
+
+**ScoreData:**
+```json
+{
+  "points": 0,
+  "advantages": 0,
+  "penalties": 0
+}
+```
+
+**Regras de pontuação BJJ:**
+- **2 pontos:** Derrubada, varredura, saída por baixo
+- **3 pontos:** Passagem de guarda
+- **4 pontos:** Montada, pegada nas costas, knee-on-belly
+- **Vantagem:** Registro de tentativa incompleta (não soma na desistência)
+- **Punição:** Penalidade ao competidor infrator — conta como +1 ponto para o adversário no critério de desempate
+- Vencedor por pontos: maior pontuação ao fim do tempo
+- Critério de desempate: vantagens > punições do adversário
+- Vencedor por finalização: encerrar a luta manualmente com vitória definida
+
+**Cronômetro:**
+- Tempo configurável antes de iniciar (padrão: 5 minutos)
+- Ações: Iniciar, Pausar, Retomar, Zerar
+- Ao chegar em 00:00, o cronômetro para e o sistema indica fim de luta
+
+**Ações do placar:**
+- `Selecionar área` para abrir o placar daquela área
+- `Adicionar pontos` (+2, +3, +4) para A ou B
+- `Adicionar vantagem` para A ou B
+- `Adicionar punição` para A ou B
+- `Desfazer última ação` (undo — apenas a última)
+- `Finalizar luta` (com vencedor por tempo ou por finalização)
+- Ao finalizar: avança o bracket automaticamente
+
+---
+
+### 8. Módulo de Relatórios e Exportação
+
+**Objetivo:** Consolidar e exportar informações do torneio.
+
+**Tipos de Relatório:**
+
+| Relatório | Descrição |
+|---|---|
+| Relatório Final do Torneio | Visão completa: competidores, chaves, resultados por área |
+| Relatório por Área | Lutas realizadas por tatame, árbitros atuantes |
+| Relatório por Árbitro | Chaves e lutas arbitradas por cada árbitro |
+| Relatório de Resultados | Colocações finais por chave |
+| Exportação Completa | Todos os JSONs consolidados em um arquivo |
+
+**Ações:**
+- `Gerar relatório final do torneio`
+- `Exportar dados (torneio + competidores + chaves + áreas + árbitros)`
+- `Importar dados` (para consolidar informações de múltiplas fontes)
+- `Consolidar dados` (juntar informações de arquivos locais diferentes)
+
+---
+
+## Estrutura de Arquivos de Dados
+
+O sistema utiliza múltiplos arquivos JSON separados, simulando um banco de dados relacional. Cada arquivo tem uma responsabilidade específica e são lidos/escritos conforme necessário.
+
+### Estrutura de Pastas
+
+```
+data/
+├── tournament.json      # Configuração principal do torneio
+├── competitors.json     # Cadastro de competidores
+├── brackets.json        # Chaves e brackets
+├── matches.json         # Lutas (inclui histórico de placares)
+├── areas.json           # Áreas de luta e programação
+├── referees.json        # Cadastro de árbitros
+├── marriedMatches.json  # Lutas casadas predefinidas
+├── results.json         # Resultados consolidados do torneio
+└── exports/             # Pasta para arquivos de exportação/importação
+    └── [timestamp]_export.json
+```
+
+### Exemplos de Estrutura dos JSONs
+
+#### `data/tournament.json` — Configuração do Torneio
+
+```json
+{
+  "id": "uuid",
+  "name": "Campeonato Brasileiro de BJJ 2025",
+  "startDate": "2025-08-10",
+  "endDate": "2025-08-12",
+  "location": "Ginásio do Ibirapuera, São Paulo",
+  "organization": "CBJJ",
+  "status": "ACTIVE",
+  "createdAt": "2025-01-15T10:00:00Z",
+  "updatedAt": "2025-08-01T14:30:00Z"
+}
+```
+
+#### `data/competitors.json` — Competidores
+
+```json
+{
+  "competitors": [
+    {
+      "id": "uuid",
+      "name": "João Silva",
+      "team": "Alliance",
+      "weight": 74.5,
+      "age": 28,
+      "belt": "BLUE",
+      "coach": "Fábio Gurgel",
+      "registrationDate": "2025-07-01T09:00:00Z"
+    }
+  ]
+}
+```
+
+#### `data/brackets.json` — Chaves
+
+```json
+{
+  "brackets": [
+    {
+      "id": "uuid",
+      "belt": "BLUE",
+      "weightMin": 70,
+      "weightMax": 79,
+      "label": "Azul - Leve",
+      "competitors": ["competitorId1", "competitorId2"],
+      "matches": ["matchId1", "matchId2"],
+      "status": "PENDING",
+      "refereeId": "refereeId1",
+      "areaId": null,
+      "createdAt": "2025-08-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### `data/matches.json` — Lutas
+
+```json
+{
+  "matches": [
+    {
+      "id": "uuid",
+      "bracketId": "uuid",
+      "competitorA": {
+        "competitorId": "uuid",
+        "name": "João Silva",
+        "team": "Alliance",
+        "belt": "BLUE",
+        "weight": 74.5
+      },
+      "competitorB": {
+        "competitorId": "uuid",
+        "name": "Pedro Rocha",
+        "team": "Checkmat",
+        "belt": "BLUE",
+        "weight": 73.0
+      },
+      "areaId": "areaId1",
+      "status": "FINISHED",
+      "scoreA": {
+        "points": 6,
+        "advantages": 1,
+        "penalties": 0
+      },
+      "scoreB": {
+        "points": 2,
+        "advantages": 0,
+        "penalties": 1
+      },
+      "duration": 300,
+      "elapsedTime": 298,
+      "winner": "competitorId1",
+      "isMarried": false,
+      "refereeId": "refereeId1",
+      "finishedAt": "2025-08-10T10:42:00Z"
+    }
+  ]
+}
+```
+
+#### `data/areas.json` — Áreas de Luta
+
+```json
+{
+  "areas": [
+    {
+      "id": "uuid",
+      "name": "Tatame 1",
+      "currentMatchId": "matchId1",
+      "scheduledMatches": [
+        {
+          "matchId": "matchId2",
+          "order": 1,
+          "estimatedTime": "2025-08-10T11:00:00Z",
+          "isMarried": false
+        }
+      ],
+      "refereeId": "refereeId1",
+      "assistantRefereeId": "refereeId2"
+    }
+  ]
+}
+```
+
+#### `data/referees.json` — Árbitros
+
+```json
+{
+  "referees": [
+    {
+      "id": "uuid",
+      "name": "Carlos Eduardo",
+      "belt": "PURPLE",
+      "certification": "CBJJ Nível 2",
+      "experience": 5
+    }
+  ]
+}
+```
+
+#### `data/marriedMatches.json` — Lutas Casadas
+
+```json
+{
+  "marriedMatches": [
+    {
+      "id": "uuid",
+      "competitorAId": "competitorId1",
+      "competitorBId": "competitorId2",
+      "areaId": "areaId1",
+      "scheduledTime": "2025-08-10T14:00:00Z",
+      "bracketId": null,
+      "notes": "Final absoluto"
+    }
+  ]
+}
+```
+
+#### `data/results.json` — Resultados Consolidados
+
+```json
+{
+  "generatedAt": "2025-08-12T20:00:00Z",
+  "tournament": {
+    "id": "uuid",
+    "name": "Campeonato Brasileiro de BJJ 2025"
+  },
+  "brackets": [
+    {
+      "bracketId": "uuid",
+      "label": "Azul - Leve",
+      "belt": "BLUE",
+      "weightMin": 70,
+      "weightMax": 79,
+      "status": "FINISHED",
+      "refereeName": "Carlos Eduardo",
+      "placements": [...],
+      "rounds": [...]
+    }
+  ],
+  "areaHistory": [...],
+  "refereeSummary": [...],
+  "statistics": {
+    "totalCompetitors": 128,
+    "totalBrackets": 12,
+    "totalMatches": 120,
+    "totalAreas": 4,
+    "totalReferees": 8,
+    "submissions": 45,
+    "pointsVictories": 60,
+    "walkovers": 10,
+    "dq": 5
+  }
+}
+```
+
+---
+
+## API Routes
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/tournament` | Retorna configuração do torneio |
+| `POST` | `/api/tournament` | Cria/atualiza torneio |
+| `GET` | `/api/competitors` | Lista competidores |
+| `POST` | `/api/competitors` | Cria competidor |
+| `PUT` | `/api/competitors/[id]` | Atualiza competidor |
+| `DELETE` | `/api/competitors/[id]` | Remove competidor |
+| `GET` | `/api/brackets` | Lista chaves |
+| `POST` | `/api/brackets` | Cria chave |
+| `POST` | `/api/brackets/[id]/generate` | Gera bracket |
+| `GET` | `/api/areas` | Lista áreas |
+| `POST` | `/api/areas` | Cria área |
+| `POST` | `/api/areas/[id]/schedule` | Programa luta na área |
+| `GET` | `/api/referees` | Lista árbitros |
+| `POST` | `/api/referees` | Cria árbitro |
+| `GET` | `/api/married-matches` | Lista lutas casadas |
+| `POST` | `/api/married-matches` | Cria luta casada |
+| `GET` | `/api/results` | Retorna resultados consolidados |
+| `POST` | `/api/results/finalize` | Finaliza torneio e gera relatório |
+| `POST` | `/api/export` | Exporta todos os dados |
+| `POST` | `/api/import` | Importa dados consolidados |
+| `DELETE` | `/api/reset` | Reseta todos os dados (confirmação dupla) |
+
+---
+
+## Navegação e Telas
+
+| Rota | Tela |
+|---|---|
+| `/` | Dashboard — resumo do torneio |
+| `/tournament/setup` | Configuração inicial do torneio |
+| `/competitors` | Lista e cadastro de competidores |
+| `/competitors/import` | Importação de competidores |
+| `/brackets` | Lista de chaves + criação |
+| `/brackets/[id]` | Visualização do bracket (árvore) |
+| `/brackets/[id]/referee` | Atribuição de árbitro à chave |
+| `/areas` | Gerenciamento de áreas |
+| `/areas/[id]/schedule` | Programação de lutas na área |
+| `/scoreboard` | Seletor de área + placar ativo |
+| `/scoreboard/[areaId]` | Placar em tela cheia |
+| `/referees` | Cadastro e gestão de árbitros |
+| `/married-matches` | Gerenciamento de lutas casadas |
+| `/schedule` | Visão geral da programação |
+| `/results` | Resultados finais — relatório completo |
+| `/results/export` | Exportação de dados |
+| `/import` | Importação e consolidação de dados |
+
+---
+
+## Fora de Escopo (v1)
+
+- Autenticação de usuário
+- Torneios múltiplos simultâneos (embora o JSON suporte, a UI é para um torneio por vez)
+- Integração com banco de dados externo (PostgreSQL, MongoDB)
+- Histórico de torneios anteriores (múltiplos eventos)
+- Categorias de peso pré-definidas por federação
+- Notificações em tempo real via WebSocket
+- Aplicação mobile nativa
+
+---
+
+## Critérios de Aceite Globais
+
+- Toda operação de escrita persiste imediatamente no JSON correspondente.
+- A aplicação deve funcionar sem internet (dados locais).
+- O placar em `/scoreboard/[areaId]` deve ser utilizável em tela cheia (projetado para TV/monitor).
+- Listas com mais de 20 itens devem ter paginação ou scroll virtual.
+- O sistema não deve perder estado do cronômetro ao navegar entre abas do mesmo browser (usar `localStorage` como fallback de cronômetro ativo).
+- É possível exportar e importar dados para consolidação entre diferentes instâncias.
+- O relatório final deve conter todas as informações do torneio: competidores, chaves, resultados por área e sumário de árbitros.
+
+---
+
+# Plano de Implementação
+
+## Stack
+
+| Item | Decisão |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Linguagem | TypeScript |
+| Estilização | Tailwind CSS + **shadcn/ui** |
+| Componentes | **shadcn/ui** (Button, Card, Dialog, Input, Select, Table, Tabs, etc.) |
+| Ícones | **Lucide React** |
+| Formulários | React Hook Form + Zod (validação) |
+| Persistência | Múltiplos JSONs locais via `fs` em API Routes |
+| Estado cliente | `useState` + `useReducer` + `Context API` |
+| Cronômetro | `useRef` + `setInterval` com fallback `localStorage` |
+| Geração de UUID | `crypto.randomUUID()` |
+| Testes | Vitest (unitário) |
+| Notificações | **shadcn/ui Toast** ou **Sonner** |
+
+---
+
+## Fases de Implementação
+
+---
+
+### FASE 1 — Fundação e Estrutura de Dados
+
+**Objetivo:** Criar a base do projeto com tipos, persistência e API.
+
+#### Tarefas
+
+**1.1 — Setup do Projeto**
+- [ ] Criar projeto Next.js 14 com TypeScript e Tailwind: `npx create-next-app@latest bjj-tournament --typescript --tailwind --app`
+- [ ] Instalar e configurar **shadcn/ui**:
+  ```bash
+  npx shadcn-ui@latest init
+  # Selecionar: Estilo New York, Neutral, CSS variables, yes
+  ```
+- [ ] Instalar **Lucide React**:
+  ```bash
+  npm install lucide-react
+  ```
+- [ ] Instalar dependências adicionais:
+  ```bash
+  npm install react-hook-form zod @hookform/resolvers sonner
+  ```
+- [ ] Configurar `eslint` e `prettier`
+- [ ] Criar estrutura de pastas: `src/types`, `src/lib`, `src/hooks`, `src/components`, `src/app`
+- [ ] Criar pasta `data/` com todos os arquivos JSON iniciais vazios
+
+**1.2 — Definição de Tipos**
+- [ ] Criar `src/types/index.ts` com todos os tipos necessários
+- [ ] Tipos: `Tournament`, `Belt`, `Competitor`, `ScoreData`, `Match`, `MatchStatus`, `FinishType`, `Bracket`, `BracketStatus`, `Area`, `ScheduledMatch`, `Referee`, `MarriedMatch`, `TournamentData`, `ResultsData`
+- [ ] Exportar todos os tipos de um barrel `src/types/index.ts`
+
+**1.3 — Camada de Persistência**
+- [ ] Criar `src/lib/storage.ts` com funções para cada arquivo JSON
+- [ ] Criar `src/lib/atomicWrite.ts` para escrita atômica
+- [ ] Garantir que todos os arquivos são inicializados caso não existam
+
+**1.4 — API Routes Base**
+- [ ] Criar rotas para cada entidade usando os padrões do Next.js App Router
+- [ ] Criar `/api/reset` com validação de confirmação
+
+**1.5 — Setup de UI Base**
+- [ ] Adicionar componentes shadcn/ui essenciais:
+  ```bash
+  npx shadcn-ui@latest add button card dialog input label select table tabs toast form
+  ```
+- [ ] Configurar `Sonner` para toasts no `layout.tsx`
+- [ ] Criar layout base com navbar e sidebar (usando shadcn/ui components)
+
+**Critério de aceite:** Todas as rotas GET retornam os JSONs corretamente. Interface base com navbar funcional.
+
+---
+
+### FASE 2 — Módulo de Torneio
+
+**Objetivo:** Configuração inicial do torneio.
+
+#### Tarefas
+
+**2.1 — Hook de Torneio**
+- [ ] Criar `src/hooks/useTournament.ts` com: `tournament`, `createTournament`, `updateTournament`, `activateTournament`, `finalizeTournament`
+
+**2.2 — Componentes**
+- [ ] `TournamentForm` — usando `react-hook-form` + `zod` + shadcn/ui `Form`
+- [ ] `TournamentStatusBadge` — usando shadcn/ui `Badge`
+
+**2.3 — Página**
+- [ ] `src/app/tournament/setup/page.tsx` — configuração inicial
+
+**Critério de aceite:** É possível criar e editar o torneio. Status reflete no dashboard.
+
+---
+
+### FASE 3 — Módulo de Competidores
+
+**Objetivo:** CRUD completo de competidores com componentes shadcn/ui.
+
+#### Tarefas
+
+**3.1 — Hook de Competidores**
+- [ ] Criar `src/hooks/useCompetitors.ts` com operações CRUD + import/export
+
+**3.2 — Componentes**
+- [ ] `CompetitorForm` — shadcn/ui `Dialog` + `Form` com validação Zod
+- [ ] `CompetitorCard` — shadcn/ui `Card` com Lucide ícones (`User`, `Weight`, `Award`)
+- [ ] `CompetitorList` — shadcn/ui `Table` com filtros (shadcn/ui `Input` + `Select`)
+- [ ] `BeltBadge` — componente customizado com cores mapeadas para cada faixa
+- [ ] `CompetitorImportModal` — shadcn/ui `Dialog` com upload de arquivo
+
+**3.3 — Páginas**
+- [ ] `src/app/competitors/page.tsx` — lista com botão "Novo Competidor"
+- [ ] `src/app/competitors/import/page.tsx` — importação
+
+**Critério de aceite:** CRUD completo, filtros funcionando, dados persistem. Interface consistente com shadcn/ui.
+
+---
+
+### FASE 4 — Módulo de Árbitros
+
+**Objetivo:** CRUD de árbitros.
+
+#### Tarefas
+
+**4.1 — Hook de Árbitros**
+- [ ] Criar `src/hooks/useReferees.ts` com operações CRUD
+
+**4.2 — Componentes**
+- [ ] `RefereeForm` — shadcn/ui `Form` + `Dialog`
+- [ ] `RefereeList` — shadcn/ui `Table`
+- [ ] `RefereeBadge` — componente com ícone Lucide `Shield`
+
+**4.3 — Página**
+- [ ] `src/app/referees/page.tsx`
+
+**Critério de aceite:** CRUD completo de árbitros.
+
+---
+
+### FASE 5 — Módulo de Chaves (Brackets)
+
+**Objetivo:** Criar e gerenciar brackets de eliminação simples.
+
+#### Tarefas
+
+**5.1 — Lógica de Bracket**
+- [ ] Criar `src/lib/bracket.ts` com função `generateBracket`
+- [ ] Criar `src/lib/bracketUtils.ts` com `advanceBracket`
+- [ ] Criar `src/lib/placementCalculator.ts` com `calculatePlacements`
+
+**5.2 — Hook de Brackets**
+- [ ] Criar `src/hooks/useBrackets.ts` com operações
+
+**5.3 — Componentes**
+- [ ] `BracketForm` — shadcn/ui `Form` com `Select` para faixa, `Input` para pesos
+- [ ] `EligibleCompetitorsList` — shadcn/ui `Checkbox` + `Table`
+- [ ] `BracketTree` — visualização responsiva (CSS Grid + shadcn/ui `Card`)
+- [ ] `BracketCard` — shadcn/ui `Card` com ícones
+
+**5.4 — Páginas**
+- [ ] `src/app/brackets/page.tsx`
+- [ ] `src/app/brackets/[id]/page.tsx`
+- [ ] `src/app/brackets/[id]/referee/page.tsx`
+
+**Critério de aceite:** Criação de chave funcional, bracket gerado corretamente, visualização em árvore.
+
+---
+
+### FASE 6 — Módulo de Áreas de Luta e Lutas Casadas
+
+**Objetivo:** Gerenciar tatames e programar lutas.
+
+#### Tarefas
+
+**6.1 — Hook de Áreas**
+- [ ] Criar `src/hooks/useAreas.ts` com operações
+
+**6.2 — Hook de Lutas Casadas**
+- [ ] Criar `src/hooks/useMarriedMatches.ts`
+
+**6.3 — Componentes**
+- [ ] `AreaCard` — shadcn/ui `Card` com status indicator
+- [ ] `AreaForm` — shadcn/ui `Dialog` + `Form`
+- [ ] `MatchAssignModal` — shadcn/ui `Dialog` com `Select`
+- [ ] `SchedulePanel` — visualização de fila usando shadcn/ui `ScrollArea`
+- [ ] `MarriedMatchForm` — shadcn/ui `Form` com `DateTimePicker` customizado
+- [ ] `ScheduleView` — grade usando CSS Grid + shadcn/ui `Card`
+
+**6.4 — Páginas**
+- [ ] `src/app/areas/page.tsx`
+- [ ] `src/app/areas/[id]/schedule/page.tsx`
+- [ ] `src/app/married-matches/page.tsx`
+- [ ] `src/app/schedule/page.tsx`
+
+**Critério de aceite:** Gerenciamento completo de áreas, programação de lutas, lutas casadas.
+
+---
+
+### FASE 7 — Módulo de Placar
+
+**Objetivo:** Placar interativo com cronômetro.
+
+#### Tarefas
+
+**7.1 — Hook de Cronômetro**
+- [ ] Criar `src/hooks/useTimer.ts` com persistência em `localStorage`
+
+**7.2 — Hook de Placar**
+- [ ] Criar `src/hooks/useScoreboard.ts` com histórico de ações
+
+**7.3 — Componentes**
+- [ ] `ScorePanel` — shadcn/ui `Card` com design otimizado para TV
+- [ ] `ScoreButton` — shadcn/ui `Button` com ícones Lucide (`Plus`, `Minus`)
+- [ ] `TimerDisplay` — componente com `font-mono` e tamanho responsivo
+- [ ] `TimerControls` — shadcn/ui `Button` com ícones (`Play`, `Pause`, `RotateCcw`)
+- [ ] `AreaSelector` — shadcn/ui `Select`
+- [ ] `FinishMatchModal` — shadcn/ui `Dialog` com opções de finalização
+
+**7.4 — Páginas**
+- [ ] `src/app/scoreboard/page.tsx`
+- [ ] `src/app/scoreboard/[areaId]/page.tsx` — layout fullscreen, sem navbar quando `?fullscreen=true`
+
+**Critério de aceite:** Placar funcional, cronômetro persistente, undo funcionando.
+
+---
+
+### FASE 8 — Dashboard, Resultados e Exportação
+
+**Objetivo:** Dashboard, relatórios finais e funcionalidades de exportação/importação.
+
+#### Tarefas
+
+**8.1 — Dashboard**
+- [ ] `src/app/page.tsx` — shadcn/ui `Card` grid com estatísticas e links rápidos
+
+**8.2 — Página de Resultados**
+- [ ] `src/app/results/page.tsx` — shadcn/ui `Tabs` para navegar entre: Pódios, Histórico por Área, Sumário de Árbitros, Estatísticas
+
+**8.3 — Exportação e Importação**
+- [ ] `src/app/results/export/page.tsx`
+- [ ] `src/app/import/page.tsx`
+- [ ] Lógica de merge/consolidação
+
+**8.4 — Reset do Torneio**
+- [ ] Modal de confirmação com input para digitar "RESETAR" (shadcn/ui `Dialog` + `Input`)
+
+**8.5 — Layout e Navegação**
+- [ ] Navbar com shadcn/ui `NavigationMenu`
+- [ ] Tema escuro com shadcn/ui `ThemeProvider` (modo escuro como padrão para placar)
+
+**8.6 — Tratamento de Erros**
+- [ ] Toast do Sonner para feedback de operações
+- [ ] Empty states com ícones Lucide
+- [ ] Loading skeletons (shadcn/ui `Skeleton`)
+
+**8.7 — Testes Unitários**
+- [ ] Testes para funções puras (bracket, pontuação, placement)
+
+---
+
+## Componentes Shadcn/ui a Serem Utilizados
+
+| Componente | Uso |
+|---|---|
+| `Button` | Todas as ações do sistema |
+| `Card` | Dashboard, listagens, ScorePanel |
+| `Dialog` | Formulários modais (competidor, árbitro, chave, área) |
+| `Form` | Todos os formulários com validação |
+| `Input` | Campos de texto, busca, filtros |
+| `Select` | Seleção de faixa, área, árbitro |
+| `Table` | Listas de competidores, árbitros, chaves |
+| `Tabs` | Navegação na página de resultados |
+| `Toast` / `Sonner` | Notificações de sucesso/erro |
+| `Badge` | Status, faixas |
+| `Checkbox` | Seleção de competidores elegíveis |
+| `ScrollArea` | Listas longas, fila de lutas |
+| `Skeleton` | Loading states |
+| `NavigationMenu` | Navbar principal |
+| `Separator` | Divisão entre seções |
+| `Tooltip` | Dicas em botões de ação |
+
+---
+
+## Ícones Lucide a Serem Utilizados
+
+| Ícone | Uso |
+|---|---|
+| `Trophy` | Dashboard, pódio |
+| `Users` | Competidores |
+| `Swords` | Lutas, chaves |
+| `MapPin` | Áreas |
+| `Shield` | Árbitros |
+| `Clock` | Cronômetro |
+| `Plus`, `Minus` | Pontuação |
+| `Play`, `Pause`, `RotateCcw` | Controles do cronômetro |
+| `Undo` | Desfazer ação |
+| `Check` | Confirmar |
+| `X` | Cancelar |
+| `Trash` | Excluir |
+| `Edit` | Editar |
+| `Upload`, `Download` | Importar/Exportar |
+| `Calendar` | Datas |
+| `Weight` | Categoria de peso |
+| `Award` | Faixa/graduação |
+| `Flag` | Finalização |
+| `RefreshCw` | Reset |
+| `LayoutGrid` | Dashboard |
+| `List` | Listagens |
+
+---
+
+## Ordem de Entrega Recomendada
+
+```
+Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fase 8
+```
+
+Cada fase é independente e entregável. É possível usar a aplicação a partir da Fase 3.
+
+---
+
+## Riscos e Decisões Abertas
+
+| Risco | Decisão |
+|---|---|
+| Concorrência de escrita no JSON | Uso de escrita atômica para evitar corrupção |
+| Persistência do cronômetro em múltiplas abas | `localStorage` + `BroadcastChannel` para sincronização |
+| Bracket com 1 competidor | Bloquear geração — erro "Mínimo 2 competidores" |
+| Competidor excluído que está em bracket ativo | Impedir exclusão |
+| Tela de placar em TV | Rota `?fullscreen=true` oculta navbar e usa CSS fullscreen |
+| Corrupção de JSON por escrita parcial | Write atômico (temp file + rename) |
+| Resetar torneio acidentalmente | Confirmação dupla com digitação de "RESETAR" |
+| Consolidação de dados de múltiplas fontes | Merge strategy baseada em timestamps e UUIDs |
+| Acessibilidade | shadcn/ui já fornece componentes acessíveis (Radix UI) |
+
+Novas informações que devem ser adicionadas ao spec a cima:
+
+
+tailwind para a estilização adicionais
+cores, amarelo, azul, branco e preto
+
+primeira task tem que ser ciar a tela inicial contemplando todos os menus que serão implementados futuramente
+
+Concorrência de escrita no JSON	Uso de escrita atômica para evitar corrupção
+
+Persistência do cronômetro em múltiplas abas	localStorage + BroadcastChannel para sincronização -> não pois os pontos são marcados ao vivo, ou seja tem que ter a opção de desfazer a pontuação caso necessario
+
+Bracket com 1 competidor	Bloquear geração — erro "Mínimo 2 competidores"
+
+Competidor excluído que está em bracket ativo	Impedir exclusão (sempre soft delete)
+
+Resetar torneio acidentalmente	Confirmação dupla com digitação de "RESETAR" / não pode resetar o torneio
+
+Consolidação de dados de múltiplas fontes	Merge strategy baseada em timestamps e UUIDs
+Acessibilidade	shadcn/ui já fornece componentes acessíveis (Radix UI)
