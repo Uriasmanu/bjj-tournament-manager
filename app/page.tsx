@@ -23,12 +23,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Header com fundo branco e borda suave */}
+      
       <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-4">
-              {/* Ícone em azul */}
+              
               <div className="p-2 bg-blue-600 rounded-lg shadow-sm">
                 <Trophy className="w-6 h-6 text-white" />
               </div>
@@ -67,7 +67,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-        {/* Seção de Estatísticas - Cards brancos com bordas sutis */}
+        
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatsCard title="Atletas" value="128" trend="+12" icon={Users} className="bg-white border-slate-200 shadow-sm" />
@@ -77,7 +77,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Seção de Módulos */}
+        
         <section>
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* MenuCards agora devem seguir o padrão: Fundo branco, ícones em azul/preto */}
+            
             <MenuCard 
               href="/competitors" title="Competidores" 
               description="Gerencie atletas, inscrições e pesagem." 
