@@ -3,6 +3,12 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   theme: {
     extend: {
+      fontFamily: {
+
+        sans: ["var(--font-inter)", "sans-serif"],
+
+        display: ["var(--font-barlow)", "sans-serif"],
+      },
       colors: {
         'bjj-gold': '#FFD700',
         'bjj-gold-dark': '#DAA520',

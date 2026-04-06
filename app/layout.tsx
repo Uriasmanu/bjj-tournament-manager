@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Outfit, Quicksand } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({ 
   subsets: ["latin"],
+  variable: "--font-inter",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const outfit = Outfit({ 
   subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
+const quicksand = Quicksand({ 
+  subsets: ["latin"],
+  variable: "--font-quicksand",
 });
 
 export const metadata: Metadata = {
@@ -25,9 +30,10 @@ export default function RootLayout({
   return (
     <html
       lang="pt-br"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      // ⚠️ Corrigido: Agora usando as variáveis corretas das fontes arredondadas
+      className={`${inter.variable} ${outfit.variable} ${quicksand.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bjj-black text-white">
+      <body className="min-h-full flex flex-col bg-zinc-950 text-white font-sans">
         {children}
       </body>
     </html>
