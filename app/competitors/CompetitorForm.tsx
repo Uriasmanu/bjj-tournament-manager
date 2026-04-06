@@ -101,7 +101,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] bg-gradient-to-b from-white to-gray-50 border-2 border-bjj-gold/30 shadow-xl">
-        {/* Cabeçalho com gradiente */}
+        
         <DialogHeader className="bg-gradient-to-r from-bjj-gold/10 to-transparent -mx-6 px-6 pb-4 pt-2 border-b-2 border-bjj-gold/30">
           <DialogTitle className="text-2xl font-bold text-bjj-gold flex items-center gap-2">
             <Award className="w-6 h-6 text-bjj-gold" />
@@ -113,7 +113,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          {/* Nome Completo */}
+          
           <div className="group">
             <Label htmlFor="name" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <User className="w-4 h-4 text-bjj-gold" />
@@ -135,7 +135,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             )}
           </div>
 
-          {/* Equipe */}
+          
           <div className="group">
             <Label htmlFor="team" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <Building2 className="w-4 h-4 text-bjj-gold" />
@@ -157,7 +157,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             )}
           </div>
 
-          {/* Peso e Idade */}
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="group">
               <Label htmlFor="weight" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
@@ -205,7 +205,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             </div>
           </div>
 
-          {/* Faixa */}
+          
           <div className="group">
             <Label htmlFor="belt" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <Award className="w-4 h-4 text-bjj-gold" />
@@ -251,7 +251,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             )}
           </div>
 
-          {/* Técnico */}
+          
           <div className="group">
             <Label htmlFor="coach" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <UserCircle className="w-4 h-4 text-bjj-gold" />
@@ -266,7 +266,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             />
           </div>
 
-          {/* Informação adicional */}
+          
           <div className="bg-blue-50 border-l-4 border-bjj-blue p-3 rounded-md">
             <p className="text-xs text-gray-700">
               <span className="font-semibold">📌 Informação:</span> Os campos marcados com <span className="text-red-500">*</span> são obrigatórios.
@@ -274,7 +274,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             </p>
           </div>
 
-          {/* Botões */}
+          
           <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
             <Button
               type="button"

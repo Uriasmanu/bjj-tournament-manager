@@ -46,7 +46,7 @@ export function BeltBadge({ belt }: BeltBadgeProps) {
       `}
     >
       <span className="flex items-center gap-1">
-        {/* Ícone opcional para cada faixa */}
+        
         {belt === 'WHITE' && '🥋'}
         {belt === 'BLUE' && '💙'}
         {belt === 'PURPLE' && '💜'}

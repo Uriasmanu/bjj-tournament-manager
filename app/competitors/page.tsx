@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Plus, Search, Upload, Download, Trash2, Edit, 
-  Eye, EyeOff, Users, Filter, HardHat 
+import {
+  Plus, Search, Upload, Download, Trash2, Edit,
+  Eye, EyeOff, Users, Filter, HardHat
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,10 +107,9 @@ export default function CompetitorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]"> {/* Fundo levemente off-white para contraste com cards */}
+    <div className="min-h-screen bg-[#F8F9FA]">
       <div className="container mx-auto p-6 space-y-6">
-        
-        {/* Header Section */}
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="bg-bjj-black p-3 rounded-lg shadow-lg">
@@ -121,19 +120,28 @@ export default function CompetitorsPage() {
               <p className="text-gray-500 font-medium">Gestão de atletas e graduações</p>
             </div>
           </div>
-          
+
           <div className="flex gap-2 w-full md:w-auto">
-            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 hover:bg-gray-50">
-              <Upload className="w-4 h-4 mr-2 text-bjj-blue" /> Importar
+            <Button
+              variant="outline"
+              className="flex-1 md:flex-none border-gray-300 hover:bg-bjj-blue/5 text-bjj-blue font-semibold transition-colors"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Importar
             </Button>
-            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 hover:bg-gray-50">
-              <Download className="w-4 h-4 mr-2 text-bjj-blue" /> Exportar
+
+            <Button
+              variant="outline"
+              className="flex-1 md:flex-none border-gray-300 hover:bg-bjj-blue/5 text-bjj-blue font-semibold transition-colors"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 setEditingCompetitor(null);
                 setFormOpen(true);
-              }} 
+              }}
               className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-bjj-gold-dark font-bold shadow-md"
             >
               <Plus className="w-4 h-4 mr-2" /> Novo Atleta
@@ -142,7 +150,7 @@ export default function CompetitorsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar de Filtros */}
+
           <Card className="lg:col-span-1 bg-white border-none shadow-md overflow-hidden">
             <CardHeader className="bg-gray-50 border-b border-gray-100">
               <CardTitle className="text-sm font-bold uppercase flex items-center gap-2 text-bjj-black">
@@ -201,7 +209,7 @@ export default function CompetitorsPage() {
             </CardContent>
           </Card>
 
-          {/* Tabela Principal */}
+
           <Card className="lg:col-span-3 bg-white border-none shadow-md overflow-hidden">
             <CardContent className="p-0">
               <Table>
@@ -232,8 +240,8 @@ export default function CompetitorsPage() {
                     </TableRow>
                   ) : (
                     competitors.map((competitor) => (
-                      <TableRow 
-                        key={competitor.id} 
+                      <TableRow
+                        key={competitor.id}
                         className={`group border-b border-gray-100 transition-colors ${!competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'}`}
                       >
                         <TableCell>
@@ -282,7 +290,7 @@ export default function CompetitorsPage() {
                             </Button>
                           </div>
                           {!competitor.isActive && (
-                             <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200">INATIVO</Badge>
+                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200">INATIVO</Badge>
                           )}
                         </TableCell>
                       </TableRow>
