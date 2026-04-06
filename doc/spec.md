@@ -1039,3 +1039,7 @@ Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fas
 | Corrupção de JSON por escrita parcial | Write atômico (temp file + rename) |
 | Consolidação de dados de múltiplas fontes | Merge strategy baseada em timestamps e UUIDs |
 | Acessibilidade | shadcn/ui já fornece componentes acessíveis (Radix UI) |
+
+
+
+precisa ter sempre o fundo branco

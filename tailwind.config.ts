@@ -1,14 +1,15 @@
-import type { Config } from "tailwindcss";
-
-const config: Config = {
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
   theme: {
     extend: {
-      fontFamily: {
-
-        sans: ["var(--font-inter)", "sans-serif"],
-
-        display: ["var(--font-barlow)", "sans-serif"],
-      },
       colors: {
         'bjj-gold': '#FFD700',
         'bjj-gold-dark': '#DAA520',
@@ -18,7 +19,10 @@ const config: Config = {
         'bjj-black': '#111111',
         'bjj-gray': '#2A2A2A',
       },
+      backgroundColor: {
+        'white': '#FFFFFF',
+      },
     },
   },
-};
-export default config;
+  plugins: [require("tailwindcss-animate")],
+}
