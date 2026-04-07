@@ -189,7 +189,7 @@ export default function CompetitorsPage() {
                 onClick={() => setShowInactive(!showInactive)}
                 className={`w-full justify-start gap-2 ${showInactive
                     ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90'
-                    : 'border-gray-200 text-gray-900'
+                    : 'border-gray-200 text-gray-900 hover:bg-gray-100 hover:text-gray-900'
                   }`}
               >
                 {showInactive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

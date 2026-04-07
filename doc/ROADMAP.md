@@ -25,10 +25,8 @@
 - [x] Verificação de duplicidade (name + team)
 
 **Funcionalidades pontuais faltantes:**
-- [ ] Importar competidores (CSV/JSON)
-- [ ] Exportar competidores (CSV/JSON)
-- [ ] Busca avançada com mais filtros
-- [ ] Histórico de edições
+- [ ] Importar competidores (JSON)
+- [ ] Exportar competidores (JSON)
 
 ---
 
