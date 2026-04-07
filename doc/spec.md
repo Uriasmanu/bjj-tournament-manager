@@ -133,8 +133,62 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - `Editar competidor`
 - `Excluir competidor` (soft delete — marca como inativo)
 - `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
-- `Importar competidores` (CSV/JSON)
+- `Importar competidores` (JSON)
 - `Exportar competidores`
+
+Aqui está a explicação **corrigida**:
+
+---
+
+## Regra de Importação de Competidores (JSON)
+
+**Formato aceito:** JSON array.
+
+**Mapeamento de campos obrigatórios:**
+
+| Campo no arquivo | Mapeamento no sistema |
+|-----------------|----------------------|
+| `name` | Nome completo |
+| `team` | Equipe/academia |
+| `weight` | Peso (kg) — número |
+| `age` | Idade (anos) |
+| `belt` | Faixa (WHITE, GRAY, YELLOW, ORANGE, GREEN, BLUE, PURPLE, BROWN, BLACK) |
+| `coach` | Técnico (opcional) |
+
+**Regras durante a importação:**
+
+1. **Validação completa antes de qualquer inserção** — todo o arquivo JSON é validado item por item.
+2. **Se qualquer competidor for inválido** (campo faltando, peso fora de 0-300, idade fora de 4-100, faixa inválida, nome+team duplicado com registro existente), a **importação inteira é cancelada**.
+3. **Nenhum competidor é cadastrado** até que todo o arquivo esteja 100% válido.
+4. **Mensagem de erro clara:** o sistema exibe quais competidores estão inválidos e o motivo de cada um.
+5. `registrationDate`, `id` e `isActive` são gerados automaticamente após validação bem-sucedida.
+
+**Exemplo de JSON válido:**
+```json
+[
+  {
+    "name": "João Silva",
+    "team": "Alliance",
+    "weight": 74.5,
+    "age": 28,
+    "belt": "BLUE",
+    "coach": "Fábio Gurgel"
+  }
+]
+```
+
+**Exemplo de mensagem de erro:**
+```
+❌ Importação cancelada. Os seguintes competidores estão inválidos:
+
+- Linha 2: "Maria" - campo 'team' obrigatório não informado
+- Linha 3: "José" - peso 350 deve ser entre 0 e 300
+- Linha 5: "Ana" - faixa "RED" não é válida. Valores permitidos: WHITE, GRAY, YELLOW, ORANGE, GREEN, BLUE, PURPLE, BROWN, BLACK
+
+Corrija os erros e tente novamente.
+```
+
+**Feedback ao usuário:** importação só é concluída com sucesso quando **todos** os competidores do arquivo são válidos.
 
 ---
 
@@ -1040,8 +1094,4 @@ Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fas
 | Consolidação de dados de múltiplas fontes | Merge strategy baseada em timestamps e UUIDs |
 | Acessibilidade | shadcn/ui já fornece componentes acessíveis (Radix UI) |
 
-
-Novas Informaçoes que precizam ser consideradas na revisão do spec:
-
-precisa ter sempre o fundo branco nos layouts
 
