@@ -153,7 +153,7 @@ export default function CompetitorsPage() {
                     placeholder="Nome do atleta..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-gray-50 border-gray-200"
+                    className="pl-9 bg-gray-50 border-gray-200 text-gray-500"
                   />
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function CompetitorsPage() {
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Graduação</label>
                 <Select value={filterBelt} onValueChange={setFilterBelt}>
-                  <SelectTrigger className="bg-gray-50 border-gray-200">
+                  <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-500">
                     <SelectValue placeholder="Todas as faixas" />
                   </SelectTrigger>
                   <SelectContent>
@@ -179,25 +179,27 @@ export default function CompetitorsPage() {
                   placeholder="Nome da equipe..."
                   value={filterTeam}
                   onChange={(e) => setFilterTeam(e.target.value)}
-                  className="bg-gray-50 border-gray-200"
+                  className="bg-gray-50 border-gray-200 text-gray-500"
                 />
               </div>
 
               <Separator className="my-2" />
-
               <Button
                 variant={showInactive ? "default" : "outline"}
                 onClick={() => setShowInactive(!showInactive)}
-                className={`w-full justify-start gap-2 ${showInactive ? 'bg-bjj-blue hover:bg-bjj-blue/90' : 'border-gray-200'}`}
+                className={`w-full justify-start gap-2 ${showInactive
+                    ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90'
+                    : 'border-gray-200 text-gray-900'
+                  }`}
               >
                 {showInactive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showInactive ? "Ocultar Inativos" : "Mostrar Inativos"}
               </Button>
             </CardContent>
           </Card>
-         
+
           <Card className="lg:col-span-3 bg-white border-none shadow-md flex flex-col overflow-hidden">
-           
+
             <div className="flex flex-col h-full">
               <div className="flex-shrink-0 bg-bjj-black shadow-md rounded-t-lg">
                 <div className="grid grid-cols-12 gap-4 px-4 py-3">
@@ -208,7 +210,7 @@ export default function CompetitorsPage() {
                   <div className="col-span-2 text-white font-bold uppercase text-xs text-right px-6">Ações</div>
                 </div>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto">
                 <div className="divide-y divide-gray-100">
                   {loading ? (
@@ -226,9 +228,8 @@ export default function CompetitorsPage() {
                     competitors.map((competitor) => (
                       <div
                         key={competitor.id}
-                        className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors ${
-                          !competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'
-                        }`}
+                        className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors ${!competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'
+                          }`}
                       >
                         <div className="col-span-4">
                           <div className="flex flex-col">
