@@ -1,4 +1,3 @@
-// src/app/competitors/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -107,10 +106,12 @@ export default function CompetitorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <div className="container mx-auto p-6 space-y-6">
+    // ⚠️ Ajuste: h-screen e overflow-hidden para travar a tela
+    <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col">
+      <div className="container mx-auto p-6 space-y-6 flex flex-col h-full overflow-hidden">
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        {/* Header - flex-shrink-0 garante que ele não diminua */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="bg-bjj-black p-3 rounded-lg shadow-lg">
               <Users className="w-8 h-8 text-bjj-gold" />
@@ -149,15 +150,17 @@ export default function CompetitorsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* ⚠️ Ajuste: flex-1 e min-h-0 permitem que o grid ocupe o espaço restante */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0 pb-4">
 
-          <Card className="lg:col-span-1 bg-white border-none shadow-md overflow-hidden">
-            <CardHeader className="bg-gray-50 border-b border-gray-100">
+          {/* Filtros - Com scroll próprio se a tela for pequena */}
+          <Card className="lg:col-span-1 bg-white border-none shadow-md flex flex-col overflow-hidden">
+            <CardHeader className="bg-gray-50 border-b border-gray-100 flex-shrink-0">
               <CardTitle className="text-sm font-bold uppercase flex items-center gap-2 text-bjj-black">
                 <Filter className="w-4 h-4 text-bjj-gold" /> Filtros Avançados
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="p-4 space-y-4 overflow-y-auto flex-1">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Busca</label>
                 <div className="relative">
@@ -209,11 +212,11 @@ export default function CompetitorsPage() {
             </CardContent>
           </Card>
 
-
-          <Card className="lg:col-span-3 bg-white border-none shadow-md overflow-hidden">
-            <CardContent className="p-0">
+          {/* ⚠️ Ajuste: Card da Lista com scroll interno na tabela */}
+          <Card className="lg:col-span-3 bg-white border-none shadow-md flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-auto">
               <Table>
-                <TableHeader className="bg-bjj-black">
+                <TableHeader className="bg-bjj-black sticky top-0 z-10">
                   <TableRow className="hover:bg-transparent border-none">
                     <TableHead className="text-white font-bold uppercase text-xs">Atleta</TableHead>
                     <TableHead className="text-white font-bold uppercase text-xs">Equipe</TableHead>
@@ -298,7 +301,7 @@ export default function CompetitorsPage() {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
+            </div>
           </Card>
         </div>
 
