@@ -106,11 +106,9 @@ export default function CompetitorsPage() {
   };
 
   return (
-    // ⚠️ Ajuste: h-screen e overflow-hidden para travar a tela
     <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col">
-      <div className="container mx-auto p-6 space-y-6 flex flex-col h-full overflow-hidden">
+      <div className="container mx-auto p-6 space-y-6 flex flex-col h-full">
 
-        {/* Header - flex-shrink-0 garante que ele não diminua */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="bg-bjj-black p-3 rounded-lg shadow-lg">
@@ -123,26 +121,14 @@ export default function CompetitorsPage() {
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-            <Button
-              variant="outline"
-              className="flex-1 md:flex-none border-gray-300 hover:bg-bjj-blue/5 text-bjj-blue font-semibold transition-colors"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Importar
+            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold">
+              <Upload className="w-4 h-4 mr-2" /> Importar
             </Button>
-
-            <Button
-              variant="outline"
-              className="flex-1 md:flex-none border-gray-300 hover:bg-bjj-blue/5 text-bjj-blue font-semibold transition-colors"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
+            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold">
+              <Download className="w-4 h-4 mr-2" /> Exportar
             </Button>
             <Button
-              onClick={() => {
-                setEditingCompetitor(null);
-                setFormOpen(true);
-              }}
+              onClick={() => { setEditingCompetitor(null); setFormOpen(true); }}
               className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-bjj-gold-dark font-bold shadow-md"
             >
               <Plus className="w-4 h-4 mr-2" /> Novo Atleta
@@ -150,10 +136,8 @@ export default function CompetitorsPage() {
           </div>
         </div>
 
-        {/* ⚠️ Ajuste: flex-1 e min-h-0 permitem que o grid ocupe o espaço restante */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0 pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
 
-          {/* Filtros - Com scroll próprio se a tela for pequena */}
           <Card className="lg:col-span-1 bg-white border-none shadow-md flex flex-col overflow-hidden">
             <CardHeader className="bg-gray-50 border-b border-gray-100 flex-shrink-0">
               <CardTitle className="text-sm font-bold uppercase flex items-center gap-2 text-bjj-black">
@@ -211,43 +195,42 @@ export default function CompetitorsPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* ⚠️ Ajuste: Card da Lista com scroll interno na tabela */}
+         
           <Card className="lg:col-span-3 bg-white border-none shadow-md flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto">
-              <Table>
-                <TableHeader className="bg-bjj-black sticky top-0 z-10">
-                  <TableRow className="hover:bg-transparent border-none">
-                    <TableHead className="text-white font-bold uppercase text-xs">Atleta</TableHead>
-                    <TableHead className="text-white font-bold uppercase text-xs">Equipe</TableHead>
-                    <TableHead className="text-white font-bold uppercase text-xs text-center">Info</TableHead>
-                    <TableHead className="text-white font-bold uppercase text-xs">Faixa</TableHead>
-                    <TableHead className="text-white font-bold uppercase text-xs text-right px-6">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+           
+            <div className="flex flex-col h-full">
+              <div className="flex-shrink-0 bg-bjj-black shadow-md rounded-t-lg">
+                <div className="grid grid-cols-12 gap-4 px-4 py-3">
+                  <div className="col-span-4 text-white font-bold uppercase text-xs">Atleta</div>
+                  <div className="col-span-2 text-white font-bold uppercase text-xs">Equipe</div>
+                  <div className="col-span-2 text-white font-bold uppercase text-xs text-center">Info</div>
+                  <div className="col-span-2 text-white font-bold uppercase text-xs">Faixa</div>
+                  <div className="col-span-2 text-white font-bold uppercase text-xs text-right px-6">Ações</div>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y divide-gray-100">
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-20 text-gray-400 font-medium">
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="w-6 h-6 border-4 border-bjj-gold border-t-transparent rounded-full animate-spin" />
-                          Sincronizando atletas...
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    <div className="text-center py-20 text-gray-400 font-medium">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-6 h-6 border-4 border-bjj-gold border-t-transparent rounded-full animate-spin" />
+                        Sincronizando atletas...
+                      </div>
+                    </div>
                   ) : competitors.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-20 text-gray-400">
-                        Nenhum competidor encontrado para os filtros aplicados.
-                      </TableCell>
-                    </TableRow>
+                    <div className="text-center py-20 text-gray-400">
+                      Nenhum competidor encontrado.
+                    </div>
                   ) : (
                     competitors.map((competitor) => (
-                      <TableRow
+                      <div
                         key={competitor.id}
-                        className={`group border-b border-gray-100 transition-colors ${!competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'}`}
+                        className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors ${
+                          !competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'
+                        }`}
                       >
-                        <TableCell>
+                        <div className="col-span-4">
                           <div className="flex flex-col">
                             <span className={`font-bold ${!competitor.isActive ? 'text-gray-400 line-through' : 'text-bjj-black'}`}>
                               {competitor.name}
@@ -258,9 +241,9 @@ export default function CompetitorsPage() {
                               </span>
                             )}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-gray-600 font-medium">{competitor.team}</TableCell>
-                        <TableCell>
+                        </div>
+                        <div className="col-span-2 text-gray-600 font-medium">{competitor.team}</div>
+                        <div className="col-span-2">
                           <div className="flex flex-col items-center gap-1">
                             <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 bg-white">
                               {competitor.weight}kg
@@ -269,10 +252,12 @@ export default function CompetitorsPage() {
                               {competitor.age} anos
                             </Badge>
                           </div>
-                        </TableCell>
-                        <TableCell><BeltBadge belt={competitor.belt} /></TableCell>
-                        <TableCell className="text-right px-6">
-                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div className="col-span-2">
+                          <BeltBadge belt={competitor.belt} />
+                        </div>
+                        <div className="col-span-2 text-right px-6">
+                          <div className="flex justify-end gap-2">
                             <Button
                               size="icon"
                               variant="ghost"
@@ -295,12 +280,12 @@ export default function CompetitorsPage() {
                           {!competitor.isActive && (
                             <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200">INATIVO</Badge>
                           )}
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                      </div>
                     ))
                   )}
-                </TableBody>
-              </Table>
+                </div>
+              </div>
             </div>
           </Card>
         </div>
