@@ -1041,5 +1041,39 @@ Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7 → Fas
 | Acessibilidade | shadcn/ui já fornece componentes acessíveis (Radix UI) |
 
 
+Novas Informaçoes que precizam ser consideradas na revisão do spec:
 
-precisa ter sempre o fundo branco
+precisa ter sempre o fundo branco nos layouts
+
+4. Regras de negócio do competidor
+A maior parte das regras da spec de competidor está correta, mas vale ajustar detalhes menores conforme o código:
+
+O enum Belt atual é:
+WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
+O campo coach é opcional e é armazenado como string | null
+registrationDate é gerado automaticamente no backend como ISO string
+A validação de peso usa min(0.1) e max(300) no formulário
+A validação de idade usa min(4) e max(100) no formulário
+A verificação de duplicidade em POST/PUT considera name + team + isActive
+Esses pontos estão OK, mas recomendo incluir no spec a forma exata de persistência que é implementada hoje.
+
+5. Endpoint e filtros atuais
+Documentar corretamente a API atual:
+
+GET /api/competitors?name=&belt=&team=&showInactive=true
+POST /api/competitors
+PUT /api/competitors/:id
+DELETE /api/competitors/:id (soft delete)
+Isso fica mais alinhado com o código atual do que a spec geral de múltiplos módulos.
+
+6. Melhorar a separação entre “implementado” e “planejado”
+A spec atual mistura:
+
+funcionalidades já feitas
+funcionalidades planejadas para o futuro
+Seria útil separar em seções:
+
+Funcionalidades atuais
+Funcionalidades planejadas
+Roadmap
+Assim a documentação não dá a impressão de que todo o projeto já está pronto.

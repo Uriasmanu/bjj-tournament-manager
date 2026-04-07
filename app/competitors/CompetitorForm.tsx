@@ -64,7 +64,8 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
         setErrors(prev => ({ ...prev, [name]: '' }));
       }
     } catch (error: any) {
-      setErrors(prev => ({ ...prev, [name]: error.errors[0]?.message || 'Campo inválido' }));
+      const errorMessage = error?.errors?.[0]?.message || 'Campo inválido';
+      setErrors(prev => ({ ...prev, [name]: errorMessage }));
     }
   };
 
@@ -91,9 +92,13 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
       onOpenChange(false);
     } catch (error: any) {
       const newErrors: Record<string, string> = {};
-      error.errors.forEach((err: any) => {
-        newErrors[err.path[0]] = err.message;
-      });
+      if (error?.errors) {
+        error.errors.forEach((err: any) => {
+          newErrors[err.path[0]] = err.message;
+        });
+      } else {
+        newErrors.general = error?.message || 'Erro ao validar formulário';
+      }
       setErrors(newErrors);
     }
   };
@@ -123,7 +128,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
               id="name"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className={`mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
+              className={`mt-1 text-gray-700 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
                 errors.name ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
               }`}
               placeholder="Digite o nome completo do atleta"
@@ -145,7 +150,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
               id="team"
               value={formData.team}
               onChange={(e) => handleChange('team', e.target.value)}
-              className={`mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
+              className={`mt-1 text-gray-700 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
                 errors.team ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
               }`}
               placeholder="Ex: Alliance, Checkmat, Gracie Barra"
@@ -169,8 +174,11 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
                 type="number"
                 step="0.1"
                 value={formData.weight || ''}
-                onChange={(e) => handleChange('weight', parseFloat(e.target.value))}
-                className={`mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
+                onChange={(e) => {
+                  const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                  handleChange('weight', isNaN(value) ? 0 : value);
+                }}
+                className={`mt-1 text-gray-700 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
                   errors.weight ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
                 }`}
                 placeholder="Ex: 75.5"
@@ -191,8 +199,11 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
                 id="age"
                 type="number"
                 value={formData.age || ''}
-                onChange={(e) => handleChange('age', parseInt(e.target.value))}
-                className={`mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
+                onChange={(e) => {
+                  const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                  handleChange('age', isNaN(value) ? 0 : value);
+                }}
+                className={`mt-1 text-gray-700 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
                   errors.age ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
                 }`}
                 placeholder="Ex: 28"
