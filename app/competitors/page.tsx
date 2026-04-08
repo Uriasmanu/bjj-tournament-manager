@@ -119,6 +119,29 @@ export default function CompetitorsPage() {
     setFormOpen(true);
   };
 
+  const handleExport = async () => {
+    const response = await fetch('/api/competitors/export');
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Gerar o nome do arquivo no frontend mesmo
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const filename = `competidores_export_${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col">
       <div className="container mx-auto p-6 space-y-6 flex flex-col h-full">
@@ -144,6 +167,7 @@ export default function CompetitorsPage() {
 
             <Button
               variant="outline"
+              onClick={handleExport}
               className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold cursor-pointer hover:!bg-bjj-blue hover:!text-white"
             >
               <Download className="w-4 h-4 mr-2" /> Exportar

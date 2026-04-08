@@ -140,7 +140,7 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - `Reativar competidor` (disponível apenas para competidores inativos)
 - `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
 - `Importar competidores` (JSON)
-- `Exportar competidores`
+- `Exportar competidores`(JSON) — o arquivo gerado segue o mesmo formato esperado na importação e é nomeado automaticamente como competidores_export_YYYY-MM-DD_HHmmss.json (exemplo: competidores_export_2026-04-08_143022.json)
 
 ---
 
