@@ -4,20 +4,28 @@ import { readCompetitors, writeCompetitors } from '@/lib/storage';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
+
   const body = await request.json();
   const data = await readCompetitors();
-  
-  const index = data.competitors.findIndex(c => c.id === params.id);
-  
+
+  const index = data.competitors.findIndex(c => c.id === id);
+
   if (index === -1) {
-    return NextResponse.json({ error: 'Competidor não encontrado' }, { status: 404 });
+    return NextResponse.json(
+      { error: 'Competidor não encontrado' },
+      { status: 404 }
+    );
   }
 
-  // Check for duplicate name + team (excluding current)
   const exists = data.competitors.some(
-    c => c.name === body.name && c.team === body.team && c.id !== params.id && c.isActive
+    c =>
+      c.name === body.name &&
+      c.team === body.team &&
+      c.id !== id &&
+      c.isActive
   );
 
   if (exists) {
@@ -38,6 +46,7 @@ export async function PUT(
   };
 
   await writeCompetitors(data);
+
   return NextResponse.json(data.competitors[index]);
 }
 
@@ -47,7 +56,7 @@ export async function DELETE(
 ) {
   const data = await readCompetitors();
   const index = data.competitors.findIndex(c => c.id === params.id);
-  
+
   if (index === -1) {
     return NextResponse.json({ error: 'Competidor não encontrado' }, { status: 404 });
   }
@@ -55,6 +64,6 @@ export async function DELETE(
   // Soft delete
   data.competitors[index].isActive = false;
   await writeCompetitors(data);
-  
+
   return NextResponse.json({ success: true });
 }

@@ -33,8 +33,8 @@ bugs
 - [ ] Não tem como inativar um competidor pelo editar
 - [ ] O soft delete não esta funcionando e ele que deveria inativar o competidor
 - [ ] tem que ter uma forma de ativar novamente o competidor
-- [ ] O salvar edição de competidor não esta funcionando
-- [ ] O expandir das graduações esta com um estilo que o select fica invisivel
+- [x] O salvar edição de competidor não esta funcionando
+- [x] O expandir das graduações esta com um estilo que o select fica invisivel
 ---
 
 ### ⏳ 2. Módulo de Torneio (Planejado)
