@@ -98,6 +98,10 @@ module.exports = {
 
 ---
 
+Aqui está o trecho completo com a nova regra de interface para competidores inativos:
+
+---
+
 ### 2. Módulo de Competidores
 
 **Objetivo:** Cadastrar e gerenciar os atletas inscritos.
@@ -127,16 +131,16 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - Idade deve ser >= 4 e <= 100.
 - Todos os campos obrigatórios são exigidos.
 - **Exclusão é sempre soft delete:** competidor não é removido do banco, apenas marcado como `isActive: false`. Impede que o competidor seja incluído em novas chaves, mas mantém histórico.
+- **Regra de interface para competidores inativos:** quando um competidor está inativo (`isActive: false`), os botões **"Editar"** e **"Excluir"** não são exibidos na interface. Em seu lugar, é exibido apenas o botão **"Reativar"**. O botão "Reativar" permite que o competidor volte ao status ativo (`isActive: true`), desde que não exista outro competidor ativo com o mesmo `nome` e `equipe`. Caso exista, o sistema exibe mensagem de erro impedindo a reativação.
 
 **Ações:**
 - `Criar competidor`
-- `Editar competidor`
-- `Excluir competidor` (soft delete — marca como inativo)
+- `Editar competidor` (disponível apenas para competidores ativos)
+- `Excluir competidor` (soft delete — marca como inativo; disponível apenas para competidores ativos)
+- `Reativar competidor` (disponível apenas para competidores inativos)
 - `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
 - `Importar competidores` (JSON)
 - `Exportar competidores`
-
-Aqui está a explicação **corrigida**:
 
 ---
 

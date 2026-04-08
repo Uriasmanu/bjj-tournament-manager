@@ -58,7 +58,7 @@ export async function DELETE(
 
   const data = await readCompetitors();
   const index = data.competitors.findIndex(c => c.id === id);
-  
+
   if (index === -1) {
     return NextResponse.json(
       { error: 'Competidor não encontrado' },
@@ -69,6 +69,46 @@ export async function DELETE(
   data.competitors[index].isActive = false;
 
   await writeCompetitors(data);
-  
+
+  return NextResponse.json({ success: true });
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+
+  const data = await readCompetitors();
+  const index = data.competitors.findIndex(c => c.id === id);
+
+  if (index === -1) {
+    return NextResponse.json(
+      { error: 'Competidor não encontrado' },
+      { status: 404 }
+    );
+  }
+
+  const competitor = data.competitors[index];
+
+  const exists = data.competitors.some(
+    c =>
+      c.name === competitor.name &&
+      c.team === competitor.team &&
+      c.id !== id &&
+      c.isActive
+  );
+
+  if (exists) {
+    return NextResponse.json(
+      { error: 'Já existe um competidor ativo com este nome nesta equipe' },
+      { status: 400 }
+    );
+  }
+
+  data.competitors[index].isActive = true;
+
+  await writeCompetitors(data);
+
   return NextResponse.json({ success: true });
 }

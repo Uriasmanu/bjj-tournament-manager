@@ -100,6 +100,20 @@ export default function CompetitorsPage() {
     }
   };
 
+  const handleReactivateCompetitor = async (id: string) => {
+    const response = await fetch(`/api/competitors/${id}`, {
+      method: 'PATCH',
+    });
+
+    if (response.ok) {
+      toast.success('Competidor reativado com sucesso!');
+      fetchCompetitors();
+    } else {
+      const error = await response.json();
+      toast.error(error.error || 'Erro ao reativar competidor');
+    }
+  };
+
   const openEditForm = (competitor: Competitor) => {
     setEditingCompetitor(competitor);
     setFormOpen(true);
@@ -188,8 +202,8 @@ export default function CompetitorsPage() {
                 variant={showInactive ? "default" : "outline"}
                 onClick={() => setShowInactive(!showInactive)}
                 className={`w-full justify-start gap-2 ${showInactive
-                    ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90'
-                    : 'border-gray-200 text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90'
+                  : 'border-gray-200 text-gray-900 hover:bg-gray-100 hover:text-gray-900'
                   }`}
               >
                 {showInactive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -259,24 +273,35 @@ export default function CompetitorsPage() {
                         </div>
                         <div className="col-span-2 text-right px-6">
                           <div className="flex justify-end gap-2">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => openEditForm(competitor)}
-                              disabled={!competitor.isActive}
-                              className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDeleteCompetitor(competitor.id, competitor.name)}
-                              disabled={!competitor.isActive}
-                              className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {competitor.isActive ? (
+                              <>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => openEditForm(competitor)}
+                                  className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteCompetitor(competitor.id, competitor.name)}
+                                  className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => handleReactivateCompetitor(competitor.id)}
+                                className="bg-green-600 text-white hover:bg-green-700"
+                              >
+                                Reativar
+                              </Button>
+                            )}
                           </div>
                           {!competitor.isActive && (
                             <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200">INATIVO</Badge>
