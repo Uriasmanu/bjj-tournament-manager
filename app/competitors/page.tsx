@@ -164,7 +164,7 @@ export default function CompetitorsPage() {
                   <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-500">
                     <SelectValue placeholder="Todas as faixas" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white text-black border shadow-md">
                     <SelectItem value="all">Todas as faixas</SelectItem>
                     {Object.entries(beltLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>{label}</SelectItem>
