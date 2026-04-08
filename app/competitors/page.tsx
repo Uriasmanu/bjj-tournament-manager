@@ -297,14 +297,14 @@ export default function CompetitorsPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleReactivateCompetitor(competitor.id)}
-                                className="bg-green-600 text-white hover:bg-green-700"
+                                className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all"
                               >
                                 Reativar
                               </Button>
                             )}
                           </div>
                           {!competitor.isActive && (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200">INATIVO</Badge>
+                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 mt-4">INATIVO</Badge>
                           )}
                         </div>
                       </div>
