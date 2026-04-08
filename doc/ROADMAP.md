@@ -30,8 +30,7 @@
 
 bugs
 - [x] Botao de ocultar inativo estava com o estilo errado e invisivel antes de clicar
-- [ ] Não tem como inativar um competidor pelo editar
-- [ ] O soft delete não esta funcionando e ele que deveria inativar o competidor
+- [x] O soft delete não esta funcionando e ele que deveria inativar o competidor
 - [ ] tem que ter uma forma de ativar novamente o competidor
 - [x] O salvar edição de competidor não esta funcionando
 - [x] O expandir das graduações esta com um estilo que o select fica invisivel

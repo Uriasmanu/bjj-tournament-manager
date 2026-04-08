@@ -52,18 +52,23 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const data = await readCompetitors();
-  const index = data.competitors.findIndex(c => c.id === params.id);
+  const { id } = await context.params;
 
+  const data = await readCompetitors();
+  const index = data.competitors.findIndex(c => c.id === id);
+  
   if (index === -1) {
-    return NextResponse.json({ error: 'Competidor não encontrado' }, { status: 404 });
+    return NextResponse.json(
+      { error: 'Competidor não encontrado' },
+      { status: 404 }
+    );
   }
 
-  // Soft delete
   data.competitors[index].isActive = false;
-  await writeCompetitors(data);
 
+  await writeCompetitors(data);
+  
   return NextResponse.json({ success: true });
 }
