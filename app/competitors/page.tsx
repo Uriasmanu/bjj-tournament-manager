@@ -135,15 +135,22 @@ export default function CompetitorsPage() {
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold">
+            <Button
+              variant="outline"
+              className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold cursor-pointer hover:!bg-bjj-blue hover:!text-white"
+            >
               <Upload className="w-4 h-4 mr-2" /> Importar
             </Button>
-            <Button variant="outline" className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold">
+
+            <Button
+              variant="outline"
+              className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold cursor-pointer hover:!bg-bjj-blue hover:!text-white"
+            >
               <Download className="w-4 h-4 mr-2" /> Exportar
             </Button>
             <Button
               onClick={() => { setEditingCompetitor(null); setFormOpen(true); }}
-              className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-bjj-gold-dark font-bold shadow-md"
+              className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-bjj-gold-dark font-bold shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" /> Novo Atleta
             </Button>
@@ -202,8 +209,8 @@ export default function CompetitorsPage() {
                 variant={showInactive ? "default" : "outline"}
                 onClick={() => setShowInactive(!showInactive)}
                 className={`w-full justify-start gap-2 ${showInactive
-                  ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90'
-                  : 'border-gray-200 text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-bjj-blue text-white hover:bg-bjj-blue/90 cursor-pointer'
+                  : 'border-gray-200 text-gray-900 hover:bg-gray-100 hover:text-gray-900 cursor-pointer'
                   }`}
               >
                 {showInactive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -279,7 +286,7 @@ export default function CompetitorsPage() {
                                   size="icon"
                                   variant="ghost"
                                   onClick={() => openEditForm(competitor)}
-                                  className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white"
+                                  className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white cursor-pointer"
                                 >
                                   <Edit className="w-4 h-4" />
                                 </Button>
@@ -288,7 +295,7 @@ export default function CompetitorsPage() {
                                   size="icon"
                                   variant="ghost"
                                   onClick={() => handleDeleteCompetitor(competitor.id, competitor.name)}
-                                  className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white"
+                                  className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -297,7 +304,7 @@ export default function CompetitorsPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleReactivateCompetitor(competitor.id)}
-                                className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all"
+                                className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer"
                               >
                                 Reativar
                               </Button>
