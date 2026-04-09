@@ -12,9 +12,13 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        if (!Array.isArray(body)) {
+        const competitors = Array.isArray(body)
+            ? body
+            : body?.competitors;
+
+        if (!Array.isArray(competitors)) {
             return NextResponse.json(
-                { error: 'Formato inválido. Esperado um array JSON.' },
+                { error: 'Formato inválido. Use um array ou { competitors: [] }' },
                 { status: 400 }
             );
         }
@@ -22,68 +26,68 @@ export async function POST(request: NextRequest) {
         const data = await readCompetitors();
         const errors: string[] = [];
 
-
-        body.forEach((c, index) => {
+        competitors.forEach((c, index) => {
             const line = index + 1;
 
-            if (!c.name) {
-                errors.push(`- Linha ${line}: "${c.name || 'Sem nome'}" - campo 'name' obrigatório`);
+            const name = c.name?.trim();
+            const team = c.team?.trim();
+            const weight = Number(c.weight);
+            const age = Number(c.age);
+            const belt = c.belt;
+
+            if (!name) {
+                errors.push(`- Linha ${line}: nome obrigatório`);
             }
 
-            if (!c.team) {
-                errors.push(`- Linha ${line}: "${c.name}" - campo 'team' obrigatório`);
+            if (!team) {
+                errors.push(`- Linha ${line}: "${name}" - equipe obrigatória`);
             }
 
-            if (typeof c.weight !== 'number' || c.weight <= 0 || c.weight >= 300) {
-                errors.push(`- Linha ${line}: "${c.name}" - peso ${c.weight} deve ser entre 0 e 300`);
+            if (!weight || weight <= 0 || weight >= 300) {
+                errors.push(`- Linha ${line}: "${name}" - peso inválido (${c.weight})`);
             }
 
-            if (typeof c.age !== 'number' || c.age < 4 || c.age > 100) {
-                errors.push(`- Linha ${line}: "${c.name}" - idade ${c.age} deve ser entre 4 e 100`);
+            if (!age || age < 4 || age > 100) {
+                errors.push(`- Linha ${line}: "${name}" - idade inválida (${c.age})`);
             }
 
-            if (!VALID_BELTS.includes(c.belt)) {
-                errors.push(
-                    `- Linha ${line}: "${c.name}" - faixa "${c.belt}" inválida`
-                );
+            if (!VALID_BELTS.includes(belt)) {
+                errors.push(`- Linha ${line}: "${name}" - faixa inválida (${belt})`);
             }
-
 
             const exists = data.competitors.some(
                 existing =>
-                    existing.name === c.name &&
-                    existing.team === c.team &&
+                    existing.name === name &&
+                    existing.team === team &&
                     existing.isActive
             );
 
             if (exists) {
                 errors.push(
-                    `- Linha ${line}: "${c.name}" - já existe competidor ativo nesta equipe`
+                    `- Linha ${line}: "${name}" - já existe competidor ativo nesta equipe`
                 );
             }
         });
-
 
         if (errors.length > 0) {
             return NextResponse.json(
                 {
                     error:
-                        `❌ Importação cancelada. Os seguintes competidores estão inválidos:\n\n` +
+                        `❌ Importação cancelada. Problemas encontrados:\n\n` +
                         errors.join('\n'),
                 },
                 { status: 400 }
             );
         }
 
-
         const now = new Date().toISOString();
 
-        const newCompetitors = body.map(c => ({
+        const newCompetitors = competitors.map(c => ({
             id: uuidv4(),
-            name: c.name,
-            team: c.team,
-            weight: c.weight,
-            age: c.age,
+            name: c.name.trim(),
+            team: c.team.trim(),
+            weight: Number(c.weight),
+            age: Number(c.age),
             belt: c.belt,
             coach: c.coach || null,
             registrationDate: now,
@@ -94,11 +98,18 @@ export async function POST(request: NextRequest) {
 
         await writeCompetitors(data);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({
+            success: true,
+            imported: newCompetitors.length
+        });
 
     } catch (error) {
+        console.error(error);
+
         return NextResponse.json(
-            { error: 'Erro ao processar arquivo' },
+            {
+                error: 'Erro ao processar arquivo. Verifique se é um JSON válido.'
+            },
             { status: 500 }
         );
     }
