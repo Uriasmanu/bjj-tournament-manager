@@ -15,7 +15,7 @@
       "id": "9771aff6-f5df-49d9-926e-6f4802353a9e",
       "name": "Lucas Silv",
       "team": "Bravo",
-      "weight": 75,
+      "weight": 70,
       "age": 28,
       "belt": "BLUE",
       "coach": "Mestre Ricardo",
@@ -1747,6 +1747,17 @@
       "belt": "BLACK",
       "coach": "None needed",
       "registrationDate": "2026-04-09T00:56:55.894Z",
+      "isActive": true
+    },
+    {
+      "id": "c1768b82-e954-41c2-a743-39e818ff20f3",
+      "name": "Teste",
+      "team": "a",
+      "weight": 60,
+      "age": 25,
+      "belt": "WHITE",
+      "coach": null,
+      "registrationDate": "2026-04-09T01:00:42.117Z",
       "isActive": true
     }
   ]

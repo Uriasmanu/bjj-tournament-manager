@@ -1,4 +1,4 @@
-// src/app/api/competitors/import/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { readCompetitors, writeCompetitors } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +24,12 @@ export async function POST(request: NextRequest) {
         }
 
         const data = await readCompetitors();
+
         const errors: string[] = [];
+        const skipped: string[] = [];
+        const toInsert: any[] = [];
+
+        const now = new Date().toISOString();
 
         competitors.forEach((c, index) => {
             const line = index + 1;
@@ -35,26 +40,33 @@ export async function POST(request: NextRequest) {
             const age = Number(c.age);
             const belt = c.belt;
 
+            
             if (!name) {
-                errors.push(`- Linha ${line}: nome obrigatório`);
+                errors.push(`Linha ${line}: nome obrigatório`);
+                return;
             }
 
             if (!team) {
-                errors.push(`- Linha ${line}: "${name}" - equipe obrigatória`);
+                errors.push(`Linha ${line}: "${name}" - equipe obrigatória`);
+                return;
             }
 
             if (!weight || weight <= 0 || weight >= 300) {
-                errors.push(`- Linha ${line}: "${name}" - peso inválido (${c.weight})`);
+                errors.push(`Linha ${line}: "${name}" - peso inválido (${c.weight})`);
+                return;
             }
 
             if (!age || age < 4 || age > 100) {
-                errors.push(`- Linha ${line}: "${name}" - idade inválida (${c.age})`);
+                errors.push(`Linha ${line}: "${name}" - idade inválida (${c.age})`);
+                return;
             }
 
             if (!VALID_BELTS.includes(belt)) {
-                errors.push(`- Linha ${line}: "${name}" - faixa inválida (${belt})`);
+                errors.push(`Linha ${line}: "${name}" - faixa inválida (${belt})`);
+                return;
             }
 
+            
             const exists = data.competitors.some(
                 existing =>
                     existing.name === name &&
@@ -63,44 +75,39 @@ export async function POST(request: NextRequest) {
             );
 
             if (exists) {
-                errors.push(
-                    `- Linha ${line}: "${name}" - já existe competidor ativo nesta equipe`
-                );
+                skipped.push(`Linha ${line}: "${name}" já existe`);
+                return;
             }
+
+            
+            toInsert.push({
+                id: uuidv4(),
+                name,
+                team,
+                weight,
+                age,
+                belt,
+                coach: c.coach || null,
+                registrationDate: now,
+                isActive: true,
+            });
         });
 
-        if (errors.length > 0) {
-            return NextResponse.json(
-                {
-                    error:
-                        `❌ Importação cancelada. Problemas encontrados:\n\n` +
-                        errors.join('\n'),
-                },
-                { status: 400 }
-            );
+        
+        if (toInsert.length > 0) {
+            data.competitors.push(...toInsert);
+            await writeCompetitors(data);
         }
-
-        const now = new Date().toISOString();
-
-        const newCompetitors = competitors.map(c => ({
-            id: uuidv4(),
-            name: c.name.trim(),
-            team: c.team.trim(),
-            weight: Number(c.weight),
-            age: Number(c.age),
-            belt: c.belt,
-            coach: c.coach || null,
-            registrationDate: now,
-            isActive: true,
-        }));
-
-        data.competitors.push(...newCompetitors);
-
-        await writeCompetitors(data);
 
         return NextResponse.json({
             success: true,
-            imported: newCompetitors.length
+            imported: toInsert.length,
+            skipped: skipped.length,
+            errors: errors.length,
+            details: {
+                errors,
+                skipped
+            }
         });
 
     } catch (error) {
