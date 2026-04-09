@@ -15,17 +15,18 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
     const [step, setStep] = useState<'idle' | 'validating' | 'importing'>('idle');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showAllErrors, setShowAllErrors] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     if (!open) return null;
 
-    // 🔥 RESET CENTRALIZADO
     const handleClose = () => {
         setFile(null);
         setError(null);
         setStep('idle');
         setLoading(false);
+        setShowAllErrors(false);
 
         if (inputRef.current) {
             inputRef.current.value = '';
@@ -63,7 +64,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
 
             setTimeout(() => {
                 onSuccess();
-                handleClose(); // 🔥 usa o reset completo
+                handleClose();
             }, 1500);
 
         } catch {
@@ -80,11 +81,15 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
         return null;
     };
 
+    // 🔥 transforma string em lista
+    const errorList = error
+        ? error.split('\n').filter(line => line.trim() !== '')
+        : [];
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
 
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-
 
                 <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
                     <div>
@@ -104,9 +109,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
                     </button>
                 </div>
 
-
                 <div className="p-6 space-y-4">
-
 
                     <div
                         onClick={() => inputRef.current?.click()}
@@ -151,7 +154,6 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
                         onChange={(e) => setFile(e.target.files?.[0] || null)}
                     />
 
-
                     {getStatusText() && (
                         <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-md">
                             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -159,15 +161,31 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
                         </div>
                     )}
 
-
                     {error && (
-                        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3 whitespace-pre-wrap">
-                            {error}
+                        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3 space-y-2 max-h-60 overflow-auto">
+
+                            <p className="font-semibold">
+                                Erros encontrados ({errorList.length})
+                            </p>
+
+                            <ul className="list-disc pl-4 space-y-1">
+                                {(showAllErrors ? errorList : errorList.slice(0, 10)).map((err, i) => (
+                                    <li key={i}>{err}</li>
+                                ))}
+                            </ul>
+
+                            {errorList.length > 10 && (
+                                <button
+                                    onClick={() => setShowAllErrors(prev => !prev)}
+                                    className="text-xs text-red-700 underline"
+                                >
+                                    {showAllErrors ? 'Mostrar menos' : 'Mostrar todos'}
+                                </button>
+                            )}
                         </div>
                     )}
 
                 </div>
-
 
                 <div className="flex justify-end gap-2 px-6 py-4 border-t bg-gray-50">
                     <Button
