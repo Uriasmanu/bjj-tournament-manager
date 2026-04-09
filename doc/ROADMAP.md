@@ -25,7 +25,7 @@
 - [x] Verificação de duplicidade (name + team)
 
 **Funcionalidades pontuais faltantes:**
-- [ ] Importar competidores (JSON)
+- [x] Importar competidores (JSON)
 - [x] Exportar competidores (JSON)
 
 bugs

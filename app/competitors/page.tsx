@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link'; // Importado para navegação
 import {
   Plus, Search, Upload, Download, Trash2, Edit,
-  Eye, EyeOff, Users, Filter, HardHat
+  Eye, EyeOff, Users, Filter, HardHat, ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,9 +145,20 @@ export default function CompetitorsPage() {
   };
 
   return (
-    <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col">
+    <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col font-sans">
       <div className="container mx-auto p-6 space-y-6 flex flex-col h-full">
 
+       
+        <div className="flex items-center justify-between flex-shrink-0">
+          <Link href="/">
+            <Button variant="ghost" className="text-gray-600 hover:text-bjj-black transition-colors group cursor-pointer">
+              <ChevronLeft className="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" />
+              Voltar ao Dashboard
+            </Button>
+          </Link>
+        </div>
+
+       
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="bg-bjj-black p-3 rounded-lg shadow-lg">
@@ -175,7 +187,7 @@ export default function CompetitorsPage() {
             </Button>
             <Button
               onClick={() => { setEditingCompetitor(null); setFormOpen(true); }}
-              className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-bjj-gold-dark font-bold shadow-md cursor-pointer"
+              className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-black hover:text-bjj-gold transition-all font-bold shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" /> Novo Atleta
             </Button>
@@ -183,7 +195,7 @@ export default function CompetitorsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-
+         
           <Card className="lg:col-span-1 bg-white border-none shadow-md flex flex-col overflow-hidden">
             <CardHeader className="bg-gray-50 border-b border-gray-100 flex-shrink-0">
               <CardTitle className="text-sm font-bold uppercase flex items-center gap-2 text-bjj-black">
@@ -199,7 +211,7 @@ export default function CompetitorsPage() {
                     placeholder="Nome do atleta..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-gray-50 border-gray-200 text-gray-500"
+                    className="pl-9 bg-gray-50 border-gray-200 text-gray-500 focus:border-bjj-gold"
                   />
                 </div>
               </div>
@@ -207,7 +219,7 @@ export default function CompetitorsPage() {
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">Graduação</label>
                 <Select value={filterBelt} onValueChange={setFilterBelt}>
-                  <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-500">
+                  <SelectTrigger className="bg-gray-50 border-gray-200 text-gray-500 focus:border-bjj-gold">
                     <SelectValue placeholder="Todas as faixas" />
                   </SelectTrigger>
                   <SelectContent className="bg-white text-black border shadow-md">
@@ -225,7 +237,7 @@ export default function CompetitorsPage() {
                   placeholder="Nome da equipe..."
                   value={filterTeam}
                   onChange={(e) => setFilterTeam(e.target.value)}
-                  className="bg-gray-50 border-gray-200 text-gray-500"
+                  className="bg-gray-50 border-gray-200 text-gray-500 focus:border-bjj-gold"
                 />
               </div>
 
@@ -244,8 +256,8 @@ export default function CompetitorsPage() {
             </CardContent>
           </Card>
 
+         
           <Card className="lg:col-span-3 bg-white border-none shadow-md flex flex-col overflow-hidden">
-
             <div className="flex flex-col h-full">
               <div className="flex-shrink-0 bg-bjj-black shadow-md rounded-t-lg">
                 <div className="grid grid-cols-12 gap-4 px-4 py-3">
@@ -336,7 +348,7 @@ export default function CompetitorsPage() {
                             )}
                           </div>
                           {!competitor.isActive && (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 mt-4">INATIVO</Badge>
+                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 mt-2">INATIVO</Badge>
                           )}
                         </div>
                       </div>

@@ -99,11 +99,7 @@ module.exports = {
 
 ---
 
-Aqui está o trecho completo com a nova regra de interface para competidores inativos:
-
----
-
-### 2. Módulo de Competidores
+## 2. Módulo de Competidores
 
 **Objetivo:** Cadastrar e gerenciar os atletas inscritos.
 
@@ -129,7 +125,7 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 
 **Regras:**
 
-- Não é permitido cadastrar dois competidores com o mesmo nome na mesma equipe.
+- Não é permitido cadastrar dois competidores com o mesmo nome na mesma equipe **que estejam ativos**.
 - Peso deve ser > 0 e < 300.
 - Idade deve ser >= 4 e <= 100.
 - Todos os campos obrigatórios são exigidos.
@@ -144,7 +140,7 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - `Reativar competidor` (disponível apenas para competidores inativos)
 - `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
 - `Importar competidores` (JSON)
-- `Exportar competidores` (JSON) — o arquivo gerado segue o mesmo formato esperado na importação e é nomeado automaticamente como competidores_export_YYYY-MM-DD_HHmmss.json (exemplo: competidores_export_2026-04-08_143022.json)
+- `Exportar competidores` (JSON) — o arquivo gerado segue o mesmo formato esperado na importação e é nomeado automaticamente como `competidores_export_YYYYMMDD_HHmmss.json` (exemplo: `competidores_export_20260408_143022.json`)
 
 ---
 
@@ -152,7 +148,7 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 
 ### Interface de Importação (Overlay)
 
-**Gatilho de abertura:** Ao clicar no botão **"Importar competidores"**, um overlay/modal é aberto na tela.
+**Gatilho de abertura:** Ao clicar no botão **"Importar"** (rotulado como "Importar" na interface), um overlay/modal é aberto na tela.
 
 **Comportamento do overlay:**
 
@@ -185,34 +181,7 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
    - Botão "Importar" permanece ativo para nova tentativa
    - Botão "Cancelar" ainda disponível para fechar
 
-**Exemplo visual do overlay (descrição):**
-
-```
-┌─────────────────────────────────────────────┐
-│  Importar Competidores                   ✕  │
-├─────────────────────────────────────────────┤
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │                                     │   │
-│  │        📁 Arraste ou clique         │   │
-│  │        para selecionar um           │   │
-│  │        arquivo JSON                 │   │
-│  │                                     │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  Nenhum arquivo selecionado                 │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ Exemplo de formato esperado:        │   │
-│  │ [{"name": "João", "team": "Equipe   │   │
-│  │ X", "weight": 75, ...}]             │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│         [ Cancelar ]    [ Importar ]       │
-└─────────────────────────────────────────────┘
-```
-
-**Formato aceito:** JSON array.
+**Formato aceito:** JSON array de objetos.
 
 **Mapeamento de campos obrigatórios:**
 
@@ -227,10 +196,10 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 
 **Regras durante a importação:**
 
-1. **Validação completa antes de qualquer inserção** — todo o arquivo JSON é validado item por item.
-2. **Se qualquer competidor for inválido** (campo faltando, peso fora de 0-300, idade fora de 4-100, faixa inválida, nome+team duplicado com registro existente), a **importação inteira é cancelada**.
-3. **Nenhum competidor é cadastrado** até que todo o arquivo esteja 100% válido.
-4. **Mensagem de erro clara:** o sistema exibe quais competidores estão inválidos e o motivo de cada um.
+1. **Validação linha a linha com inserção parcial** — o sistema valida cada competidor individualmente.
+2. **Competidores válidos são inseridos**, competidores inválidos são rejeitados com erro específico.
+3. **Não há cancelamento total da importação** — apenas os registros com erro são ignorados.
+4. **Mensagem de erro clara:** o sistema exibe quais competidores estão inválidos e o motivo de cada um, além de informar quantos foram importados com sucesso.
 5. `registrationDate`, `id` e `isActive` são gerados automaticamente após validação bem-sucedida.
 
 **Exemplo de JSON válido:**
@@ -238,19 +207,20 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 ```json
 [
   {
-    "competitors": [
-      {
-        "id": "c8d7d04e-7615-4f7d-968b-452fc98d63f4",
-        "name": "Manoela",
-        "team": "a",
-        "weight": 60,
-        "age": 25,
-        "belt": "WHITE",
-        "coach": null,
-        "registrationDate": "2026-04-07T12:54:02.009Z",
-        "isActive": false
-      }
-    ]
+    "name": "João Silva",
+    "team": "Equipe X",
+    "weight": 75.5,
+    "age": 25,
+    "belt": "BLUE",
+    "coach": "Prof. Carlos"
+  },
+  {
+    "name": "Maria Santos",
+    "team": "Equipe Y",
+    "weight": 62.3,
+    "age": 30,
+    "belt": "PURPLE",
+    "coach": null
   }
 ]
 ```
@@ -258,18 +228,18 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 **Exemplo de mensagem de erro (exibida dentro do overlay):**
 
 ```
-❌ Importação cancelada. Os seguintes competidores estão inválidos:
+❌ Importação parcial. Foram importados 3 competidores com sucesso.
+Os seguintes competidores apresentaram erro e não foram importados:
 
 - Linha 2: "Maria" - campo 'team' obrigatório não informado
-- Linha 3: "José" - peso 350 deve ser entre 0 e 300
-- Linha 5: "Ana" - faixa "RED" não é válida. Valores permitidos: WHITE, GRAY, YELLOW, ORANGE, GREEN, BLUE, PURPLE, BROWN, BLACK
+- Linha 4: "José" - peso 350 deve ser entre 0 e 300
+- Linha 6: "Ana" - faixa "RED" não é válida. Valores permitidos: WHITE, GRAY, YELLOW, ORANGE, GREEN, BLUE, PURPLE, BROWN, BLACK
+- Linha 8: "Pedro" - já existe um competidor ativo com mesmo nome e equipe
 
-Corrija os erros e tente novamente.
+Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 ```
 
-**Feedback ao usuário:** importação só é concluída com sucesso quando **todos** os competidores do arquivo são válidos.
-
----
+## **Feedback ao usuário:** importação insere todos os registros válidos e reporta claramente quais registros foram ignorados e por quê.
 
 ### 3. Módulo de Árbitros
 
