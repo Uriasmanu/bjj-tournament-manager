@@ -1759,6 +1759,17 @@
       "coach": null,
       "registrationDate": "2026-04-09T01:00:42.117Z",
       "isActive": true
+    },
+    {
+      "id": "bba1053b-bd62-4e1d-954e-1e4b6a7c137f",
+      "name": "a",
+      "team": "a",
+      "weight": 1,
+      "age": 12,
+      "belt": "WHITE",
+      "coach": null,
+      "registrationDate": "2026-04-09T01:10:28.891Z",
+      "isActive": true
     }
   ]
 }
