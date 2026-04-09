@@ -26,7 +26,7 @@
 
 **Funcionalidades pontuais faltantes:**
 - [ ] Importar competidores (JSON)
-- [ ] Exportar competidores (JSON)
+- [x] Exportar competidores (JSON)
 
 bugs
 - [x] Botao de ocultar inativo estava com o estilo errado e invisivel antes de clicar

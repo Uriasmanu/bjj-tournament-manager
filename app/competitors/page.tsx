@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { beltLabels, Competitor } from '@/types';
 import { BeltBadge } from './BeltBadge';
 import { CompetitorForm } from './CompetitorForm';
+import { ImportCompetitorsModal } from './ImportCompetitorsModal';
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -25,6 +26,7 @@ export default function CompetitorsPage() {
   const [filterTeam, setFilterTeam] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingCompetitor, setEditingCompetitor] = useState<Competitor | null>(null);
 
   const fetchCompetitors = async () => {
@@ -124,7 +126,6 @@ export default function CompetitorsPage() {
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
 
-    // Gerar o nome do arquivo no frontend mesmo
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -158,7 +159,7 @@ export default function CompetitorsPage() {
           </div>
 
           <div className="flex gap-2 w-full md:w-auto">
-            <Button
+            <Button onClick={() => setImportOpen(true)}
               variant="outline"
               className="flex-1 md:flex-none border-gray-300 text-bjj-blue font-semibold cursor-pointer hover:!bg-bjj-blue hover:!text-white"
             >
@@ -346,6 +347,15 @@ export default function CompetitorsPage() {
             </div>
           </Card>
         </div>
+
+        <ImportCompetitorsModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          onSuccess={() => {
+            fetchCompetitors();
+            toast.success('Importação concluída com sucesso!');
+          }}
+        />
 
         <CompetitorForm
           open={formOpen}

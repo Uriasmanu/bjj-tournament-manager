@@ -140,11 +140,72 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 - `Reativar competidor` (disponível apenas para competidores inativos)
 - `Listar competidores` com filtro por faixa, equipe, nome e status (ativos/inativos)
 - `Importar competidores` (JSON)
-- `Exportar competidores`(JSON) — o arquivo gerado segue o mesmo formato esperado na importação e é nomeado automaticamente como competidores_export_YYYY-MM-DD_HHmmss.json (exemplo: competidores_export_2026-04-08_143022.json)
+- `Exportar competidores` (JSON) — o arquivo gerado segue o mesmo formato esperado na importação e é nomeado automaticamente como competidores_export_YYYY-MM-DD_HHmmss.json (exemplo: competidores_export_2026-04-08_143022.json)
 
 ---
 
 ## Regra de Importação de Competidores (JSON)
+
+### Interface de Importação (Overlay)
+
+**Gatilho de abertura:** Ao clicar no botão **"Importar competidores"**, um overlay/modal é aberto na tela.
+
+**Comportamento do overlay:**
+
+1. **Conteúdo do overlay:**
+   - Título: "Importar Competidores"
+   - Área de upload/clique para selecionar arquivo JSON
+   - Botão "Cancelar" (fecha o overlay sem realizar ação)
+   - Botão "Importar" (inicia o processo de validação e importação)
+
+2. **Área de upload:**
+   - Suporte a drag-and-drop (arrastar e soltar arquivo)
+   - Clique para abrir seletor de arquivos do sistema
+   - Aceitar apenas arquivos com extensão `.json`
+   - Exibir nome do arquivo selecionado
+
+3. **Feedback visual durante o processo:**
+   - **Validando:** Exibir spinner/mensagem "Validando arquivo..."
+   - **Importando:** Exibir spinner/mensagem "Importando competidores..."
+   - **Sucesso:** Exibir mensagem de sucesso e fechar overlay automaticamente após 2 segundos
+   - **Erro:** Exibir mensagem de erro detalhada dentro do overlay, sem fechá-lo
+
+4. **Comportamento após importação bem-sucedida:**
+   - Fechar overlay automaticamente
+   - Recarregar a lista de competidores automaticamente
+   - Exibir toast/notificação de sucesso na tela principal
+
+5. **Comportamento em caso de erro:**
+   - Overlay permanece aberto
+   - Exibir mensagem de erro formatada (conforme exemplo abaixo)
+   - Botão "Importar" permanece ativo para nova tentativa
+   - Botão "Cancelar" ainda disponível para fechar
+
+**Exemplo visual do overlay (descrição):**
+```
+┌─────────────────────────────────────────────┐
+│  Importar Competidores                   ✕  │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌─────────────────────────────────────┐   │
+│  │                                     │   │
+│  │        📁 Arraste ou clique         │   │
+│  │        para selecionar um           │   │
+│  │        arquivo JSON                 │   │
+│  │                                     │   │
+│  └─────────────────────────────────────┘   │
+│                                             │
+│  Nenhum arquivo selecionado                 │
+│                                             │
+│  ┌─────────────────────────────────────┐   │
+│  │ Exemplo de formato esperado:        │   │
+│  │ [{"name": "João", "team": "Equipe   │   │
+│  │ X", "weight": 75, ...}]             │   │
+│  └─────────────────────────────────────┘   │
+│                                             │
+│         [ Cancelar ]    [ Importar ]       │
+└─────────────────────────────────────────────┘
+```
 
 **Formato aceito:** JSON array.
 
@@ -170,18 +231,18 @@ WHITE | GRAY | YELLOW | ORANGE | GREEN | BLUE | PURPLE | BROWN | BLACK
 **Exemplo de JSON válido:**
 ```json
 [
-  {
-    "name": "João Silva",
-    "team": "Alliance",
-    "weight": 74.5,
-    "age": 28,
-    "belt": "BLUE",
-    "coach": "Fábio Gurgel"
-  }
+    {
+      "name": "Lucas Silva",
+      "team": "Bravo",
+      "weight": 75,
+      "age": 28,
+      "belt": "BLUE",
+      "coach": "Mestre Ricardo"
+    }
 ]
 ```
 
-**Exemplo de mensagem de erro:**
+**Exemplo de mensagem de erro (exibida dentro do overlay):**
 ```
 ❌ Importação cancelada. Os seguintes competidores estão inválidos:
 
