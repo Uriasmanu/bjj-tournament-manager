@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,7 +16,23 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   if (!open) return null;
+
+  // 🔥 RESET CENTRALIZADO
+  const handleClose = () => {
+    setFile(null);
+    setError(null);
+    setStep('idle');
+    setLoading(false);
+
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+
+    onClose();
+  };
 
   const handleSubmit = async () => {
     if (!file) return;
@@ -47,9 +63,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
 
       setTimeout(() => {
         onSuccess();
-        onClose();
-        setFile(null);
-        setStep('idle');
+        handleClose(); // 🔥 usa o reset completo
       }, 1500);
 
     } catch {
@@ -83,7 +97,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-md hover:bg-gray-200 transition"
           >
             <X className="w-4 h-4 text-gray-500" />
@@ -93,9 +107,9 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
         {/* CONTENT */}
         <div className="p-6 space-y-4">
 
-          {/* DROP AREA */}
+          {/* UPLOAD AREA */}
           <div
-            onClick={() => document.getElementById('fileInput')?.click()}
+            onClick={() => inputRef.current?.click()}
             className={`
               relative flex flex-col items-center justify-center
               border-2 border-dashed rounded-xl p-6 cursor-pointer
@@ -130,7 +144,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <input
-            id="fileInput"
+            ref={inputRef}
             type="file"
             accept=".json"
             className="hidden"
@@ -158,7 +172,7 @@ export function ImportCompetitorsModal({ open, onClose, onSuccess }: Props) {
         <div className="flex justify-end gap-2 px-6 py-4 border-t bg-gray-50">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
             className="cursor-pointer"
           >
             Cancelar
