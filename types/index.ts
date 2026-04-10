@@ -15,6 +15,15 @@ export interface Competitor {
   isActive: boolean;
 }
 
+export interface Referee {
+  id: string;
+  name: string;
+  belt: Belt;
+  city: string;
+  registrationDate: string;
+  isActive: boolean;
+}
+
 export const beltColors: Record<Belt, string> = {
   WHITE: '#FFFFFF',
   GRAY: '#808080',

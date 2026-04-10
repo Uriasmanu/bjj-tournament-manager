@@ -34,19 +34,6 @@ bugs
 - [x] tem que ter uma forma de ativar novamente o competidor
 - [x] O salvar edição de competidor não esta funcionando
 - [x] O expandir das graduações esta com um estilo que o select fica invisivel
----
-
-### ⏳ 2. Módulo de Torneio (Planejado)
-- [ ] Estrutura de dados para `Tournament`
-- [ ] Criar torneio (`POST /api/tournaments`)
-- [ ] Editar torneio (`PUT /api/tournaments/:id`)
-- [ ] Listar torneios (`GET /api/tournaments`)
-- [ ] Definir status: DRAFT → ACTIVE → COMPLETED
-- [ ] UI página de torneios
-- [ ] UI formulário de criação/edição
-- [ ] Persistência em `data/tournament.json`
-- [ ] Validação de datas (startDate < endDate)
-- [ ] Soft delete de torneio
 
 ---
 
@@ -61,6 +48,20 @@ bugs
 - [ ] Persistência em `data/referees.json`
 - [ ] Verificação se árbitro pode ser excluído (não vinculado a chave/área ativa)
 - [ ] Filtro por graduação mínima (recomendado: Roxa)
+
+---
+
+### ⏳ 2. Módulo de Torneio (Planejado)
+- [ ] Estrutura de dados para `Tournament`
+- [ ] Criar torneio (`POST /api/tournaments`)
+- [ ] Editar torneio (`PUT /api/tournaments/:id`)
+- [ ] Listar torneios (`GET /api/tournaments`)
+- [ ] Definir status: DRAFT → ACTIVE → COMPLETED
+- [ ] UI página de torneios
+- [ ] UI formulário de criação/edição
+- [ ] Persistência em `data/tournament.json`
+- [ ] Validação de datas (startDate < endDate)
+- [ ] Soft delete de torneio
 
 ---
 
