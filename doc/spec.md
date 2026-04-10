@@ -19,8 +19,8 @@ O sistema utiliza a seguinte paleta de cores base, inspirada no BJJ:
 | ------------------ | ------------------------------------------------------------ |
 | **Amarelo (Gold)** | Destaques, botões principais, títulos, elementos de ação     |
 | **Azul (Blue)**    | Fundos secundários, hover states, links, bordas de destaque  |
-| **Branco (White)** | Texto principal, fundos claros (modo claro)                  |
-| **Preto (Black)**  | Fundo principal (modo escuro), textos secundários, contraste |
+| **Branco (White)** | Fundo principal (modo escuro), textos secundários, contraste |
+| **Preto (Black)**  | Texto principal, fundos claros (modo claro)                  |
 
 ### Configuração Tailwind
 
