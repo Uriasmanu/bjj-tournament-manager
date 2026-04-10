@@ -52,38 +52,11 @@ export default function RefereesPage() {
   }, [searchTerm, filterBelt, filterTeam, showInactive]);
 
   const handleCreateReferee = async (data: any) => {
-    const response = await fetch('/api/Referees', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
 
-    if (response.ok) {
-      toast.success('Competidor cadastrado com sucesso!');
-      fetchReferees();
-    } else {
-      const error = await response.json();
-      toast.error(error.error || 'Erro ao cadastrar competidor');
-    }
   };
 
   const handleUpdateReferee = async (data: any) => {
-    if (!editingReferee) return;
-
-    const response = await fetch(`/api/Referees/${editingReferee.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      toast.success('Competidor atualizado com sucesso!');
-      fetchReferees();
-      setEditingReferee(null);
-    } else {
-      const error = await response.json();
-      toast.error(error.error || 'Erro ao atualizar competidor');
-    }
+    
   };
 
   const handleDeleteReferee = async (id: string, name: string) => {
@@ -292,7 +265,6 @@ export default function RefereesPage() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => handleDeleteReferee(Referee.id, Referee.name)}
                                   className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -301,7 +273,6 @@ export default function RefereesPage() {
                             ) : (
                               <Button
                                 size="sm"
-                                onClick={() => handleReactivateReferee(Referee.id)}
                                 className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer"
                               >
                                 Reativar
@@ -325,7 +296,6 @@ export default function RefereesPage() {
           open={importOpen}
           onClose={() => setImportOpen(false)}
           onSuccess={() => {
-            fetchReferees();
             toast.success('Importação concluída com sucesso!');
           }}
         />
