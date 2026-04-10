@@ -15,7 +15,7 @@ const competitorSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   team: z.string().min(1, 'Equipe é obrigatória'),
   weight: z.number().min(0.1, 'Peso deve ser maior que 0').max(300, 'Peso deve ser menor que 300'),
-  age: z.number().min(4, 'Idade mínima é 4 anos').max(100, 'Idade máxima é 100 anos'),
+  dateBirth: z.number().min(4, 'Idade mínima é 4 anos').max(100, 'Idade máxima é 100 anos'),
   belt: z.enum(['WHITE', 'GRAY', 'YELLOW', 'ORANGE', 'GREEN', 'BLUE', 'PURPLE', 'BROWN', 'BLACK']),
   coach: z.string().optional(),
 });
@@ -35,7 +35,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
     name: '',
     team: '',
     weight: 0,
-    age: 0,
+    dateBirth: 0,
     belt: 'WHITE',
     coach: '',
   });
@@ -49,7 +49,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
         name: '',
         team: '',
         weight: 0,
-        age: 0,
+        dateBirth: 0,
         belt: 'WHITE',
         coach: '',
       });
@@ -64,8 +64,8 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
         setErrors(prev => ({ ...prev, [name]: '' }));
       }
     } catch (error: any) {
-      const errorMessage = error?.errors?.[0]?.message || 'Campo inválido';
-      setErrors(prev => ({ ...prev, [name]: errorMessage }));
+      const errorMessdateBirth = error?.errors?.[0]?.messdateBirth || 'Campo inválido';
+      setErrors(prev => ({ ...prev, [name]: errorMessdateBirth }));
     }
   };
 
@@ -84,7 +84,7 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
         name: '',
         team: '',
         weight: 0,
-        age: 0,
+        dateBirth: 0,
         belt: 'WHITE',
         coach: '',
       });
@@ -94,10 +94,10 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
       const newErrors: Record<string, string> = {};
       if (error?.errors) {
         error.errors.forEach((err: any) => {
-          newErrors[err.path[0]] = err.message;
+          newErrors[err.path[0]] = err.messdateBirth;
         });
       } else {
-        newErrors.general = error?.message || 'Erro ao validar formulário';
+        newErrors.general = error?.messdateBirth || 'Erro ao validar formulário';
       }
       setErrors(newErrors);
     }
@@ -191,26 +191,26 @@ export function CompetitorForm({ open, onOpenChange, onSubmit, initialData, titl
             </div>
 
             <div className="group">
-              <Label htmlFor="age" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
+              <Label htmlFor="dateBirth" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-bjj-gold" />
                 Idade <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="age"
+                id="dateBirth"
                 type="number"
-                value={formData.age || ''}
+                value={formData.dateBirth || ''}
                 onChange={(e) => {
                   const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                  handleChange('age', isNaN(value) ? 0 : value);
+                  handleChange('dateBirth', isNaN(value) ? 0 : value);
                 }}
                 className={`mt-1 text-gray-700 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
-                  errors.age ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
+                  errors.dateBirth ? 'border-red-500 focus:ring-red-500' : 'hover:border-bjj-gold/50'
                 }`}
                 placeholder="Ex: 28"
               />
-              {errors.age && (
+              {errors.dateBirth && (
                 <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                  <span>⚠️</span> {errors.age}
+                  <span>⚠️</span> {errors.dateBirth}
                 </p>
               )}
             </div>

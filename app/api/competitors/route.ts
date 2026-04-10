@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     name: body.name,
     team: body.team,
     weight: body.weight,
-    age: body.age,
+    dateBirth: body.dateBirth,
     belt: body.belt,
     coach: body.coach || null,
     registrationDate: new Date().toISOString(),

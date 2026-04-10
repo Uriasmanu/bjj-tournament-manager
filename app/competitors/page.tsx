@@ -308,7 +308,7 @@ export default function CompetitorsPage() {
                               {competitor.weight}kg
                             </Badge>
                             <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 bg-white">
-                              {competitor.age} anos
+                              {competitor.dateBirth} anos
                             </Badge>
                           </div>
                         </div>
@@ -377,7 +377,7 @@ export default function CompetitorsPage() {
             name: editingCompetitor.name,
             team: editingCompetitor.team,
             weight: editingCompetitor.weight,
-            age: editingCompetitor.age,
+            dateBirth: editingCompetitor.dateBirth,
             belt: editingCompetitor.belt,
             coach: editingCompetitor.coach || '',
           } : undefined}

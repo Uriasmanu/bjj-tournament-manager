@@ -121,7 +121,7 @@ Para garantir a visibilidade em fundos claros e evitar que o conteúdo "desapare
 | `name`             | string                | Sim         | Nome completo                   |
 | `team`             | string                | Sim         | Nome da academia/equipe         |
 | `weight`           | number (kg)           | Sim         | Peso em quilogramas             |
-| `age`              | number                | Sim         | Idade em anos                   |
+| `dateBirth`              | number                | Sim         | Idade em anos                   |
 | `belt`             | enum Belt             | Sim         | Ver enum abaixo                 |
 | `coach`            | string                | Não         | Nome do técnico                 |
 | `registrationDate` | string (ISO datetime) | Sim         | Data de inscrição               |

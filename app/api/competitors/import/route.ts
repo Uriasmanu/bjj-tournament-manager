@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
             const name = c.name?.trim();
             const team = c.team?.trim();
             const weight = Number(c.weight);
-            const age = Number(c.age);
+            const dateBirth = Number(c.dateBirth);
             const belt = c.belt;
 
             
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
                 return;
             }
 
-            if (!age || age < 4 || age > 100) {
-                errors.push(`Linha ${line}: "${name}" - idade inválida (${c.age})`);
+            if (!dateBirth || dateBirth < 4 || dateBirth > 100) {
+                errors.push(`Linha ${line}: "${name}" - idade inválida (${c.dateBirth})`);
                 return;
             }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
                 name,
                 team,
                 weight,
-                age,
+                dateBirth,
                 belt,
                 coach: c.coach || null,
                 registrationDate: now,

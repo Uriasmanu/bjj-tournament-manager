@@ -40,7 +40,7 @@ export async function PUT(
     name: body.name,
     team: body.team,
     weight: body.weight,
-    age: body.age,
+    dateBirth: body.dateBirth,
     belt: body.belt,
     coach: body.coach || null,
   };
