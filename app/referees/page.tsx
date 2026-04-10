@@ -54,7 +54,7 @@ export default function RefereesPage() {
       const response = await fetch(`/api/referees?${params.toString()}`);
       const data = await response.json();
       setReferees(data);
-      
+
       // Extrair cidades únicas para filtro
       const uniqueCities = [...new Set(data.map((r: Referee) => r.city).filter(Boolean))];
       setCities(uniqueCities as string[]);
@@ -92,7 +92,7 @@ export default function RefereesPage() {
 
   const handleUpdateReferee = async (data: any) => {
     if (!editingReferee) return;
-    
+
     try {
       const response = await fetch(`/api/referees/${editingReferee.id}`, {
         method: 'PUT',
@@ -192,11 +192,11 @@ export default function RefereesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto p-6 space-y-6">
-        {/* Header com navegação */}
+
         <div className="flex items-center justify-between">
           <Link href="/">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-gray-600 hover:text-bjj-black transition-all group cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" />
@@ -205,9 +205,9 @@ export default function RefereesPage() {
           </Link>
         </div>
 
-        {/* Card principal */}
+
         <Card className="border-0 shadow-xl bg-white overflow-hidden">
-          {/* Header com gradiente */}
+
           <div className="bg-gradient-to-r from-bjj-black to-gray-800 px-6 py-5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-4">
@@ -221,7 +221,7 @@ export default function RefereesPage() {
               </div>
 
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={() => setImportOpen(true)}
                   variant="outline"
                   className="border-gray-600 text-gray-200 hover:bg-bjj-gold hover:text-black hover:border-bjj-gold transition-all cursor-pointer"
@@ -236,7 +236,7 @@ export default function RefereesPage() {
                 >
                   <Download className="w-4 h-4 mr-2" /> Exportar
                 </Button>
-                
+
                 <Button
                   onClick={() => { setEditingReferee(null); setFormOpen(true); }}
                   className="bg-bjj-gold text-black hover:bg-bjj-gold-dark hover:scale-105 transition-all font-bold shadow-lg cursor-pointer"
@@ -249,28 +249,28 @@ export default function RefereesPage() {
           </div>
 
           <CardContent className="p-6">
-            {/* Alerta de limite máximo */}
+
             {activeRefereesCount >= maxReferees - 2 && activeRefereesCount < maxReferees && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-yellow-800">
                 <Award className="w-5 h-5" />
                 <span className="text-sm">
-                  Atenção: Você está próximo do limite de {maxReferees} árbitros ativos. 
+                  Atenção: Você está próximo do limite de {maxReferees} árbitros ativos.
                   Atualmente {activeRefereesCount}/{maxReferees}.
                 </span>
               </div>
             )}
-            
+
             {isAtMaxLimit && (
               <div className="mb-4 p-3 bg-amber-100 border border-amber-300 rounded-lg flex items-center gap-2 text-amber-800">
                 <Shield className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  Limite máximo de {maxReferees} árbitros ativos atingido. 
+                  Limite máximo de {maxReferees} árbitros ativos atingido.
                   Desative ou exclua algum árbitro para adicionar novos.
                 </span>
               </div>
             )}
 
-            {/* Filtros - Layout horizontal compacto */}
+
             <div className="flex flex-wrap gap-3 mb-6 pb-4 border-b border-gray-100">
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
@@ -339,7 +339,7 @@ export default function RefereesPage() {
               )}
             </div>
 
-            {/* Lista de árbitros - Layout compacto tipo grid */}
+
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="w-10 h-10 border-4 border-bjj-gold border-t-transparent rounded-full animate-spin mb-4" />
@@ -358,13 +358,12 @@ export default function RefereesPage() {
                 {referees.map((referee) => (
                   <div
                     key={referee.id}
-                    className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden ${
-                      !referee.isActive 
-                        ? 'border-gray-200 opacity-70 bg-gray-50' 
+                    className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden ${!referee.isActive
+                        ? 'border-gray-200 opacity-70 bg-gray-50'
                         : 'border-gray-200 hover:shadow-lg hover:border-bjj-gold/30 hover:-translate-y-0.5'
-                    }`}
+                      }`}
                   >
-                    {/* Indicador de status */}
+
                     {!referee.isActive && (
                       <div className="absolute top-0 right-0">
                         <Badge variant="secondary" className="rounded-bl-lg rounded-tr-lg bg-gray-400 text-white text-xs px-3 py-1">
@@ -374,15 +373,13 @@ export default function RefereesPage() {
                     )}
 
                     <div className="p-5">
-                      {/* Cabeçalho do card */}
+
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                            beltColors[referee.belt]?.split(' ')[0] || 'bg-gray-100'
-                          }`}>
-                            <Shield className={`w-6 h-6 ${
-                              referee.belt === 'BLACK' ? 'text-white' : 'text-gray-700'
-                            }`} />
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${beltColors[referee.belt]?.split(' ')[0] || 'bg-gray-100'
+                            }`}>
+                            <Shield className={`w-6 h-6 ${referee.belt === 'BLACK' ? 'text-white' : 'text-gray-700'
+                              }`} />
                           </div>
                           <div>
                             <h3 className="font-bold text-gray-900 text-lg leading-tight">
@@ -395,7 +392,7 @@ export default function RefereesPage() {
                         </div>
                       </div>
 
-                      {/* Informações do árbitro */}
+
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <MapPin className="w-4 h-4 text-gray-400" />
@@ -403,7 +400,7 @@ export default function RefereesPage() {
                         </div>
                       </div>
 
-                      {/* Ações */}
+
                       <div className="flex gap-2 pt-3 border-t border-gray-100">
                         {referee.isActive ? (
                           <>
@@ -440,7 +437,7 @@ export default function RefereesPage() {
               </div>
             )}
 
-            {/* Rodapé com contagem */}
+
             {!loading && referees.length > 0 && (
               <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
                 <div className="flex items-center gap-4">
@@ -457,7 +454,7 @@ export default function RefereesPage() {
         </Card>
       </div>
 
-      {/* Modais */}
+
       <ImportRefereesModal
         open={importOpen}
         onClose={() => setImportOpen(false)}
