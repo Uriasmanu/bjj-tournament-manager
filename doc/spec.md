@@ -1,7 +1,3 @@
-Aqui está a spec atualizada com as novas informações:
-
----
-
 # Spec: BJJ Tournament Manager
 
 ## Visão Geral
@@ -251,9 +247,8 @@ Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 | --------------- | --------- | ----------- | ---------------------------------- |
 | `id`            | UUID      | Sim         | Gerado automaticamente             |
 | `name`          | string    | Sim         | Nome completo                      |
+| `city`          | string    | Sim         | Cidade que mora                    |
 | `belt`          | enum Belt | Sim         | Graduação mínima recomendada: Roxa |
-| `certification` | string    | Não         | Certificação / federação           |
-| `experience`    | number    | Não         | Anos de experiência                |
 | `isActive`      | boolean   | Sim         | Soft delete — `true` por padrão    |
 
 **Ações:**
@@ -262,7 +257,6 @@ Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 - `Editar árbitro`
 - `Excluir árbitro` (soft delete — somente se não estiver associado a uma chave/área ativa)
 - `Listar árbitros`
-- `Atribuir árbitro a área`
 
 ---
 
