@@ -27,7 +27,7 @@ export default function RefereesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBelt, setFilterBelt] = useState<string>('all');
-  const [filterCity, setFilterCity] = useState('');
+  const [filterCity, setFilterCity] = useState('all');
   const [showInactive, setShowInactive] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function RefereesPage() {
     const params = new URLSearchParams();
     if (searchTerm) params.append('name', searchTerm);
     if (filterBelt !== 'all') params.append('belt', filterBelt);
-    if (filterCity) params.append('city', filterCity);
+    if (filterCity && filterCity !== 'all') params.append('city', filterCity);
     if (showInactive) params.append('showInactive', 'true');
 
     try {
@@ -230,20 +230,28 @@ export default function RefereesPage() {
                     placeholder="Buscar por nome..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-gray-50 border-gray-200 focus:border-bjj-gold focus:ring-bjj-gold/20"
+                    className="pl-9 text-bjj-gray bg-gray-50 border-gray-200 focus:border-bjj-gold focus:ring-bjj-gold/20"
                   />
                 </div>
               </div>
 
               <div className="w-[180px]">
                 <Select value={filterBelt} onValueChange={setFilterBelt}>
-                  <SelectTrigger className="bg-gray-50 border-gray-200">
+                  <SelectTrigger className="bg-gray-50 text-bjj-gray border-gray-200">
                     <SelectValue placeholder="Todas faixas" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas faixas</SelectItem>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="all" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900">
+                      Todas faixas
+                    </SelectItem>
                     {Object.entries(beltLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                      <SelectItem
+                        key={value}
+                        value={value}
+                        className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900"
+                      >
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -251,13 +259,21 @@ export default function RefereesPage() {
 
               <div className="w-[180px]">
                 <Select value={filterCity} onValueChange={setFilterCity}>
-                  <SelectTrigger className="bg-gray-50 border-gray-200">
+                  <SelectTrigger className="bg-gray-50 text-bjj-gray border-gray-200">
                     <SelectValue placeholder="Todas cidades" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas cidades</SelectItem>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="all" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900">
+                      Todas cidades
+                    </SelectItem>
                     {cities.map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                      <SelectItem
+                        key={city}
+                        value={city}
+                        className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900"
+                      >
+                        {city}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
