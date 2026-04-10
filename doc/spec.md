@@ -11,37 +11,51 @@ Armazenamento: múltiplos arquivos JSON locais via sistema de arquivos do servid
 
 ---
 
-## Paleta de Cores
+## Identidade Visual e Design System
 
-O sistema utiliza a seguinte paleta de cores base, inspirada no BJJ:
+O sistema utiliza uma estética "Premium BJJ", focada em alto contraste, profundidade com gradientes e legibilidade para ambientes de competição.
 
-| Cor                | Uso                                                          |
-| ------------------ | ------------------------------------------------------------ |
-| **Amarelo (Gold)** | Destaques, botões principais, títulos, elementos de ação     |
-| **Azul (Blue)**    | Fundos secundários, hover states, links, bordas de destaque  |
-| **Branco (White)** | Fundo principal (modo escuro), textos secundários, contraste |
-| **Preto (Black)**  | Texto principal, fundos claros (modo claro)                  |
+### Paleta de Cores (Tailwind Tokens)
 
-### Configuração Tailwind
+| Cor                | Token             | Uso Principal                                              |
+| ------------------ | ----------------- | ---------------------------------------------------------- |
+| **Gold** | `bjj-gold`        | Botões de ação principal, ícones de autoridade, destaques. |
+| **Gold Dark** | `bjj-gold-dark`   | Estados de hover para elementos Gold.                      |
+| **Black/Anthracite**| `bjj-black`      | Headers de cards, backgrounds de navegação, textos fortes. |
+| **Blue** | `bjj-blue`        | Ações secundárias, filtros ativos, estados de hover.      |
+| **Surface Gray** | `gray-50/100`     | Background da aplicação e fundos de inputs/cards.          |
 
-```js
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        "bjj-gold": "#FFD700",
-        "bjj-gold-dark": "#DAA520",
-        "bjj-blue": "#1E3A8A",
-        "bjj-blue-light": "#3B82F6",
-        "bjj-white": "#FFFFFF",
-        "bjj-black": "#111111",
-        "bjj-gray": "#2A2A2A",
-      },
-    },
-  },
-};
-```
+### Estilização de Componentes
+
+#### 1. Cards de Gestão
+* **Container:** `bg-white`, `border-0`, `shadow-xl`, `overflow-hidden`.
+* **Header:** Uso obrigatório de gradiente `bg-gradient-to-r from-bjj-black to-gray-800`.
+* **Cards de Listagem (Grid):** Devem possuir `transition-all` com elevação no hover (`hover:shadow-lg`, `hover:-translate-y-0.5`).
+
+#### 2. Botões de Ação e Estados de Hover ⚠️
+Para garantir a visibilidade em fundos claros e evitar que o conteúdo "desapareça" no hover, os botões devem seguir estas regras de implementação:
+
+* **Botões de Edição/Secundários:**
+    * **Estilo:** Borda e texto em `bjj-blue`.
+    * **Hover:** Inversão total. Fundo vira `bjj-blue` e texto vira `white`.
+    * **Implementação:** `border-bjj-blue text-bjj-blue hover:bg-bjj-blue hover:text-white`.
+* **Botões de Exclusão:**
+    * **Estilo:** Borda suave e texto em `red-600`.
+    * **Hover:** Fundo e borda em `red-600` com texto `white`.
+    * **Implementação:** `border-red-200 text-red-600 hover:bg-red-600 hover:text-white`.
+* **Acessibilidade:** Todos os botões interativos devem incluir `cursor-pointer` e `transition-all`.
+
+#### 3. Tipografia e Feedback
+* **Títulos:** Semibold ou Bold, cor `gray-900`.
+* **Status Inativo:** Elementos inativos devem utilizar `opacity-70` e `bg-gray-50`.
+* **Badges de Faixa (Arbitragem):**
+    * **Roxa:** `bg-purple-100 text-purple-800 border-purple-300`
+    * **Marrom:** `bg-amber-100 text-amber-800 border-amber-300`
+    * **Preta:** `bg-gray-900 text-white border-gray-800`
+
+### Regras de UI/UX
+* **Navegação:** Botões de "Voltar" utilizam variante `ghost` com animação de deslocamento no ícone (`group-hover:-translate-x-1`).
+* **Inputs:** Fundo `gray-50` com foco em `bjj-gold` para manter a consistência visual.
 
 ---
 
@@ -235,30 +249,163 @@ Os seguintes competidores apresentaram erro e não foram importados:
 Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 ```
 
-## **Feedback ao usuário:** importação insere todos os registros válidos e reporta claramente quais registros foram ignorados e por quê.
+### **Feedback ao usuário:** importação insere todos os registros válidos e reporta claramente quais registros foram ignorados e por quê.
 
+Boa, isso aqui é exatamente o tipo de coisa que deixa seu sistema profissional de verdade. Vou te devolver a spec já **atualizada, consistente com o que você implementou** e incluindo regras de **import/export**.
+
+---
+
+## ✅ Versão atualizada da SPEC
+
+````md
 ### 3. Módulo de Árbitros
 
-**Objetivo:** Cadastrar e gerenciar os árbitros do torneio.
+**Objetivo:**  
+Cadastrar, gerenciar e importar/exportar os árbitros do torneio.
 
-**Dados do Árbitro:**
+---
 
-| Campo           | Tipo      | Obrigatório | Observação                         |
-| --------------- | --------- | ----------- | ---------------------------------- |
-| `id`            | UUID      | Sim         | Gerado automaticamente             |
-| `name`          | string    | Sim         | Nome completo                      |
-| `city`          | string    | Sim         | Cidade que mora                    |
-| `belt`          | enum Belt | Sim         | Graduação mínima recomendada: Roxa |
-| `isActive`      | boolean   | Sim         | Soft delete — `true` por padrão    |
+### 📌 Dados do Árbitro
 
-**Ações:**
+| Campo              | Tipo               | Obrigatório | Observação                                      |
+| ------------------ | ------------------ | ----------- | ----------------------------------------------- |
+| `id`               | UUID               | Sim         | Gerado automaticamente                          |
+| `name`             | string             | Sim         | Nome completo                                   |
+| `city`             | string             | Sim         | Cidade que mora                                 |
+| `beltReferee`      | enum BeltReferee   | Sim         | Valores: `PURPLE`, `BROWN`, `BLACK`             |
+| `registrationDate` | ISO string (date)  | Sim         | Data de cadastro                                |
+| `isActive`         | boolean            | Sim         | Soft delete — `true` por padrão                 |
+
+---
+
+### 📌 Regras de Negócio
+
+- Não pode existir dois árbitros **ativos** com o mesmo nome
+- O campo `beltReferee` deve aceitar apenas valores válidos do enum
+- O campo `isActive` controla exclusão lógica (soft delete)
+- Registros inativos podem ser reativados
+- Exclusão apenas desativa (`isActive = false`)
+
+---
+
+### 📌 Ações
 
 - `Criar árbitro`
 - `Editar árbitro`
-- `Excluir árbitro` (soft delete — somente se não estiver associado a uma chave/área ativa)
+- `Excluir árbitro` (soft delete)
+- `Reativar árbitro`
 - `Listar árbitros`
+- `Filtrar por nome, cidade e faixa`
 
 ---
+
+## 📦 Exportação de Árbitros
+
+### ✔ Formato do arquivo exportado
+
+O sistema deve exportar os dados no seguinte formato JSON:
+
+```json
+{
+  "referees": [
+    {
+      "id": "uuid",
+      "name": "Nome do árbitro",
+      "beltReferee": "BLACK",
+      "city": "Cidade",
+      "registrationDate": "2026-04-10T10:00:00.000Z",
+      "isActive": true
+    }
+  ]
+}
+````
+
+### ✔ Regras de Exportação
+
+* Deve incluir **todos os árbitros** (ativos e inativos)
+* O formato deve ser **compatível com o import**
+* O arquivo deve ser válido para reimportação sem ajustes
+
+---
+
+## 📥 Importação de Árbitros
+
+### ✔ Formato aceito
+
+O sistema deve aceitar **exclusivamente** arquivos JSON no seguinte formato:
+
+```json
+{
+  "referees": [ ... ]
+}
+```
+
+---
+
+### ✔ Regras de Importação
+
+* O campo `referees` deve existir e ser um array
+* Cada item deve conter:
+
+  * `name` (obrigatório)
+  * `beltReferee` (obrigatório)
+* Campos opcionais:
+
+  * `id`
+  * `city`
+  * `registrationDate`
+  * `isActive`
+
+---
+
+### ✔ Comportamento do sistema
+
+* Se `id` não for informado → gerar automaticamente
+* Se `registrationDate` não for informado → usar data atual
+* Se `isActive` não for informado → assumir `true`
+* Registros duplicados (mesmo nome ativo) devem ser ignorados
+* Registros inválidos devem ser rejeitados
+
+---
+
+### ✔ Validações obrigatórias
+
+* `beltReferee` deve ser um dos valores:
+
+  * `PURPLE`
+  * `BROWN`
+  * `BLACK`
+* Arquivos fora do formato devem retornar erro:
+
+```json
+{
+  "error": "Formato inválido. Esperado { referees: [] }"
+}
+```
+
+---
+
+### ✔ Resultado da importação
+
+O sistema deve retornar:
+
+```json
+{
+  "message": "Importação concluída",
+  "imported": 10
+}
+```
+
+---
+
+## ⚠️ Observações Técnicas
+
+* Importação e exportação devem ser **simétricas**
+* O sistema deve garantir integridade dos dados
+* O import não deve sobrescrever dados existentes
+* Apenas adicionar novos registros válidos
+
+```
 
 ### 4. Módulo de Chaves (Brackets)
 
