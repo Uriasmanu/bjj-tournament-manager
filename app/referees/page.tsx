@@ -38,7 +38,7 @@ export default function RefereesPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchTerm) params.append('name', searchTerm);
-    if (filterBelt !== 'all') params.append('belt', filterBelt);
+    if (filterBelt !== 'all') params.append('beltReferee', filterBelt);
     if (filterCity && filterCity !== 'all') params.append('city', filterCity);
     if (showInactive) params.append('showInactive', 'true');
 
