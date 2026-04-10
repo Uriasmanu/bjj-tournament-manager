@@ -176,7 +176,7 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
               id="city"
               value={formData.city || ''}
               onChange={(e) => handleChange('city', e.target.value)}
-              className="mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 hover:border-bjj-gold/50"
+              className="mt-1 text-gray-900 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 hover:border-bjj-gold/50"
               placeholder="Nome do Cidade responsável"
             />
           </div>
