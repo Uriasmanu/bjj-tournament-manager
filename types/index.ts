@@ -50,3 +50,9 @@ export const beltLabels: Record<Belt, string> = {
   BROWN: 'Marrom',
   BLACK: 'Preta',
 };
+
+export const beltLabelsReferee: Record<BeltReferee, string> = {
+  PURPLE: 'Roxa',
+  BROWN: 'Marrom',
+  BLACK: 'Preta',
+};

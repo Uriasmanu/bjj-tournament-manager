@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { beltLabels, Referee, BeltReferee } from '@/types';
+import { beltLabelsReferee, Referee, BeltReferee } from '@/types';
 import { ImportRefereesModal } from './ImportRefereesModal';
 import { RefereesForm } from './RefereesForm';
 
@@ -244,7 +244,7 @@ export default function RefereesPage() {
                     <SelectItem value="all" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900">
                       Todas faixas
                     </SelectItem>
-                    {Object.entries(beltLabels).map(([value, label]) => (
+                    {Object.entries(beltLabelsReferee).map(([value, label]) => (
                       <SelectItem
                         key={value}
                         value={value}
@@ -323,7 +323,7 @@ export default function RefereesPage() {
                           <div>
                             <h3 className="font-bold text-gray-900 text-lg leading-tight">{referee.name}</h3>
                             <Badge className={`mt-1 text-xs ${beltColors[referee.beltReferee]}`}>
-                              {beltLabels[referee.beltReferee]}
+                              {beltLabelsReferee[referee.beltReferee]}
                             </Badge>
                           </div>
                         </div>
