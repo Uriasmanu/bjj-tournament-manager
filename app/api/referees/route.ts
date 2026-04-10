@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readReferees, writeReferees } from '@/lib/storage';
 import { Referee, BeltReferee } from '@/types';
 
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
@@ -36,7 +35,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(referees);
 }
-
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -77,14 +75,22 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(newReferee, { status: 201 });
 }
 
-
 export async function PUT(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
   const body = await request.json();
+
+  if (!id) {
+    return NextResponse.json(
+      { error: 'ID é obrigatório' },
+      { status: 400 }
+    );
+  }
 
   const data = await readReferees();
   const referees = data.referees;
 
-  const index = referees.findIndex(r => r.id === body.id);
+  const index = referees.findIndex(r => r.id === id);
 
   if (index === -1) {
     return NextResponse.json(
@@ -105,10 +111,16 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(referees[index]);
 }
 
-
 export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json(
+      { error: 'ID é obrigatório' },
+      { status: 400 }
+    );
+  }
 
   const data = await readReferees();
   const referees = data.referees;
@@ -122,9 +134,43 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
+  // Soft delete - apenas desativa
   referees[index].isActive = false;
 
   await writeReferees(data);
 
   return NextResponse.json({ message: 'Árbitro desativado com sucesso' });
+}
+
+export async function PATCH(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  const reactivate = searchParams.get('reactivate') === 'true';
+
+  if (!id) {
+    return NextResponse.json(
+      { error: 'ID é obrigatório' },
+      { status: 400 }
+    );
+  }
+
+  const data = await readReferees();
+  const referees = data.referees;
+
+  const index = referees.findIndex(r => r.id === id);
+
+  if (index === -1) {
+    return NextResponse.json(
+      { error: 'Árbitro não encontrado' },
+      { status: 404 }
+    );
+  }
+
+  if (reactivate) {
+    referees[index].isActive = true;
+  }
+
+  await writeReferees(data);
+
+  return NextResponse.json({ message: 'Árbitro reativado com sucesso' });
 }

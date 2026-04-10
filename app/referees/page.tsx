@@ -81,11 +81,31 @@ export default function RefereesPage() {
     }
   };
 
+  const handleDeleteReferee = async (id: string, name: string) => {
+    if (confirm(`Deseja excluir ${name}? O registro será mantido no histórico.`)) {
+      try {
+        const response = await fetch(`/api/referees?id=${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          toast.success('Árbitro excluído com sucesso!');
+          fetchReferees();
+        } else {
+          const error = await response.json();
+          toast.error(error.error || 'Erro ao excluir árbitro');
+        }
+      } catch (error) {
+        toast.error('Erro ao excluir árbitro');
+      }
+    }
+  };
+
   const handleUpdateReferee = async (data: any) => {
     if (!editingReferee) return;
 
     try {
-      const response = await fetch(`/api/referees/${editingReferee.id}`, {
+      const response = await fetch(`/api/referees?id=${editingReferee.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -105,29 +125,9 @@ export default function RefereesPage() {
     }
   };
 
-  const handleDeleteReferee = async (id: string, name: string) => {
-    if (confirm(`Deseja excluir ${name}? O registro será mantido no histórico.`)) {
-      try {
-        const response = await fetch(`/api/referees/${id}`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          toast.success('Árbitro excluído com sucesso!');
-          fetchReferees();
-        } else {
-          const error = await response.json();
-          toast.error(error.error || 'Erro ao excluir árbitro');
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir árbitro');
-      }
-    }
-  };
-
   const handleReactivateReferee = async (id: string) => {
     try {
-      const response = await fetch(`/api/referees/${id}/reactivate`, {
+      const response = await fetch(`/api/referees?id=${id}&reactivate=true`, {
         method: 'PATCH',
       });
 
