@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link'; // Importado para navegação
+import Link from 'next/link';
 import {
   Plus, Search, Upload, Download, Trash2, Edit,
   Eye, EyeOff, Users, Filter, HardHat, ChevronLeft
@@ -9,7 +9,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -42,7 +41,7 @@ export default function RefereesPage() {
       const data = await response.json();
       setReferees(data);
     } catch (error) {
-      toast.error('Erro ao carregar competidores');
+      toast.error('Erro ao carregar Arbitros');
     } finally {
       setLoading(false);
     }
@@ -133,7 +132,7 @@ export default function RefereesPage() {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-    const filename = `competidores_export_${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+    const filename = `arbitros_export_${year}${month}${day}_${hours}${minutes}${seconds}.json`;
 
     const a = document.createElement('a');
     a.href = url;
@@ -164,8 +163,8 @@ export default function RefereesPage() {
               <Users className="w-8 h-8 text-bjj-gold" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-bjj-black tracking-tight uppercase">Competidores</h1>
-              <p className="text-gray-500 font-medium">Gestão de atletas e graduações</p>
+              <h1 className="text-3xl font-bold text-bjj-black tracking-tight uppercase">Arbitros</h1>
+              <p className="text-gray-500 font-medium">Gestão de Arbitros</p>
             </div>
           </div>
 
@@ -188,7 +187,7 @@ export default function RefereesPage() {
               onClick={() => { setEditingReferee(null); setFormOpen(true); }}
               className="flex-1 md:flex-none bg-bjj-gold text-black hover:bg-black hover:text-bjj-gold transition-all font-bold shadow-md cursor-pointer"
             >
-              <Plus className="w-4 h-4 mr-2" /> Novo Atleta
+              <Plus className="w-4 h-4 mr-2" /> Novo Arbitro
             </Button>
           </div>
         </div>
@@ -207,7 +206,7 @@ export default function RefereesPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-                    placeholder="Nome do atleta..."
+                    placeholder="Nome do arbitro..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9 bg-gray-50 border-gray-200 text-gray-500 focus:border-bjj-gold"
@@ -230,16 +229,6 @@ export default function RefereesPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase">Academia</label>
-                <Input
-                  placeholder="Nome da equipe..."
-                  value={filterTeam}
-                  onChange={(e) => setFilterTeam(e.target.value)}
-                  className="bg-gray-50 border-gray-200 text-gray-500 focus:border-bjj-gold"
-                />
-              </div>
-
               <Separator className="my-2" />
               <Button
                 variant={showInactive ? "default" : "outline"}
@@ -260,8 +249,6 @@ export default function RefereesPage() {
             <div className="flex flex-col h-full">
               <div className="flex-shrink-0 bg-bjj-black shadow-md rounded-t-lg">
                 <div className="grid grid-cols-12 gap-4 px-4 py-3">
-                  <div className="col-span-4 text-white font-bold uppercase text-xs">Atleta</div>
-                  <div className="col-span-2 text-white font-bold uppercase text-xs">Equipe</div>
                   <div className="col-span-2 text-white font-bold uppercase text-xs text-center">Info</div>
                   <div className="col-span-2 text-white font-bold uppercase text-xs">Faixa</div>
                   <div className="col-span-2 text-white font-bold uppercase text-xs text-right px-6">Ações</div>
@@ -274,7 +261,7 @@ export default function RefereesPage() {
                     <div className="text-center py-20 text-gray-400 font-medium">
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-6 h-6 border-4 border-bjj-gold border-t-transparent rounded-full animate-spin" />
-                        Sincronizando atletas...
+                        Sincronizando Arbitros...
                       </div>
                     </div>
                   ) : Referees.length === 0 ? (
