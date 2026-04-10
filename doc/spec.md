@@ -251,57 +251,51 @@ Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 
 ### **Feedback ao usuário:** importação insere todos os registros válidos e reporta claramente quais registros foram ignorados e por quê.
 
-Boa, isso aqui é exatamente o tipo de coisa que deixa seu sistema profissional de verdade. Vou te devolver a spec já **atualizada, consistente com o que você implementou** e incluindo regras de **import/export**.
 
----
-
-## ✅ Versão atualizada da SPEC
-
-````md
-### 3. Módulo de Árbitros
+### 3. Modulo de Arbitros
 
 **Objetivo:**  
-Cadastrar, gerenciar e importar/exportar os árbitros do torneio.
+Cadastrar, gerenciar e importar/exportar os arbitros do torneio.
 
 ---
 
-### 📌 Dados do Árbitro
+### Dados do Arbitro
 
-| Campo              | Tipo               | Obrigatório | Observação                                      |
+| Campo              | Tipo               | Obrigatorio | Observacao                                      |
 | ------------------ | ------------------ | ----------- | ----------------------------------------------- |
 | `id`               | UUID               | Sim         | Gerado automaticamente                          |
 | `name`             | string             | Sim         | Nome completo                                   |
 | `city`             | string             | Sim         | Cidade que mora                                 |
 | `beltReferee`      | enum BeltReferee   | Sim         | Valores: `PURPLE`, `BROWN`, `BLACK`             |
 | `registrationDate` | ISO string (date)  | Sim         | Data de cadastro                                |
-| `isActive`         | boolean            | Sim         | Soft delete — `true` por padrão                 |
+| `isActive`         | boolean            | Sim         | Soft delete - `true` por padrao                 |
 
 ---
 
-### 📌 Regras de Negócio
+### Regras de Negocio
 
-- Não pode existir dois árbitros **ativos** com o mesmo nome
-- O campo `beltReferee` deve aceitar apenas valores válidos do enum
-- O campo `isActive` controla exclusão lógica (soft delete)
+- **Upsert**: Se o arbitro ja existe (por ID ou nome), o registro e **atualizado** em vez de duplicado
+- O campo `beltReferee` deve aceitar apenas valores validos do enum
+- O campo `isActive` controla exclusao logica (soft delete)
 - Registros inativos podem ser reativados
-- Exclusão apenas desativa (`isActive = false`)
+- Exclusao apenas desativa (`isActive = false`)
 
 ---
 
-### 📌 Ações
+### Acoes
 
-- `Criar árbitro`
-- `Editar árbitro`
-- `Excluir árbitro` (soft delete)
-- `Reativar árbitro`
-- `Listar árbitros`
+- `Criar arbitro`
+- `Editar arbitro`
+- `Excluir arbitro` (soft delete)
+- `Reativar arbitro`
+- `Listar arbitros`
 - `Filtrar por nome, cidade e faixa`
 
 ---
 
-## 📦 Exportação de Árbitros
+## Exportacao de Arbitros
 
-### ✔ Formato do arquivo exportado
+### Formato do arquivo exportado
 
 O sistema deve exportar os dados no seguinte formato JSON:
 
@@ -310,7 +304,7 @@ O sistema deve exportar os dados no seguinte formato JSON:
   "referees": [
     {
       "id": "uuid",
-      "name": "Nome do árbitro",
+      "name": "Nome do arbitro",
       "beltReferee": "BLACK",
       "city": "Cidade",
       "registrationDate": "2026-04-10T10:00:00.000Z",
@@ -318,93 +312,167 @@ O sistema deve exportar os dados no seguinte formato JSON:
     }
   ]
 }
-````
+```
 
-### ✔ Regras de Exportação
+### Regras de Exportacao
 
-* Deve incluir **todos os árbitros** (ativos e inativos)
-* O formato deve ser **compatível com o import**
-* O arquivo deve ser válido para reimportação sem ajustes
+- Deve incluir **todos os arbitros** (ativos e inativos)
+- O formato deve ser **compativel com o import**
+- O arquivo deve ser valido para reimportacao sem ajustes
 
 ---
 
-## 📥 Importação de Árbitros
+## Importacao de Arbitros
 
-### ✔ Formato aceito
+### Formato aceito
 
-O sistema deve aceitar **exclusivamente** arquivos JSON no seguinte formato:
+O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 
+**Formato 1 - Objeto com array:**
 ```json
 {
   "referees": [ ... ]
 }
 ```
 
----
-
-### ✔ Regras de Importação
-
-* O campo `referees` deve existir e ser um array
-* Cada item deve conter:
-
-  * `name` (obrigatório)
-  * `beltReferee` (obrigatório)
-* Campos opcionais:
-
-  * `id`
-  * `city`
-  * `registrationDate`
-  * `isActive`
+**Formato 2 - Array direto:**
+```json
+[ ... ]
+```
 
 ---
 
-### ✔ Comportamento do sistema
+### Regras de Importacao (Upsert)
 
-* Se `id` não for informado → gerar automaticamente
-* Se `registrationDate` não for informado → usar data atual
-* Se `isActive` não for informado → assumir `true`
-* Registros duplicados (mesmo nome ativo) devem ser ignorados
-* Registros inválidos devem ser rejeitados
+O sistema implementa **logica de upsert** (update + insert) com a seguinte prioridade:
+
+#### Busca por existencia:
+1. **Prioridade 1 - Busca por ID**  
+   Se o campo `id` for fornecido no JSON, o sistema busca um arbitro existente com o mesmo ID
+   
+2. **Prioridade 2 - Busca por nome**  
+   Se nao encontrar por ID (ou ID nao fornecido), busca por nome exato
+
+#### Acoes resultantes:
+- **Encontrou (por ID ou nome)** → **ATUALIZA** o registro existente
+- **Nao encontrou** → **CRIA** novo registro
+
+#### O que pode ser atualizado:
+- `name` - permite correcao de nome
+- `city` - atualiza cidade
+- `beltReferee` - atualiza faixa
+- `isActive` - forcado para `true` na importacao
+
+#### Campos opcionais no JSON:
+- `id` - se nao informado → gera novo UUID
+- `city` - se nao informado → mantem existente ou usa string vazia
+- `registrationDate` - se nao informado → usa data atual
+- `isActive` - se nao informado → assume `true`
 
 ---
 
-### ✔ Validações obrigatórias
+### Validacoes obrigatorias
 
-* `beltReferee` deve ser um dos valores:
+| Campo | Validacao |
+|-------|-----------|
+| `name` | Obrigatorio, nao pode estar vazio |
+| `beltReferee` | Deve ser um dos valores: `PURPLE`, `BROWN`, `BLACK` |
+| `referees` | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
 
-  * `PURPLE`
-  * `BROWN`
-  * `BLACK`
-* Arquivos fora do formato devem retornar erro:
-
+**Exemplo de erro de validacao:**
 ```json
 {
-  "error": "Formato inválido. Esperado { referees: [] }"
+  "error": "Formato invalido. Use um array ou { referees: [] }"
 }
 ```
 
 ---
 
-### ✔ Resultado da importação
+### Resultado da importacao
 
-O sistema deve retornar:
+O sistema retorna um relatorio detalhado da operacao:
 
 ```json
 {
-  "message": "Importação concluída",
-  "imported": 10
+  "success": true,
+  "imported": 5,
+  "updated": 3,
+  "skipped": 1,
+  "errors": 2,
+  "message": "5 importado(s). 3 atualizado(s). 1 ignorado(s). 2 erro(s).",
+  "details": {
+    "errors": [
+      "Linha 2: nome obrigatorio",
+      "Linha 5: \"Jose\" - faixa invalida (WHITE)"
+    ],
+    "inserted": [
+      "Linha 1: \"Joao Silva\" importado (novo ID)",
+      "Linha 3: \"Maria Santos\" importado (com ID existente)"
+    ],
+    "updated": [
+      "Linha 4: \"Pedro Costa\" atualizado (faixa: BROWN → BLACK, cidade: SP → RJ) [match por id]"
+    ],
+    "skipped": [
+      "Linha 6: \"Ana Paula\" - nenhuma alteracao detectada"
+    ]
+  }
 }
 ```
 
+#### Campos do retorno:
+
+| Campo | Descricao |
+|-------|-----------|
+| `imported` | Quantidade de novos registros inseridos |
+| `updated` | Quantidade de registros existentes atualizados |
+| `skipped` | Quantidade de registros ignorados (sem alteracoes) |
+| `errors` | Quantidade de registros com erro de validacao |
+| `details.errors` | Lista detalhada de cada erro |
+| `details.inserted` | Lista de registros inseridos com contexto |
+| `details.updated` | Lista de registros atualizados com mudancas especificas |
+| `details.skipped` | Lista de registros ignorados e motivo |
+
 ---
 
-## ⚠️ Observações Técnicas
+### Comportamentos Especificos
 
-* Importação e exportação devem ser **simétricas**
-* O sistema deve garantir integridade dos dados
-* O import não deve sobrescrever dados existentes
-* Apenas adicionar novos registros válidos
+#### Correcao de nome
+Se o arbitro existe com ID correspondente, e possivel **corrigir o nome** via importacao:
 
+```json
+// Existente no banco:
+{ "id": "123", "name": "Alexandre Silv", "beltReferee": "BLACK" }
+
+// Importado:
+{ "id": "123", "name": "Alexandre Silva", "beltReferee": "BLACK" }
+
+// Resultado: nome atualizado para "Alexandre Silva"
+```
+
+#### Atualizacao parcial
+Campos nao informados no JSON mantem os valores existentes:
+```json
+// Existente: { "name": "Joao", "city": "SP", "beltReferee": "BROWN" }
+
+// Importado: { "id": "123", "name": "Joao", "beltReferee": "BLACK" }
+
+// Resultado: mantem city="SP", atualiza beltReferee="BLACK"
+```
+
+#### Prevencao de duplicacao
+- Mesmo nome com pequenas diferencas (ex: espaco, maiuscula) sao considerados diferentes
+- Use o `id` para garantir atualizacao correta em casos de correcao de nome
+
+---
+
+### Observacoes Tecnicas
+
+- Importacao e exportacao sao **simetricas** - o export pode ser reimportado
+- O sistema mantem **integridade referencial** dos dados
+- **Upsert** permite atualizacao em massa de registros existentes
+- Registros sao identificados por **ID (prioridade)** ou **nome (fallback)**
+- A importacao **nao desativa** arbitros (`isActive` sempre vai para `true`)
+- Logs detalhados ajudam a identificar cada alteracao realizada
 ```
 
 ### 4. Módulo de Chaves (Brackets)
