@@ -11,20 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { beltLabels, Belt, Referee } from '@/types';
+import { beltLabels, Referee, BeltReferee } from '@/types';
 import { ImportRefereesModal } from './ImportRefereesModal';
 import { RefereesForm } from './RefereesForm';
 
-// Mapeamento de cores para faixas
-const beltColors: Record<Belt, string> = {
-  WHITE: 'bg-gray-100 text-gray-800 border-gray-300',
-  GRAY: 'bg-gray-400 text-white border-gray-500',
-  YELLOW: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  ORANGE: 'bg-orange-100 text-orange-800 border-orange-300',
-  GREEN: 'bg-green-100 text-green-800 border-green-300',
-  BLUE: 'bg-blue-100 text-blue-800 border-blue-300',
+
+const beltColors: Record<BeltReferee, string> = {
   PURPLE: 'bg-purple-100 text-purple-800 border-purple-300',
   BROWN: 'bg-amber-100 text-amber-800 border-amber-300',
   BLACK: 'bg-gray-900 text-white border-gray-800',
@@ -55,7 +48,7 @@ export default function RefereesPage() {
       const data = await response.json();
       setReferees(data);
 
-      // Extrair cidades únicas para filtro
+
       const uniqueCities = [...new Set(data.map((r: Referee) => r.city).filter(Boolean))];
       setCities(uniqueCities as string[]);
     } catch (error) {
@@ -184,7 +177,7 @@ export default function RefereesPage() {
     }
   };
 
-  // Contagem de árbitros ativos
+
   const activeRefereesCount = referees.filter(r => r.isActive).length;
   const maxReferees = 15;
   const isAtMaxLimit = activeRefereesCount >= maxReferees;
@@ -359,8 +352,8 @@ export default function RefereesPage() {
                   <div
                     key={referee.id}
                     className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden ${!referee.isActive
-                        ? 'border-gray-200 opacity-70 bg-gray-50'
-                        : 'border-gray-200 hover:shadow-lg hover:border-bjj-gold/30 hover:-translate-y-0.5'
+                      ? 'border-gray-200 opacity-70 bg-gray-50'
+                      : 'border-gray-200 hover:shadow-lg hover:border-bjj-gold/30 hover:-translate-y-0.5'
                       }`}
                   >
 
@@ -376,17 +369,17 @@ export default function RefereesPage() {
 
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${beltColors[referee.belt]?.split(' ')[0] || 'bg-gray-100'
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${beltColors[referee.beltReferee]?.split(' ')[0] || 'bg-gray-100'
                             }`}>
-                            <Shield className={`w-6 h-6 ${referee.belt === 'BLACK' ? 'text-white' : 'text-gray-700'
+                            <Shield className={`w-6 h-6 ${referee.beltReferee === 'BLACK' ? 'text-white' : 'text-gray-700'
                               }`} />
                           </div>
                           <div>
                             <h3 className="font-bold text-gray-900 text-lg leading-tight">
                               {referee.name}
                             </h3>
-                            <Badge className={`mt-1 text-xs ${beltColors[referee.belt]}`}>
-                              {beltLabels[referee.belt]}
+                            <Badge className={`mt-1 text-xs ${beltColors[referee.beltReferee]}`}>
+                              {beltLabels[referee.beltReferee]}
                             </Badge>
                           </div>
                         </div>
@@ -474,7 +467,7 @@ export default function RefereesPage() {
         initialData={editingReferee ? {
           name: editingReferee.name,
           city: editingReferee.city,
-          belt: editingReferee.belt,
+          beltReferee: editingReferee.beltReferee,
         } : undefined}
         title={editingReferee ? 'Editar Árbitro' : 'Novo Árbitro'}
       />

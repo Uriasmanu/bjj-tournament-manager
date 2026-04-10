@@ -1,7 +1,10 @@
 // src/types/index.ts
-export type Belt = 
+export type Belt =
   | 'WHITE' | 'GRAY' | 'YELLOW' | 'ORANGE' | 'GREEN'
   | 'BLUE' | 'PURPLE' | 'BROWN' | 'BLACK';
+
+export type BeltReferee =
+  | 'PURPLE' | 'BROWN' | 'BLACK';
 
 export interface Competitor {
   id: string;
@@ -18,8 +21,8 @@ export interface Competitor {
 export interface Referee {
   id: string;
   name: string;
-  belt: Belt;
   city: string;
+  beltReferee: BeltReferee;
   registrationDate: string;
   isActive: boolean;
 }

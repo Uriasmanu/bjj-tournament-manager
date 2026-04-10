@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { User, Building2, Weight, Calendar, Award, UserCircle, X, Save } from 'lucide-react';
-import { Belt, beltLabels } from '@/types';
+import { User, Award, UserCircle, X, Save } from 'lucide-react';
+import { beltLabels, BeltReferee } from '@/types';
 
 const refereesSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  belt: z.enum(['WHITE', 'GRAY', 'YELLOW', 'ORANGE', 'GREEN', 'BLUE', 'PURPLE', 'BROWN', 'BLACK']),
-  coach: z.string().optional(),
+  beltReferee: z.enum(['PURPLE', 'BROWN', 'BLACK']),
+  city: z.string().optional(),
 });
 
 type refereesFormValues = z.infer<typeof refereesSchema>;
@@ -29,8 +29,8 @@ interface refereesFormProps {
 export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title }: refereesFormProps) {
   const [formData, setFormData] = useState<refereesFormValues>({
     name: '',
-    belt: 'WHITE',
-    coach: '',
+    beltReferee: 'PURPLE',
+    city: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -40,8 +40,8 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
     } else {
       setFormData({
         name: '',
-        belt: 'WHITE',
-        coach: '',
+        beltReferee: 'PURPLE',
+        city: '',
       });
     }
   }, [initialData, open]);
@@ -72,8 +72,8 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
       await onSubmit(validatedData);
       setFormData({
         name: '',
-        belt: 'WHITE',
-        coach: '',
+        beltReferee: 'PURPLE',
+        city: '',
       });
       setErrors({});
       onOpenChange(false);
@@ -132,7 +132,7 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
               <Award className="w-4 h-4 text-bjj-gold" />
               Faixa <span className="text-red-500">*</span>
             </Label>
-            <Select value={formData.belt} onValueChange={(value) => handleChange('belt', value)}>
+            <Select value={formData.beltReferee} onValueChange={(value) => handleChange('belt', value)}>
               <SelectTrigger
                 className={`mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 ${
                   errors.belt ? 'border-red-500' : 'hover:border-bjj-gold/50'
@@ -149,12 +149,6 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
                   >
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${
-                        value === 'WHITE' ? 'bg-gray-200' :
-                        value === 'GRAY' ? 'bg-gray-500' :
-                        value === 'YELLOW' ? 'bg-yellow-400' :
-                        value === 'ORANGE' ? 'bg-orange-500' :
-                        value === 'GREEN' ? 'bg-green-600' :
-                        value === 'BLUE' ? 'bg-blue-700' :
                         value === 'PURPLE' ? 'bg-purple-600' :
                         value === 'BROWN' ? 'bg-amber-800' :
                         'bg-gray-900'
@@ -174,14 +168,14 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
 
           
           <div className="group">
-            <Label htmlFor="coach" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
+            <Label htmlFor="city" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <UserCircle className="w-4 h-4 text-bjj-gold" />
               Técnico <span className="text-gray-400 text-sm">(opcional)</span>
             </Label>
             <Input
-              id="coach"
-              value={formData.coach || ''}
-              onChange={(e) => handleChange('coach', e.target.value)}
+              id="city"
+              value={formData.city || ''}
+              onChange={(e) => handleChange('city', e.target.value)}
               className="mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 hover:border-bjj-gold/50"
               placeholder="Nome do técnico responsável"
             />
@@ -211,7 +205,7 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
               className="bg-gradient-to-r from-bjj-gold to-bjj-gold-dark text-black hover:from-bjj-gold-dark hover:to-bjj-gold font-semibold shadow-md hover:shadow-lg transition-all duration-200 gap-2"
             >
               <Save className="w-4 h-4" />
-              Salvar Competidor
+              Salvar Árbitro
             </Button>
           </div>
         </form>
