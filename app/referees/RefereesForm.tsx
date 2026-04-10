@@ -170,26 +170,17 @@ export function RefereesForm({ open, onOpenChange, onSubmit, initialData, title 
           <div className="group">
             <Label htmlFor="city" className="text-gray-700 font-semibold flex items-center gap-2 mb-1">
               <UserCircle className="w-4 h-4 text-bjj-gold" />
-              Técnico <span className="text-gray-400 text-sm">(opcional)</span>
+              Cidade 
             </Label>
             <Input
               id="city"
               value={formData.city || ''}
               onChange={(e) => handleChange('city', e.target.value)}
               className="mt-1 bg-white/90 border-gray-300 focus:border-bjj-gold focus:ring-bjj-gold transition-all duration-200 hover:border-bjj-gold/50"
-              placeholder="Nome do técnico responsável"
+              placeholder="Nome do Cidade responsável"
             />
           </div>
 
-          
-          <div className="bg-blue-50 border-l-4 border-bjj-blue p-3 rounded-md">
-            <p className="text-xs text-gray-700">
-              <span className="font-semibold">📌 Informação:</span> Os campos marcados com <span className="text-red-500">*</span> são obrigatórios.
-              O peso deve ser informado em quilogramas (kg).
-            </p>
-          </div>
-
-          
           <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
             <Button
               type="button"

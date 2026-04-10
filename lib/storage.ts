@@ -52,7 +52,7 @@ export async function readReferees(): Promise<RefereesData> {
   }
 }
 
-export async function writereferees(data: RefereesData): Promise<void> {
+export async function writeReferees(data: RefereesData): Promise<void> {
   await ensureDataDir();
   const filePath = path.join(DATA_DIR, 'referees.json');
   const tempPath = path.join(DATA_DIR, 'referees.json.tmp');
