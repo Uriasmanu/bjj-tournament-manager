@@ -473,51 +473,263 @@ Campos nao informados no JSON mantem os valores existentes:
 - Registros sao identificados por **ID (prioridade)** ou **nome (fallback)**
 - A importacao **nao desativa** arbitros (`isActive` sempre vai para `true`)
 - Logs detalhados ajudam a identificar cada alteracao realizada
-```
 
-### 4. Módulo de Chaves (Brackets)
+### 4. Modulo de Chaves (Brackets)
 
-**Objetivo:** Organizar os competidores em brackets de eliminação simples por faixa e categoria de peso.
+**Objetivo:** Organizar os competidores em brackets de eliminacao simples por faixa e categoria de peso.
 
-**Categoria de peso (por faixa etária e faixa de graduação — simplificado para o sistema):**
+**Categoria de peso (por faixa etaria e faixa de graduacao - simplificado para o sistema):**
 
-O usuário define manualmente os limites de peso para criar uma categoria. Não há categorias pré-fixadas.
+O usuario define manualmente os limites de peso e idade para criar uma categoria. Nao ha categorias pre-fixadas.
 
 **Dados da Chave:**
 
-| Campo         | Tipo                                   | Observação                                       |
+| Campo         | Tipo                                   | Observacao                                       |
 | ------------- | -------------------------------------- | ------------------------------------------------ |
 | `id`          | UUID                                   | Gerado automaticamente                           |
 | `belt`        | enum Belt                              | Faixa dos competidores                           |
-| `weightMin`   | number                                 | Peso mínimo em kg                                |
-| `weightMax`   | number                                 | Peso máximo em kg                                |
+| `weightMin`   | number                                 | Peso minimo em kg                                |
+| `weightMax`   | number                                 | Peso maximo em kg                                |
 | `label`       | string                                 | Nome da categoria (ex: "Azul - Leve")            |
-| `competitors` | Competitor[]                           | Competidores elegíveis filtrados automaticamente |
+| `competitors` | Competitor[]                           | Competidores elegiveis filtrados automaticamente |
 | `matches`     | Match[]                                | Lutas geradas pelo bracket                       |
 | `status`      | enum: PENDING / IN_PROGRESS / FINISHED | Status da chave                                  |
-| `refereeId`   | UUID ou null                           | Árbitro responsável pela chave                   |
-| `areaId`      | UUID ou null                           | Área preferencial para esta chave                |
+| `refereeId`   | UUID ou null                           | Arbitro responsavel pela chave                   |
+| `areaId`      | UUID ou null                           | Area preferencial para esta chave                |
 
 **Regras:**
 
-- Ao criar uma chave, o sistema filtra automaticamente os competidores cadastrados que correspondem à faixa e ao intervalo de peso definidos.
-- O usuário pode remover ou adicionar competidores manualmente antes de gerar as lutas.
-- O bracket é de eliminação simples (single elimination).
-- Com número ímpar de competidores, o sistema distribui bye automaticamente.
-- Uma chave não pode ser editada após o status mudar para `IN_PROGRESS`.
-- Cada chave pode ter um árbitro designado.
+- Ao criar uma chave, o sistema filtra automaticamente os competidores cadastrados que correspondem a faixa e ao intervalo de peso definidos.
+- O usuario pode remover ou adicionar competidores manualmente antes de gerar as lutas.
+- O bracket e de eliminacao simples (single elimination).
+- Com numero impar de competidores, o sistema distribui bye automaticamente.
+- Uma chave nao pode ser editada apos o status mudar para `IN_PROGRESS`.
+- Cada chave pode ter um arbitro designado.
 
-**Ações:**
+**Acoes:**
 
-- `Criar chave` (definir faixa + faixa de peso + árbitro)
-- `Ver competidores elegíveis`
+- `Criar chave` (definir faixa + faixa de peso + faixa de idade + arbitro)
+- `Ver competidores elegiveis`
 - `Adicionar/remover competidor da chave`
 - `Gerar bracket` (cria as lutas)
-- `Visualizar bracket` (exibição em árvore)
-- `Atribuir árbitro à chave`
+- `Visualizar bracket` (exibicao em arvore)
+- `Atribuir arbitro a chave`
 - `Excluir chave` (somente se PENDING)
 
 ---
+
+## Exportacao de Chaves
+
+### Formato do arquivo exportado
+
+O sistema deve exportar os dados no seguinte formato JSON:
+
+```json
+{
+  "brackets": [
+    {
+      "id": "uuid",
+      "belt": "BLUE",
+      "weightMin": 70,
+      "weightMax": 76,
+      "label": "Azul - Leve",
+      "status": "PENDING",
+      "refereeId": "uuid ou null",
+      "areaId": "uuid ou null",
+      "competitors": [
+        {
+          "id": "uuid",
+          "name": "Joao Silva",
+          "team": "Equipe X",
+          "weight": 72.5,
+          "age": 25,
+          "belt": "BLUE",
+          "coach": "Prof. Carlos",
+          "registrationDate": "2026-04-10T10:00:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "uuid",
+          "round": 1,
+          "position": 1,
+          "competitorA": "uuid",
+          "competitorB": "uuid",
+          "winnerId": null,
+          "status": "PENDING",
+          "areaId": null,
+          "scheduledTime": null
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Regras de Exportacao
+
+- Deve incluir **todas as chaves** independente do status
+- O formato deve ser **compativel com o import**
+- Inclui dados completos dos competidores e lutas
+- O arquivo deve ser valido para reimportacao sem ajustes
+
+---
+
+## Importacao de Chaves
+
+### Formato aceito
+
+O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
+
+**Formato 1 - Objeto com array:**
+```json
+{
+  "brackets": [ ... ]
+}
+```
+
+**Formato 2 - Array direto:**
+```json
+[ ... ]
+```
+
+---
+
+### Regras de Importacao (Upsert)
+
+O sistema implementa **logica de upsert** (update + insert) com a seguinte prioridade:
+
+#### Busca por existencia:
+1. **Prioridade 1 - Busca por ID**  
+   Se o campo `id` for fornecido no JSON, o sistema busca uma chave existente com o mesmo ID
+   
+2. **Prioridade 2 - Busca por identificador unico**  
+   Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `weightMin` + `weightMax` + `label`
+
+#### Acoes resultantes:
+- **Encontrou (por ID ou identificador)** → **ATUALIZA** o registro existente
+- **Nao encontrou** → **CRIA** novo registro
+
+#### O que pode ser atualizado:
+- `label` - permite renomear categoria
+- `status` - atualiza status da chave
+- `refereeId` - altera arbitro responsavel
+- `areaId` - altera area preferencial
+- `competitors` - atualiza lista de competidores
+- `matches` - atualiza estrutura de lutas
+
+#### Campos opcionais no JSON:
+- `id` - se nao informado → gera novo UUID
+- `competitors` - se nao informado → array vazio
+- `matches` - se nao informado → array vazio
+- `refereeId` - se nao informado → null
+- `areaId` - se nao informado → null
+
+---
+
+### Validacoes obrigatorias
+
+| Campo | Validacao |
+|-------|-----------|
+| `belt` | Obrigatorio, deve ser um valor valido do enum Belt |
+| `weightMin` | Obrigatorio, deve ser maior que 0 |
+| `weightMax` | Obrigatorio, deve ser maior que weightMin |
+| `label` | Obrigatorio, nao pode estar vazio |
+| `brackets` | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
+
+**Exemplo de erro de validacao:**
+```json
+{
+  "error": "Formato invalido. Use um array ou { brackets: [] }"
+}
+```
+
+---
+
+### Resultado da importacao
+
+O sistema retorna um relatorio detalhado da operacao:
+
+```json
+{
+  "success": true,
+  "imported": 3,
+  "updated": 2,
+  "skipped": 0,
+  "errors": 1,
+  "message": "3 importado(s). 2 atualizado(s). 0 ignorado(s). 1 erro(s).",
+  "details": {
+    "errors": [
+      "Linha 2: belt obrigatorio",
+      "Linha 4: weightMax deve ser maior que weightMin"
+    ],
+    "inserted": [
+      "Linha 1: \"Azul - Leve\" importado (novo ID)",
+      "Linha 3: \"Roxa - Pesado\" importado (com ID existente)"
+    ],
+    "updated": [
+      "Linha 5: \"Azul - Medio\" atualizado (label: \"Azul - Medio\" → \"Azul - Medio Pesado\", status: PENDING → IN_PROGRESS) [match por id]"
+    ],
+    "skipped": []
+  }
+}
+```
+
+#### Campos do retorno:
+
+| Campo | Descricao |
+|-------|-----------|
+| `imported` | Quantidade de novas chaves inseridas |
+| `updated` | Quantidade de chaves existentes atualizadas |
+| `skipped` | Quantidade de chaves ignoradas (sem alteracoes) |
+| `errors` | Quantidade de chaves com erro de validacao |
+| `details.errors` | Lista detalhada de cada erro |
+| `details.inserted` | Lista de chaves inseridas com contexto |
+| `details.updated` | Lista de chaves atualizadas com mudancas especificas |
+| `details.skipped` | Lista de chaves ignoradas e motivo |
+
+---
+
+### Comportamentos Especificos
+
+#### Validacao de competidores
+Competidores importados junto com a chave sao validados:
+- Devem existir no banco de competidores (por ID ou nome+equipe)
+- Devem ser elegiveis para a chave (mesma faixa e peso dentro do intervalo)
+- Competidores invalidos sao removidos da lista com alerta
+
+#### Validacao de arbitro
+Se `refereeId` for fornecido:
+- O arbitro deve existir e estar ativo no modulo de arbitros
+- Caso nao exista, o campo e definido como null e um aviso e registrado
+
+#### Validacao de area
+Se `areaId` for fornecido:
+- A area deve existir no modulo de areas
+- Caso nao exista, o campo e definido como null e um aviso e registrado
+
+#### Estrutura de matches
+Ao importar matches:
+- O sistema valida se os competidores A e B existem na lista da chave
+- O sistema recalcula posicoes e rounds se necessario
+- Matches com status diferente de PENDING respeitam o estado atual
+
+#### Prevencao de conflitos
+- Chaves com mesmo `belt` + `weightMin` + `weightMax` + `label` sao consideradas duplicatas
+- Use o `id` para garantir atualizacao correta em casos de alteracao de identificador
+
+---
+
+### Observacoes Tecnicas
+
+- Importacao e exportacao sao **simetricas** - o export pode ser reimportado
+- O sistema mantem **integridade referencial** com competidores, arbitros e areas
+- **Upsert** permite atualizacao em massa de chaves existentes
+- Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+pesos+label** (fallback)
+- A importacao preserva o estado das lutas (PENDING, IN_PROGRESS, COMPLETED)
+- Logs detalhados ajudam a identificar cada alteracao realizada
+
 
 ### 5. Módulo de Áreas de Luta
 
