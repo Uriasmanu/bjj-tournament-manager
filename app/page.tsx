@@ -15,6 +15,7 @@ import { StatsCard } from '@/components/StatsCard'
 export default function Dashboard() {
   const [isExporting, setIsExporting] = useState(false)
   const [competitorsCount, setCompetitorsCount] = useState(0)
+  const [refereeCount, setRefereeCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   const fetchCompetitorsCount = async () => {
@@ -30,8 +31,22 @@ export default function Dashboard() {
     }
   }
 
+    const fetchRefereesCount = async () => {
+    try {
+      const response = await fetch('/api/referees')
+      const data = await response.json()
+
+      setRefereeCount(data.length)
+    } catch {
+      console.error('Erro ao buscar árbitros')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchCompetitorsCount()
+    fetchRefereesCount()
   }, [])
 
   const handleExport = async () => {
@@ -94,7 +109,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-6 py-10">
 
-        
+
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
@@ -112,7 +127,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        
+
         <section>
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -168,7 +183,11 @@ export default function Dashboard() {
               title="Árbitros"
               description="Cadastre oficiais."
               icon={Shield}
-              badge="8 oficiais"
+              badge={
+                loading
+                  ? 'Carregando...'
+                  : `${refereeCount} ativos`
+              }
             />
 
             <MenuCard

@@ -49,7 +49,7 @@ export function ImportRefereesModal({ open, onClose, onSuccess }: Props) {
 
             setStep('importing');
 
-            const response = await fetch('/api/Referee/import', {
+            const response = await fetch('/api/referees/import', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(json),

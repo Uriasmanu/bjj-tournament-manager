@@ -38,16 +38,16 @@ bugs
 ---
 
 ### ⏳ 3. Módulo de Árbitros (Planejado)
-- [ ] Estrutura de dados para `Referee`
-- [ ] Criar árbitro (`POST /api/referees`)
-- [ ] Editar árbitro (`PUT /api/referees/:id`)
-- [ ] Listar árbitros (`GET /api/referees`)
-- [ ] Soft delete de árbitro
-- [ ] UI página de árbitros
-- [ ] UI formulário de cadastro/edição
-- [ ] Persistência em `data/referees.json`
-- [ ] Verificação se árbitro pode ser excluído (não vinculado a chave/área ativa)
-- [ ] Filtro por graduação mínima (recomendado: Roxa)
+- [x] Estrutura de dados para `Referee`
+- [x] Criar árbitro (`POST /api/referees`)
+- [x] Editar árbitro (`PUT /api/referees/:id`)
+- [x] Listar árbitros (`GET /api/referees`)
+- [x] Soft delete de árbitro
+- [x] UI página de árbitros
+- [x] UI formulário de cadastro/edição
+- [x] Persistência em `data/referees.json`
+- [x] Verificação se árbitro pode ser excluído (não vinculado a chave/área ativa)
+- [x] Filtro por graduação mínima (recomendado: Roxa)
 
 ---
 
