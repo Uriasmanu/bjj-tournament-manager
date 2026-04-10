@@ -335,10 +335,18 @@ export default function RefereesPage() {
                       <div className="flex gap-2 pt-3 border-t border-gray-100">
                         {referee.isActive ? (
                           <>
-                            <Button size="sm" variant="outline" onClick={() => openEditForm(referee)} className="flex-1 gap-1 border-bjj-blue text-bjj-blue hover:bg-bjj-blue hover:text-white transition-all cursor-pointer">
+                            <Button
+                              size="sm"
+                              onClick={() => openEditForm(referee)}
+                              className="flex-1 gap-1 border border-bjj-blue text-bjj-blue hover:bg-bjj-blue hover:text-white transition-all cursor-pointer"
+                            >
                               <Edit className="w-3.5 h-3.5" /> Editar
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleDeleteReferee(referee.id, referee.name)} className="flex-1 gap-1 border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteReferee(referee.id, referee.name)}
+                              className="flex-1 gap-1 border border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer"
+                            >
                               <Trash2 className="w-3.5 h-3.5" /> Excluir
                             </Button>
                           </>
