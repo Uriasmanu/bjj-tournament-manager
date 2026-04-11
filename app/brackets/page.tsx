@@ -62,7 +62,6 @@ export default function GerarChavesPage() {
     )
   }
 
-  // 🎨 cores da faixa
   const getBeltColor = (belt: string) => {
     switch (belt) {
       case "WHITE": return "bg-gray-200 text-gray-700"
@@ -76,8 +75,6 @@ export default function GerarChavesPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
-
-      {/* HEADER */}
       <header className="bg-[#1A1A1A] text-white p-6 shadow-md">
         <Link href="/brackets" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
           <ArrowLeft size={14} />
@@ -90,10 +87,10 @@ export default function GerarChavesPage() {
         </h1>
       </header>
 
-      {/* CONTEÚDO */}
+
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6 min-h-0">
 
-        {/* CONFIG */}
+
         <Card className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white border border-gray-200 shadow-sm">
           <div className="flex gap-4 w-full md:w-auto">
             <Input
@@ -104,23 +101,27 @@ export default function GerarChavesPage() {
             />
 
             <Select onValueChange={setBelt}>
-              <SelectTrigger className="h-11 w-48 text-gray-900">
-                <SelectValue placeholder="Selecionar faixa" />
+              <SelectTrigger className="h-11 w-48 bg-white border-slate-300 text-slate-900 font-bold shadow-sm focus:ring-2 focus:ring-[#D4AF37] ">
+                <SelectValue placeholder="Selecionar faixa" className='text-gray-900' />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className="bg-white border border-slate-300 shadow-xl ">
                 {(Object.keys(beltLabels) as Belt[]).map((belt) => (
-                  <SelectItem key={belt} value={belt}>
-                    <div className="flex items-center gap-2 text-gray-900">
+                  <SelectItem
+                    key={belt}
+                    value={belt}
+                    className="focus:bg-slate-100 cursor-pointer py-3 "
+                  >
+                    <div className="flex items-center gap-2">
 
-                      {/* bolinha da cor */}
                       <span
-                        className="w-3 h-3 rounded-full border border-gray-300"
+                        className="w-3 h-3 rounded-full border border-slate-400 shrink-0"
                         style={{ backgroundColor: beltColors[belt] }}
                       />
 
-                      {/* label */}
-                      {beltLabels[belt]}
+                      <span className="text-slate-900 font-bold uppercase text-xs">
+                        {beltLabels[belt]}
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -137,7 +138,7 @@ export default function GerarChavesPage() {
           </Button>
         </Card>
 
-        {/* LISTA */}
+
         <Card className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 shadow-sm">
 
           <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -215,7 +216,7 @@ export default function GerarChavesPage() {
             )}
           </CardContent>
 
-          {/* FOOTER */}
+
           <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
 
             <div className="flex items-center gap-4">
