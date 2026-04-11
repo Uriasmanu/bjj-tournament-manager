@@ -1,0 +1,19 @@
+{
+  "brackets": [
+    {
+      "id": "7c3fd74d-943c-46aa-be01-b6f7e2f463b2",
+      "title": "chave",
+      "belt": "WHITE",
+      "competitors": [
+        "comp-052",
+        "comp-098",
+        "comp-018"
+      ],
+      "matches": [],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-11T22:47:20.183Z"
+    }
+  ]
+}

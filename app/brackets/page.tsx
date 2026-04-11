@@ -8,9 +8,11 @@ import {
   ChevronRight,
   Trophy,
   AlertTriangle,
-  Loader2
+  Loader2,
+  CheckCircle
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,11 +46,14 @@ function calculateAge(dateBirth: string): number {
 }
 
 export default function GerarChavesPage() {
+  const router = useRouter()
   const [competitors, setCompetitors] = useState<Competitor[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [belt, setBelt] = useState("")
   const [title, setTitle] = useState("")
+  const [error, setError] = useState("")
 
   useEffect(() => {
     async function fetchData() {
@@ -59,6 +64,7 @@ export default function GerarChavesPage() {
         setCompetitors(data)
       } catch (e) {
         console.error(e)
+        setError("Erro ao carregar competidores")
       } finally {
         setLoading(false)
       }
@@ -83,6 +89,67 @@ export default function GerarChavesPage() {
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     )
+    setError("") // Limpa erro ao selecionar
+  }
+
+  const handleGenerateBracket = async () => {
+    // Validações
+    if (selectedIds.length < 2) {
+      setError("Selecione pelo menos 2 competidores")
+      return
+    }
+
+    if (!title || title.trim() === "") {
+      setError("Digite um título para a chave")
+      return
+    }
+
+    if (!belt) {
+      setError("Selecione uma faixa")
+      return
+    }
+
+    setSaving(true)
+    setError("")
+
+    try {
+      const response = await fetch('/api/brackets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          belt: belt,
+          competitorIds: selectedIds
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao criar chave')
+      }
+
+      // Sucesso - limpar formulário e mostrar mensagem
+      setSelectedIds([])
+      setTitle("")
+      setBelt("")
+      
+      // Opcional: Redirecionar para lista de chaves ou mostrar toast de sucesso
+      alert(`Chave "${data.title}" criada com sucesso!`)
+      
+      // Redirecionar para página de chaves após 1 segundo
+      setTimeout(() => {
+        router.push('/brackets')
+      }, 1000)
+      
+    } catch (err: any) {
+      console.error('Erro ao gerar chave:', err)
+      setError(err.message || 'Erro ao gerar chave. Tente novamente.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const getBeltColor = (belt: string) => {
@@ -95,6 +162,8 @@ export default function GerarChavesPage() {
       default: return "bg-gray-100 text-gray-600"
     }
   }
+
+  const canGenerate = selectedIds.length >= 2 && title && title.trim() !== "" && belt && !saving
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
@@ -115,11 +184,21 @@ export default function GerarChavesPage() {
             <Input
               placeholder="Título da chave"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value)
+                setError("")
+              }}
               className="h-11 w-64 text-gray-900 bg-white"
             />
 
-            <Select onValueChange={setBelt} value={belt}>
+            <Select 
+              onValueChange={(value) => {
+                setBelt(value)
+                setSelectedIds([]) // Limpa seleção ao mudar faixa
+                setError("")
+              }} 
+              value={belt}
+            >
               <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37] [&>span]:text-gray-900 hover:bg-blue-900 hover:[&>span]:text-white transition-colors duration-200">
                 <SelectValue placeholder="Selecionar faixa" />
               </SelectTrigger>
@@ -147,13 +226,26 @@ export default function GerarChavesPage() {
           </div>
 
           <Button
-            disabled={selectedIds.length < 2 || !title || !belt}
+            onClick={handleGenerateBracket}
+            disabled={!canGenerate}
             className="h-11 px-6 bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold"
           >
-            <ShieldCheck size={16} />
-            Salvar Chave
+            {saving ? (
+              <Loader2 size={16} className="animate-spin mr-2" />
+            ) : (
+              <ShieldCheck size={16} className="mr-2" />
+            )}
+            {saving ? "Salvando..." : "Salvar Chave"}
           </Button>
         </Card>
+
+        {/* Mensagem de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+            <AlertTriangle size={16} />
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
 
         <Card className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 shadow-sm">
           <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -162,25 +254,33 @@ export default function GerarChavesPage() {
                 <Loader2 className="animate-spin" />
               </div>
             ) : !belt ? (
-              <div className="h-full flex items-center justify-center text-gray-400">
-                Selecione uma faixa para começar
+              <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                <Trophy size={32} className="opacity-50" />
+                <span>Selecione uma faixa para começar</span>
+              </div>
+            ) : atletasOrdenados.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                <Users size={32} className="opacity-50" />
+                <span>Nenhum competidor encontrado para esta faixa</span>
               </div>
             ) : (
               <table className="w-full">
                 <thead className="sticky top-0 bg-gray-100 z-10">
                   <tr>
-                    <th className="px-6 py-2"></th>
+                    <th className="px-6 py-2 w-12"></th>
                     <th className="px-6 py-2 text-left text-xs text-gray-600">Competidor</th>
                     <th className="px-6 py-2 text-center text-xs text-gray-600">Peso</th>
                     <th className="px-6 py-2 text-center text-xs text-gray-600">Faixa</th>
                     <th className="px-6 py-2 text-center text-xs text-gray-600">Idade</th>
-                    <th></th>
+                    <th className="w-12"></th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {atletasOrdenados.map((c, index) => {
                     const idade = calculateAge(c.dateBirth)
+                    const isSelected = selectedIds.includes(c.id)
+                    
                     return (
                       <tr
                         key={c.id}
@@ -189,26 +289,24 @@ export default function GerarChavesPage() {
                           cursor-pointer transition-colors
                           ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                           hover:bg-[#D4AF37]/10
-                          ${selectedIds.includes(c.id) ? 'bg-[#D4AF37]/20' : ''}
+                          ${isSelected ? 'bg-[#D4AF37]/20' : ''}
                         `}
                       >
-                        <td className="px-6 py-3">
-                          <div onClick={(e) => e.stopPropagation()}> 
-                            <Checkbox
-                              checked={selectedIds.includes(c.id)}
-                              onCheckedChange={() => toggleAtleta(c.id)}
-                              className="
-                                border-gray-400 
-                                data-[state=checked]:bg-[#D4AF37] 
-                                data-[state=checked]:border-[#D4AF37] 
-                                data-[state=checked]:text-black
-                              "
-                            />
-                          </div>
+                        <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleAtleta(c.id)}
+                            className="
+                              border-gray-400 
+                              data-[state=checked]:bg-[#D4AF37] 
+                              data-[state=checked]:border-[#D4AF37] 
+                              data-[state=checked]:text-black
+                            "
+                          />
                         </td>
                         <td className="px-6 py-3">
                           <div className="flex flex-col">
-                            <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'}`}>
+                            <span className={`text-sm font-semibold ${isSelected ? 'text-[#B8960F]' : 'text-gray-800'}`}>
                               {c.name}
                             </span>
                             <span className="text-xs text-gray-500 font-medium">{c.team}</span>
@@ -257,14 +355,25 @@ export default function GerarChavesPage() {
                   Bye automático
                 </div>
               )}
+              {selectedIds.length >= 2 && (
+                <div className="flex items-center gap-1.5 text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded border border-green-100">
+                  <CheckCircle size={14} />
+                  Pronto para gerar
+                </div>
+              )}
             </div>
 
             <Button
-              disabled={selectedIds.length < 2 || !title || !belt}
+              onClick={handleGenerateBracket}
+              disabled={!canGenerate}
               className="bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold px-8"
             >
-              <ShieldCheck size={16} className="mr-2" />
-              Gerar Chave
+              {saving ? (
+                <Loader2 size={16} className="animate-spin mr-2" />
+              ) : (
+                <ShieldCheck size={16} className="mr-2" />
+              )}
+              {saving ? "Gerando..." : "Gerar Chave"}
             </Button>
           </div>
         </Card>
