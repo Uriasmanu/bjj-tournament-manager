@@ -166,7 +166,12 @@ export default function GerarChavesPage() {
                       <td className="px-6 py-3">
                         <Checkbox
                           checked={selectedIds.includes(c.id)}
-                          className="data-[state=checked]:bg-[#D4AF37] border-gray-400"
+                          className="
+                            border-gray-400
+                            data-[state=checked]:bg-[#D4AF37]
+                            data-[state=checked]:border-[#D4AF37]
+                            data-[state=checked]:text-black
+                          "
                         />
                       </td>
                       <td className="px-6 py-3">
