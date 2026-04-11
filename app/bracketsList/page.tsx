@@ -63,7 +63,7 @@ export default function BracketsListPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
 
-            {/* Header com gradiente e melhor contraste */}
+            
             <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 shadow-lg border-b border-gray-700">
                 <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
                     <div>
@@ -102,7 +102,7 @@ export default function BracketsListPage() {
                 </div>
             </header>
 
-            {/* Main content com melhor espaçamento */}
+            
             <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                 {loading ? (
@@ -143,13 +143,13 @@ export default function BracketsListPage() {
                                 key={bracket.id}
                                 className="bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
                             >
-                                {/* Barra de cor lateral */}
+                                
                                 <div className={`h-1 w-full ${getBeltColor(bracket.belt as Belt).split(' ')[0]}`}></div>
 
                                 <CardContent className="p-6">
                                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-                                        {/* Informações principais */}
+                                        
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 flex-wrap mb-3">
                                                 <h2 className="text-xl font-bold text-gray-900 group-hover:text-yellow-600 transition-colors">
@@ -192,32 +192,32 @@ export default function BracketsListPage() {
                                             </div>
                                         </div>
 
-                                        {/* Ação */}
+                                        
                                         <Link href={`/brackets/${bracket.id}`} className="md:self-center">
                                             <Button
                                                 size="default"
                                                 variant="outline"
                                                 className="
+                                                    !bg-transparent
                                                     border-yellow-600 
                                                     text-yellow-700 
-                                                    bg-transparent
-                                                    /* Estado de Hover - Cores mais fortes para não sumir no branco */
-                                                    hover:bg-yellow-600 
+
+                                                    hover:!bg-yellow-600 
                                                     hover:text-white 
                                                     hover:border-yellow-700
-                                                    
+
+                                                    active:scale-[0.98]
                                                     font-bold 
                                                     gap-2 
                                                     transition-all 
                                                     duration-200 
-                                                    group/btn 
-                                                    cursor-pointer
                                                     shadow-sm
+                                                    cursor-pointer
                                                 "
                                             >
                                                 <Eye size={16} className="group-hover/btn:scale-110 transition-transform" />
-                                                <span className="text-inherit">Visualizar Chave</span>
-                                                <span className="hidden md:inline text-inherit">Completa</span>
+                                                <span>Visualizar Chave</span>
+                                                <span className="hidden md:inline"> Completa</span>
                                             </Button>
                                         </Link>
                                     </div>
@@ -227,7 +227,7 @@ export default function BracketsListPage() {
                     </div>
                 )}
 
-                {/* Estatísticas rápidas quando há chaves */}
+                
                 {!loading && !error && brackets.length > 0 && (
                     <div className="mt-8 pt-6 border-t border-gray-200">
                         <div className="flex justify-between items-center text-sm text-gray-500">
