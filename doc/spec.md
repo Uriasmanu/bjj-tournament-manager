@@ -17,47 +17,71 @@ O sistema utiliza uma estética "Premium BJJ", focada em alto contraste, profund
 
 ### Paleta de Cores (Tailwind Tokens)
 
-| Cor                | Token             | Uso Principal                                              |
-| ------------------ | ----------------- | ---------------------------------------------------------- |
-| **Gold** | `bjj-gold`        | Botões de ação principal, ícones de autoridade, destaques. |
-| **Gold Dark** | `bjj-gold-dark`   | Estados de hover para elementos Gold.                      |
-| **Black/Anthracite**| `bjj-black`      | Headers de cards, backgrounds de navegação, textos fortes. |
-| **Blue** | `bjj-blue`        | Ações secundárias, filtros ativos, estados de hover.      |
-| **Surface Gray** | `gray-50/100`     | Background da aplicação e fundos de inputs/cards.          |
+| Cor                  | Token           | Uso Principal                                              |
+| -------------------- | --------------- | ---------------------------------------------------------- |
+| **Gold**             | `bjj-gold`      | Botões de ação principal, ícones de autoridade, destaques. |
+| **Gold Dark**        | `bjj-gold-dark` | Estados de hover para elementos Gold.                      |
+| **Black/Anthracite** | `bjj-black`     | Headers de cards, backgrounds de navegação, textos fortes. |
+| **Blue**             | `bjj-blue`      | Ações secundárias, filtros ativos, estados de hover.       |
+| **Surface Gray**     | `gray-50/100`   | Background da aplicação e fundos de inputs/cards.          |
 
 ### Estilização de Componentes
 
 #### 1. Cards de Gestão
-* **Container:** `bg-white`, `border-0`, `shadow-xl`, `overflow-hidden`.
-* **Header:** Uso obrigatório de gradiente `bg-gradient-to-r from-bjj-black to-gray-800`.
-* **Cards de Listagem (Grid):** Devem possuir `transition-all` com elevação no hover (`hover:shadow-lg`, `hover:-translate-y-0.5`).
 
-#### 2. Botões de Ação e Estados de Hover ⚠️
+- **Container:** `bg-white`, `border`, `border-gray-200`, `shadow-xl`, `overflow-hidden`.
+- **Header:** Uso obrigatório de gradiente `bg-gradient-to-r from-bjj-black to-gray-800`. O texto dentro do header deve ser `text-white` ou `text-gray-100`.
+- **Cards de Listagem (Grid):** Devem possuir `transition-all` com elevação no hover (`hover:shadow-lg`, `hover:-translate-y-0.5`).
+
+#### 2. Tipografia e Textos (Acessibilidade) ⚠️
+
+Para garantir a legibilidade e corrigir a padronagem do shadcn/ui que tende a deixar tudo branco sobre fundo branco, **todas as tipografias** devem seguir estas regras:
+
+- **Corpo do Texto (Textos gerais, labels, descrições):**
+  - **Classe obrigatória:** `text-gray-900` ou `text-gray-800`.
+  - **Contraste:** Mínimo de 4.5:1 contra fundos claros (white/gray-50).
+- **Textos Secundários (Placeholders, textos auxiliares, metadata):**
+  - **Classe obrigatória:** `text-gray-500` ou `text-gray-600`.
+- **Títulos (Headings):**
+  - **Classe obrigatória:** `text-gray-900` combinado com `font-semibold` ou `font-bold`.
+- **Links e Textos Interativos:**
+  - Devem herdar a cor do contexto, mas no hover aplicar `text-bjj-blue` ou `text-bjj-gold` com underline.
+
+> **Importante:** Nunca confie na cor padrão do shadcn para texto. Sempre sobrescreva com classes `text-gray-900` ou variáveis CSS equivalentes.
+
+#### 3. Botões de Ação e Estados de Hover ⚠️
+
 Para garantir a visibilidade em fundos claros e evitar que o conteúdo "desapareça" no hover, os botões devem seguir estas regras de implementação:
 
-* **Botões de Edição/Secundários:**
-    * **Estilo:** Borda e texto em `bjj-blue`.
-    * **Hover:** Inversão total. Fundo vira `bjj-blue` e texto vira `white`.
-    * **Implementação:** `border-bjj-blue text-bjj-blue hover:bg-bjj-blue hover:text-white`.
-* **Botões de Exclusão:**
-    * **Estilo:** Borda suave e texto em `red-600`.
-    * **Hover:** Fundo e borda em `red-600` com texto `white`.
-    * **Implementação:** `border-red-200 text-red-600 hover:bg-red-600 hover:text-white`.
-* **Acessibilidade:** Todos os botões interativos devem incluir `cursor-pointer` e `transition-all`.
+- **Botões de Edição/Secundários:**
+  - **Estilo:** Borda e texto em `bjj-blue`.
+  - **Hover:** Inversão total. Fundo vira `bjj-blue` e texto vira `white`.
+  - **Implementação:** `border-bjj-blue text-bjj-blue hover:bg-bjj-blue hover:text-white`.
+- **Botões de Exclusão:**
+  - **Estilo:** Borda suave e texto em `red-600`.
+  - **Hover:** Fundo e borda em `red-600` com texto `white`.
+  - **Implementação:** `border-red-200 text-red-600 hover:bg-red-600 hover:text-white`.
+- **Botões de Ação Principal (Gold):**
+  - **Estilo:** Fundo `bjj-gold`, texto `bjj-black` (ou `gray-900`).
+  - **Hover:** Fundo `bjj-gold-dark`, texto `white`.
+- **Acessibilidade:** Todos os botões interativos devem incluir `cursor-pointer` e `transition-all`.
 
-Os textos precisam sempre ser text-gray-900
+#### 4. Badges e Status
 
-#### 3. Tipografia e Feedback
-* **Títulos:** Semibold ou Bold, cor `gray-900`.
-* **Status Inativo:** Elementos inativos devem utilizar `opacity-70` e `bg-gray-50`.
-* **Badges de Faixa (Arbitragem):**
-    * **Roxa:** `bg-purple-100 text-purple-800 border-purple-300`
-    * **Marrom:** `bg-amber-100 text-amber-800 border-amber-300`
-    * **Preta:** `bg-gray-900 text-white border-gray-800`
+- **Badges de Faixa (Arbitragem):**
+  - **Roxa:** `bg-purple-100 text-purple-800 border-purple-300`
+  - **Marrom:** `bg-amber-100 text-amber-800 border-amber-300`
+  - **Preta:** `bg-gray-900 text-white border-gray-800`
+- **Status Inativo:** Elementos inativos devem utilizar `opacity-70` e `bg-gray-50`.
 
 ### Regras de UI/UX
-* **Navegação:** Botões de "Voltar" utilizam variante `ghost` com animação de deslocamento no ícone (`group-hover:-translate-x-1`).
-* **Inputs:** Fundo `gray-50` com foco em `bjj-gold` para manter a consistência visual.
+
+- **Navegação:** Botões de "Voltar" utilizam variante `ghost` com animação de deslocamento no ícone (`group-hover:-translate-x-1`). Texto do botão ghost deve ser `text-gray-900`.
+- **Inputs (shadcn/ui):**
+  - Fundo: `bg-gray-50`.
+  - Borda: `border-gray-300`.
+  - Texto: `text-gray-900`.
+  - Foco: `ring-bjj-gold` e `border-bjj-gold` para manter a consistência visual.
 
 ---
 
@@ -123,7 +147,7 @@ Os textos precisam sempre ser text-gray-900
 | `name`             | string                | Sim         | Nome completo                   |
 | `team`             | string                | Sim         | Nome da academia/equipe         |
 | `weight`           | number (kg)           | Sim         | Peso em quilogramas             |
-| `dateBirth`              | number                | Sim         | Idade em anos                   |
+| `dateBirth`        | number                | Sim         | Idade em anos                   |
 | `belt`             | enum Belt             | Sim         | Ver enum abaixo                 |
 | `coach`            | string                | Não         | Nome do técnico                 |
 | `registrationDate` | string (ISO datetime) | Sim         | Data de inscrição               |
@@ -253,7 +277,6 @@ Corrija os erros nos registros indicados e tente novamente com um novo arquivo.
 
 ### **Feedback ao usuário:** importação insere todos os registros válidos e reporta claramente quais registros foram ignorados e por quê.
 
-
 ### 3. Modulo de Arbitros
 
 **Objetivo:**  
@@ -263,14 +286,14 @@ Cadastrar, gerenciar e importar/exportar os arbitros do torneio.
 
 ### Dados do Arbitro
 
-| Campo              | Tipo               | Obrigatorio | Observacao                                      |
-| ------------------ | ------------------ | ----------- | ----------------------------------------------- |
-| `id`               | UUID               | Sim         | Gerado automaticamente                          |
-| `name`             | string             | Sim         | Nome completo                                   |
-| `city`             | string             | Sim         | Cidade que mora                                 |
-| `beltReferee`      | enum BeltReferee   | Sim         | Valores: `PURPLE`, `BROWN`, `BLACK`             |
-| `registrationDate` | ISO string (date)  | Sim         | Data de cadastro                                |
-| `isActive`         | boolean            | Sim         | Soft delete - `true` por padrao                 |
+| Campo              | Tipo              | Obrigatorio | Observacao                          |
+| ------------------ | ----------------- | ----------- | ----------------------------------- |
+| `id`               | UUID              | Sim         | Gerado automaticamente              |
+| `name`             | string            | Sim         | Nome completo                       |
+| `city`             | string            | Sim         | Cidade que mora                     |
+| `beltReferee`      | enum BeltReferee  | Sim         | Valores: `PURPLE`, `BROWN`, `BLACK` |
+| `registrationDate` | ISO string (date) | Sim         | Data de cadastro                    |
+| `isActive`         | boolean           | Sim         | Soft delete - `true` por padrao     |
 
 ---
 
@@ -331,6 +354,7 @@ O sistema deve exportar os dados no seguinte formato JSON:
 O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 
 **Formato 1 - Objeto com array:**
+
 ```json
 {
   "referees": [ ... ]
@@ -338,6 +362,7 @@ O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 ```
 
 **Formato 2 - Array direto:**
+
 ```json
 [ ... ]
 ```
@@ -349,23 +374,26 @@ O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 O sistema implementa **logica de upsert** (update + insert) com a seguinte prioridade:
 
 #### Busca por existencia:
+
 1. **Prioridade 1 - Busca por ID**  
    Se o campo `id` for fornecido no JSON, o sistema busca um arbitro existente com o mesmo ID
-   
 2. **Prioridade 2 - Busca por nome**  
    Se nao encontrar por ID (ou ID nao fornecido), busca por nome exato
 
 #### Acoes resultantes:
+
 - **Encontrou (por ID ou nome)** → **ATUALIZA** o registro existente
 - **Nao encontrou** → **CRIA** novo registro
 
 #### O que pode ser atualizado:
+
 - `name` - permite correcao de nome
 - `city` - atualiza cidade
 - `beltReferee` - atualiza faixa
 - `isActive` - forcado para `true` na importacao
 
 #### Campos opcionais no JSON:
+
 - `id` - se nao informado → gera novo UUID
 - `city` - se nao informado → mantem existente ou usa string vazia
 - `registrationDate` - se nao informado → usa data atual
@@ -375,13 +403,14 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 
 ### Validacoes obrigatorias
 
-| Campo | Validacao |
-|-------|-----------|
-| `name` | Obrigatorio, nao pode estar vazio |
-| `beltReferee` | Deve ser um dos valores: `PURPLE`, `BROWN`, `BLACK` |
-| `referees` | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
+| Campo         | Validacao                                                                       |
+| ------------- | ------------------------------------------------------------------------------- |
+| `name`        | Obrigatorio, nao pode estar vazio                                               |
+| `beltReferee` | Deve ser um dos valores: `PURPLE`, `BROWN`, `BLACK`                             |
+| `referees`    | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
 
 **Exemplo de erro de validacao:**
+
 ```json
 {
   "error": "Formato invalido. Use um array ou { referees: [] }"
@@ -414,31 +443,30 @@ O sistema retorna um relatorio detalhado da operacao:
     "updated": [
       "Linha 4: \"Pedro Costa\" atualizado (faixa: BROWN → BLACK, cidade: SP → RJ) [match por id]"
     ],
-    "skipped": [
-      "Linha 6: \"Ana Paula\" - nenhuma alteracao detectada"
-    ]
+    "skipped": ["Linha 6: \"Ana Paula\" - nenhuma alteracao detectada"]
   }
 }
 ```
 
 #### Campos do retorno:
 
-| Campo | Descricao |
-|-------|-----------|
-| `imported` | Quantidade de novos registros inseridos |
-| `updated` | Quantidade de registros existentes atualizados |
-| `skipped` | Quantidade de registros ignorados (sem alteracoes) |
-| `errors` | Quantidade de registros com erro de validacao |
-| `details.errors` | Lista detalhada de cada erro |
-| `details.inserted` | Lista de registros inseridos com contexto |
-| `details.updated` | Lista de registros atualizados com mudancas especificas |
-| `details.skipped` | Lista de registros ignorados e motivo |
+| Campo              | Descricao                                               |
+| ------------------ | ------------------------------------------------------- |
+| `imported`         | Quantidade de novos registros inseridos                 |
+| `updated`          | Quantidade de registros existentes atualizados          |
+| `skipped`          | Quantidade de registros ignorados (sem alteracoes)      |
+| `errors`           | Quantidade de registros com erro de validacao           |
+| `details.errors`   | Lista detalhada de cada erro                            |
+| `details.inserted` | Lista de registros inseridos com contexto               |
+| `details.updated`  | Lista de registros atualizados com mudancas especificas |
+| `details.skipped`  | Lista de registros ignorados e motivo                   |
 
 ---
 
 ### Comportamentos Especificos
 
 #### Correcao de nome
+
 Se o arbitro existe com ID correspondente, e possivel **corrigir o nome** via importacao:
 
 ```json
@@ -452,7 +480,9 @@ Se o arbitro existe com ID correspondente, e possivel **corrigir o nome** via im
 ```
 
 #### Atualizacao parcial
+
 Campos nao informados no JSON mantem os valores existentes:
+
 ```json
 // Existente: { "name": "Joao", "city": "SP", "beltReferee": "BROWN" }
 
@@ -462,6 +492,7 @@ Campos nao informados no JSON mantem os valores existentes:
 ```
 
 #### Prevencao de duplicacao
+
 - Mesmo nome com pequenas diferencas (ex: espaco, maiuscula) sao considerados diferentes
 - Use o `id` para garantir atualizacao correta em casos de correcao de nome
 
@@ -477,6 +508,7 @@ Campos nao informados no JSON mantem os valores existentes:
 - Logs detalhados ajudam a identificar cada alteracao realizada
 
 ---
+
 ### 4. Modulo de Chaves (Brackets)
 
 **Objetivo:** Organizar os competidores em brackets de eliminacao simples por faixa e categoria de peso.
@@ -586,6 +618,7 @@ O sistema deve exportar os dados no seguinte formato JSON:
 O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 
 **Formato 1 - Objeto com array:**
+
 ```json
 {
   "brackets": [ ... ]
@@ -593,6 +626,7 @@ O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 ```
 
 **Formato 2 - Array direto:**
+
 ```json
 [ ... ]
 ```
@@ -604,17 +638,19 @@ O sistema deve aceitar **exclusivamente** arquivos JSON nos seguintes formatos:
 O sistema implementa **logica de upsert** (update + insert) com a seguinte prioridade:
 
 #### Busca por existencia:
+
 1. **Prioridade 1 - Busca por ID**  
    Se o campo `id` for fornecido no JSON, o sistema busca uma chave existente com o mesmo ID
-   
 2. **Prioridade 2 - Busca por identificador unico**  
    Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `weightMin` + `weightMax` + `label`
 
 #### Acoes resultantes:
+
 - **Encontrou (por ID ou identificador)** → **ATUALIZA** o registro existente
 - **Nao encontrou** → **CRIA** novo registro
 
 #### O que pode ser atualizado:
+
 - `label` - permite renomear categoria
 - `status` - atualiza status da chave
 - `refereeId` - altera arbitro responsavel
@@ -623,6 +659,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 - `matches` - atualiza estrutura de lutas
 
 #### Campos opcionais no JSON:
+
 - `id` - se nao informado → gera novo UUID
 - `competitors` - se nao informado → array vazio
 - `matches` - se nao informado → array vazio
@@ -633,15 +670,16 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 
 ### Validacoes obrigatorias
 
-| Campo | Validacao |
-|-------|-----------|
-| `belt` | Obrigatorio, deve ser um valor valido do enum Belt |
-| `weightMin` | Obrigatorio, deve ser maior que 0 |
-| `weightMax` | Obrigatorio, deve ser maior que weightMin |
-| `label` | Obrigatorio, nao pode estar vazio |
-| `brackets` | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
+| Campo       | Validacao                                                                       |
+| ----------- | ------------------------------------------------------------------------------- |
+| `belt`      | Obrigatorio, deve ser um valor valido do enum Belt                              |
+| `weightMin` | Obrigatorio, deve ser maior que 0                                               |
+| `weightMax` | Obrigatorio, deve ser maior que weightMin                                       |
+| `label`     | Obrigatorio, nao pode estar vazio                                               |
+| `brackets`  | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
 
 **Exemplo de erro de validacao:**
+
 ```json
 {
   "error": "Formato invalido. Use um array ou { brackets: [] }"
@@ -681,44 +719,53 @@ O sistema retorna um relatorio detalhado da operacao:
 
 #### Campos do retorno:
 
-| Campo | Descricao |
-|-------|-----------|
-| `imported` | Quantidade de novas chaves inseridas |
-| `updated` | Quantidade de chaves existentes atualizadas |
-| `skipped` | Quantidade de chaves ignoradas (sem alteracoes) |
-| `errors` | Quantidade de chaves com erro de validacao |
-| `details.errors` | Lista detalhada de cada erro |
-| `details.inserted` | Lista de chaves inseridas com contexto |
-| `details.updated` | Lista de chaves atualizadas com mudancas especificas |
-| `details.skipped` | Lista de chaves ignoradas e motivo |
+| Campo              | Descricao                                            |
+| ------------------ | ---------------------------------------------------- |
+| `imported`         | Quantidade de novas chaves inseridas                 |
+| `updated`          | Quantidade de chaves existentes atualizadas          |
+| `skipped`          | Quantidade de chaves ignoradas (sem alteracoes)      |
+| `errors`           | Quantidade de chaves com erro de validacao           |
+| `details.errors`   | Lista detalhada de cada erro                         |
+| `details.inserted` | Lista de chaves inseridas com contexto               |
+| `details.updated`  | Lista de chaves atualizadas com mudancas especificas |
+| `details.skipped`  | Lista de chaves ignoradas e motivo                   |
 
 ---
 
 ### Comportamentos Especificos
 
 #### Validacao de competidores
+
 Competidores importados junto com a chave sao validados:
+
 - Devem existir no banco de competidores (por ID ou nome+equipe)
 - Devem ser elegiveis para a chave (mesma faixa e peso dentro do intervalo)
 - Competidores invalidos sao removidos da lista com alerta
 
 #### Validacao de arbitro
+
 Se `refereeId` for fornecido:
+
 - O arbitro deve existir e estar ativo no modulo de arbitros
 - Caso nao exista, o campo e definido como null e um aviso e registrado
 
 #### Validacao de area
+
 Se `areaId` for fornecido:
+
 - A area deve existir no modulo de areas
 - Caso nao exista, o campo e definido como null e um aviso e registrado
 
 #### Estrutura de matches
+
 Ao importar matches:
+
 - O sistema valida se os competidores A e B existem na lista da chave
 - O sistema recalcula posicoes e rounds se necessario
 - Matches com status diferente de PENDING respeitam o estado atual
 
 #### Prevencao de conflitos
+
 - Chaves com mesmo `belt` + `weightMin` + `weightMax` + `label` sao consideradas duplicatas
 - Use o `id` para garantir atualizacao correta em casos de alteracao de identificador
 
@@ -732,7 +779,6 @@ Ao importar matches:
 - Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+pesos+label** (fallback)
 - A importacao preserva o estado das lutas (PENDING, IN_PROGRESS, COMPLETED)
 - Logs detalhados ajudam a identificar cada alteracao realizada
-
 
 ### 5. Módulo de Áreas de Luta
 
