@@ -173,7 +173,7 @@ export default function GerarChavesPage() {
                     </div>
                     
                     <Button
-                        onClick={() => router.push('/brackets')}
+                        onClick={() => router.push('/bracketsList')}
                         variant="outline"
                         className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black cursor-pointer"
                     >

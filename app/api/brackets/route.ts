@@ -1,9 +1,9 @@
-// src/app/api/brackets/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { readBrackets, writeBrackets, readCompetitors } from '@/lib/storage';
 import { Bracket, BracketStatus, Match } from '@/types';
 
-// ✅ Função auxiliar para criar o objeto de placar inicial
+
 function createEmptyScore(competitorId: string) {
     return {
         competitorId: competitorId,
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { title, belt, competitorIds } = body;
 
-        // Validações
+
         if (!title || typeof title !== 'string' || title.trim().length === 0) {
             return NextResponse.json({ error: 'Título é obrigatório' }, { status: 400 });
         }
@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
         const shuffled = shuffleArray(competitorIds);
         const matches: Match[] = [];
 
-        // 🧠 CASO ESPECIAL: 3 ATLETAS (Sistema de Rodízio BJJ)
+
         if (shuffled.length === 3) {
             const [A, B, C] = shuffled;
             const match1Id = crypto.randomUUID();
             const match2Id = crypto.randomUUID();
 
-            // LUTA 1 → A vs B
+
             matches.push({
                 id: match1Id,
                 fighter1: A,
@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
                 finished: false
             });
 
-            // LUTA 2 → C vs PERDEDOR da luta 1
+
             matches.push({
                 id: match2Id,
                 fighter1: C,
-                fighter2: null, 
+                fighter2: null,
                 score1: createEmptyScore(C),
                 score2: null,
                 dependsOn: { matchId: match1Id, type: 'LOSER' },
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                 finished: false
             });
 
-            // LUTA 3 → VENCEDOR luta 1 vs VENCEDOR luta 2
+
             matches.push({
                 id: crypto.randomUUID(),
                 fighter1: null,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
             });
 
         } else {
-            // 🔀 CASO NORMAL (2, 4, 6, 8...)
+
             for (let i = 0; i < shuffled.length; i += 2) {
                 const f1 = shuffled[i];
                 const f2 = shuffled[i + 1] || null;
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
             id: crypto.randomUUID(),
             title: title.trim(),
             belt,
-            competitors: shuffled, // Salva na ordem sorteada
+            competitors: shuffled,
             matches,
             status: 'PENDING',
             refereeId: null,
@@ -150,5 +150,21 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Erro ao criar chave:', error);
         return NextResponse.json({ error: 'Erro interno ao criar chave' }, { status: 500 });
+    }
+}
+
+export async function GET() {
+    try {
+        const data = await readBrackets();
+
+        return NextResponse.json(data.brackets, { status: 200 });
+
+    } catch (error) {
+        console.error('Erro ao buscar chaves:', error);
+
+        return NextResponse.json(
+            { error: 'Erro interno ao buscar chaves' },
+            { status: 500 }
+        );
     }
 }
