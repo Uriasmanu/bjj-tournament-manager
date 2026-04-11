@@ -1,4 +1,4 @@
-// src/types/index.ts
+
 export type Belt =
   | 'WHITE' | 'GRAY' | 'YELLOW' | 'ORANGE' | 'GREEN'
   | 'BLUE' | 'PURPLE' | 'BROWN' | 'BLACK';
@@ -54,28 +54,56 @@ export const beltLabelsReferee: Record<BeltReferee, string> = {
   BLACK: 'Preta',
 };
 
-export type BracketStatus = 
+export type BracketStatus =
   | 'PENDING'
   | 'IN_PROGRESS'
   | 'FINISHED'
 
-// src/types/bracket.ts
+
+export interface MatchScore {
+  competitorId: string | null; 
+  points: number;
+  advantages: number;
+  penalties: number;
+  submission: boolean;
+}
+
+export interface Match {
+  id: string;
+  fighter1: string | null; 
+  fighter2: string | null;
+  score1: MatchScore | null; 
+  score2: MatchScore | null;
+  winnerId: string | null;
+  round: number;
+  finished: boolean;
+
+  
+  dependsOn?: 
+    | { matchId: string; type: 'WINNER' | 'LOSER' }
+    | { matchId: string; type: 'WINNER' | 'LOSER' }[];
+}
 export interface Bracket {
-    id: string
-    title: string
-    belt: string
-    competitors: string[] // IDs dos competidores
-    matches: any[]
-    status: 'PENDING' | 'ACTIVE' | 'COMPLETED'
-    refereeId: string | null
-    areaId: string | null
-    createdAt: string
-    metadata?: {
-        totalCompetitors: number
-        weightRange: {
-            min: number
-            max: number
-        }
-        hasBye: boolean
+  id: string
+  title: string
+  belt: string
+
+  competitors: string[]
+  matches: Match[]
+
+  status: BracketStatus
+
+  refereeId: string | null
+  areaId: string | null
+
+  createdAt: string
+
+  metadata?: {
+    totalCompetitors: number
+    weightRange: {
+      min: number
+      max: number
     }
+    hasBye: boolean
+  }
 }

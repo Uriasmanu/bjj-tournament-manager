@@ -1,19 +1,82 @@
 {
   "brackets": [
     {
-      "id": "d49f594f-5667-40c0-aab7-a6431ed3355f",
+      "id": "c7f64db6-5d33-4476-8f4b-87ee3b06465f",
       "title": "chave",
       "belt": "WHITE",
       "competitors": [
-        "comp-052",
         "comp-098",
-        "comp-018"
+        "comp-018",
+        "comp-052"
       ],
-      "matches": [],
+      "matches": [
+        {
+          "id": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
+          "fighter1": "comp-098",
+          "fighter2": "comp-018",
+          "score1": {
+            "competitorId": "comp-098",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-018",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "fff76633-304e-425f-ace9-1d63b0fa62cf",
+          "fighter1": "comp-052",
+          "fighter2": null,
+          "score1": {
+            "competitorId": "comp-052",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": null,
+          "dependsOn": {
+            "matchId": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
+            "type": "LOSER"
+          },
+          "winnerId": null,
+          "round": 2,
+          "finished": false
+        },
+        {
+          "id": "23bab3d8-57e1-48a4-a38f-7ab64f7aa656",
+          "fighter1": null,
+          "fighter2": null,
+          "score1": null,
+          "score2": null,
+          "dependsOn": [
+            {
+              "matchId": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
+              "type": "WINNER"
+            },
+            {
+              "matchId": "fff76633-304e-425f-ace9-1d63b0fa62cf",
+              "type": "WINNER"
+            }
+          ],
+          "winnerId": null,
+          "round": 3,
+          "finished": false
+        }
+      ],
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-11T22:56:40.441Z",
+      "createdAt": "2026-04-11T23:09:43.897Z",
       "metadata": {
         "totalCompetitors": 3,
         "weightRange": {
