@@ -24,9 +24,28 @@ interface Competitor {
   id: string
   name: string
   team: string
-  weight: string
+  weight: number
   belt: string
   isActive: boolean
+  dateBirth: string
+}
+
+// ✅ cálculo correto da idade (sem bug de timezone)
+function calculateAge(dateBirth: string): number {
+  const [year, month, day] = dateBirth.split('-').map(Number)
+
+  const today = new Date()
+  const birth = new Date(year, month - 1, day)
+
+  let age = today.getFullYear() - birth.getFullYear()
+
+  const m = today.getMonth() - birth.getMonth()
+
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+
+  return age
 }
 
 export default function GerarChavesPage() {
@@ -80,14 +99,18 @@ export default function GerarChavesPage() {
           <ArrowLeft size={14} />
           VOLTAR
         </Link>
+
         <h1 className="text-2xl font-black flex items-center gap-2">
           <Trophy className="text-[#D4AF37]" />
           Montar Chave
         </h1>
       </header>
+
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6 min-h-0">
+
         <Card className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white border border-gray-200 shadow-sm">
           <div className="flex gap-4 w-full md:w-auto">
+
             <Input
               placeholder="Título da chave"
               value={title}
@@ -96,7 +119,7 @@ export default function GerarChavesPage() {
             />
 
             <Select onValueChange={setBelt} value={belt}>
-              <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37] [&>span]:text-gray-900">
+              <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37] [&>span]:text-gray-900 hover:bg-blue-900 hover:[&>span]:text-white transition-colors duration-200">
                 <SelectValue placeholder="Selecionar faixa" />
               </SelectTrigger>
 
@@ -105,14 +128,14 @@ export default function GerarChavesPage() {
                   <SelectItem
                     key={belt}
                     value={belt}
-                    className="focus:bg-slate-100 cursor-pointer py-3 text-gray-900 hover:text-gray-900 [&>span]:text-gray-900"
+                    className="cursor-pointer py-3 text-gray-900 hover:bg-blue-900 hover:text-white focus:bg-blue-900 focus:text-white transition-colors duration-200"
                   >
                     <div className="flex items-center gap-2">
                       <span
                         className="w-3 h-3 rounded-full border border-slate-400 shrink-0"
                         style={{ backgroundColor: beltColors[belt] }}
                       />
-                      <span className="font-bold uppercase text-xs text-gray-900">
+                      <span className="font-bold uppercase text-xs">
                         {beltLabels[belt]}
                       </span>
                     </div>
@@ -133,6 +156,7 @@ export default function GerarChavesPage() {
 
         <Card className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 shadow-sm">
           <CardContent className="p-0 flex-1 overflow-y-auto">
+
             {loading ? (
               <div className="h-full flex items-center justify-center text-gray-400">
                 <Loader2 className="animate-spin" />
@@ -143,63 +167,94 @@ export default function GerarChavesPage() {
               </div>
             ) : (
               <table className="w-full">
+
                 <thead className="sticky top-0 bg-gray-100">
                   <tr>
                     <th className="px-6 py-2"></th>
                     <th className="px-6 py-2 text-left text-xs text-gray-600">Competidor</th>
-                    <th className="px-6 py-2 text-center text-xs text-gray-600">Peso / Faixa</th>
+                    <th className="px-6 py-2 text-center text-xs text-gray-600">Peso</th>
+                    <th className="px-6 py-2 text-center text-xs text-gray-600">Faixa</th>
+                    <th className="px-6 py-2 text-center text-xs text-gray-600">Idade</th>
                     <th></th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {atletasFiltrados.map((c, index) => (
-                    <tr
-                      key={c.id}
-                      onClick={() => toggleAtleta(c.id)}
-                      className={`
-                        cursor-pointer transition-colors
-                        ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                        hover:bg-[#D4AF37]/10
-                        ${selectedIds.includes(c.id) ? 'bg-[#D4AF37]/20' : ''}
-                      `}
-                    >
-                      <td className="px-6 py-3">
-                        <Checkbox
-                          checked={selectedIds.includes(c.id)}
-                          className="
-                            border-gray-400
-                            data-[state=checked]:bg-[#D4AF37]
-                            data-[state=checked]:border-[#D4AF37]
-                            data-[state=checked]:text-black
-                          "
-                        />
-                      </td>
-                      <td className="px-6 py-3">
-                        <div className="flex flex-col">
-                          <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'}`}>
-                            {c.name}
-                          </span>
-                          <span className="text-xs text-gray-500 font-medium">
-                            {c.team}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-3 text-center">
-                        <div className="flex flex-col items-center gap-1">
+                  {atletasFiltrados.map((c, index) => {
+                    const idade = calculateAge(c.dateBirth)
+
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => toggleAtleta(c.id)}
+                        className={`
+                          cursor-pointer transition-colors
+                          ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                          hover:bg-[#D4AF37]/10
+                          ${selectedIds.includes(c.id) ? 'bg-[#D4AF37]/20' : ''}
+                        `}
+                      >
+                        <td className="px-6 py-3">
+                          <Checkbox
+                            checked={selectedIds.includes(c.id)}
+                            className="
+                              border-gray-400
+                              data-[state=checked]:bg-[#D4AF37]
+                              data-[state=checked]:border-[#D4AF37]
+                              data-[state=checked]:text-black
+                            "
+                          />
+                        </td>
+
+                        <td className="px-6 py-3">
+                          <div className="flex flex-col">
+                            <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'}`}>
+                              {c.name}
+                            </span>
+                            <span className="text-xs text-gray-500 font-medium">
+                              {c.team}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
                           <Badge className="bg-gray-100 text-gray-800 border border-gray-200 text-xs">
                             {c.weight}kg
                           </Badge>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getBeltColor(c.belt)}`}>
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded ${getBeltColor(c.belt)}`}>
                             {beltLabels[c.belt as Belt] || c.belt}
                           </span>
-                        </div>
-                      </td>
-                      <td className="pr-6 text-right">
-                        <ChevronRight size={16} className="text-gray-300" />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+                              {idade} anos
+                            </Badge>
+
+                            {idade < 18 && (
+                              <span className="text-[10px] text-amber-600 font-bold">INFANTIL</span>
+                            )}
+                            {idade >= 18 && idade < 30 && (
+                              <span className="text-[10px] text-green-600 font-bold">ADULTO</span>
+                            )}
+                            {idade >= 30 && (
+                              <span className="text-[10px] text-purple-600 font-bold">MASTER</span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="pr-6 text-right">
+                          <ChevronRight size={16} className="text-gray-300" />
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
+
               </table>
             )}
           </CardContent>
@@ -210,6 +265,7 @@ export default function GerarChavesPage() {
                 <Users size={18} />
                 <span className="font-bold text-sm">{selectedIds.length}</span>
               </div>
+
               {selectedIds.length % 2 !== 0 && selectedIds.length > 0 && (
                 <div className="flex items-center gap-2 text-amber-600 text-xs font-semibold">
                   <AlertTriangle size={14} />
@@ -217,6 +273,7 @@ export default function GerarChavesPage() {
                 </div>
               )}
             </div>
+
             <Button
               disabled={selectedIds.length < 2 || !title || !belt}
               className="bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white"
@@ -225,6 +282,7 @@ export default function GerarChavesPage() {
               Gerar Chave
             </Button>
           </div>
+
         </Card>
       </main>
     </div>
