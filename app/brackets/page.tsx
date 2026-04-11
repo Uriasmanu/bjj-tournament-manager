@@ -84,7 +84,6 @@ export default function GerarChavesPage() {
     };
 
     const handleGenerateBracket = async () => {
-        // Validações
         if (selectedIds.length < 2) {
             setError("Selecione pelo menos 2 competidores");
             return;
@@ -112,7 +111,7 @@ export default function GerarChavesPage() {
                 body: JSON.stringify({
                     title: title.trim(),
                     belt: belt,
-                    competitorIds: selectedIds // ✅ Enviando os IDs
+                    competitorIds: selectedIds
                 })
             });
 
@@ -122,18 +121,16 @@ export default function GerarChavesPage() {
                 throw new Error(data.error || 'Erro ao criar chave');
             }
 
-            // Sucesso
             setSelectedIds([]);
             setTitle("");
             setBelt("");
-            
+
             alert(`Chave "${data.title}" criada com sucesso!`);
-            
-            // Redirecionar para lista de chaves
+
             setTimeout(() => {
                 router.push('/brackets');
             }, 1000);
-            
+
         } catch (err: any) {
             console.error('Erro ao gerar chave:', err);
             setError(err.message || 'Erro ao gerar chave. Tente novamente.');
@@ -162,10 +159,22 @@ export default function GerarChavesPage() {
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
             <header className="bg-[#1A1A1A] text-white p-6 shadow-md">
-                <Link href="/" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
-                    <ArrowLeft size={14} />
-                    VOLTAR
-                </Link>
+                <div className="flex items-center justify-between mb-2">
+                    <Link href="/" className="text-xs text-gray-400 flex items-center gap-2">
+                        <ArrowLeft size={14} />
+                        VOLTAR
+                    </Link>
+
+                    <Link href="/brackets">
+                        <Button
+                            variant="outline"
+                            className="h-8 text-xs border-gray-600 text-gray-200 hover:bg-gray-800 cursor-pointer"
+                        >
+                            Lista de chaves
+                        </Button>
+                    </Link>
+                </div>
+
                 <h1 className="text-2xl font-black flex items-center gap-2">
                     <Trophy className="text-[#D4AF37]" />
                     Montar Chave
@@ -185,12 +194,12 @@ export default function GerarChavesPage() {
                             className="h-11 w-64 text-gray-900 bg-white"
                         />
 
-                        <Select 
+                        <Select
                             onValueChange={(value) => {
                                 setBelt(value);
                                 setSelectedIds([]);
                                 setError("");
-                            }} 
+                            }}
                             value={belt}
                         >
                             <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37]">
@@ -273,7 +282,7 @@ export default function GerarChavesPage() {
                                     {atletasOrdenados.map((c, index) => {
                                         const idade = calculateAge(c.dateBirth);
                                         const isSelected = selectedIds.includes(c.id);
-                                        
+
                                         return (
                                             <tr
                                                 key={c.id}
