@@ -76,7 +76,7 @@ export default function GerarChavesPage() {
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
       <header className="bg-[#1A1A1A] text-white p-6 shadow-md">
-        <Link href="/brackets" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
+        <Link href="/" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
           <ArrowLeft size={14} />
           VOLTAR
         </Link>
