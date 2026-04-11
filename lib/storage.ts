@@ -1,10 +1,12 @@
 // src/lib/storage.ts
-import { Competitor, Referee } from '@/types';
+import { Bracket, Competitor, Referee } from '@/types';
 import fs from 'fs/promises';
 import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
-
+export interface BracketsData {
+  brackets: Bracket[];
+}
 export interface CompetitorsData {
   competitors: Competitor[];
 }
@@ -57,6 +59,27 @@ export async function writeReferees(data: RefereesData): Promise<void> {
   const filePath = path.join(DATA_DIR, 'referees.json');
   const tempPath = path.join(DATA_DIR, 'referees.json.tmp');
   
+  await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.rename(tempPath, filePath);
+}
+
+export async function readBrackets(): Promise<BracketsData> {
+  await ensureDataDir();
+  const filePath = path.join(DATA_DIR, 'brackets.json');
+
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return { brackets: [] };
+  }
+}
+
+export async function writeBrackets(data: BracketsData): Promise<void> {
+  await ensureDataDir();
+  const filePath = path.join(DATA_DIR, 'brackets.json');
+  const tempPath = path.join(DATA_DIR, 'brackets.json.tmp');
+
   await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
   await fs.rename(tempPath, filePath);
 }

@@ -26,7 +26,6 @@ export interface Referee {
   registrationDate: string;
   isActive: boolean;
 }
-
 export const beltColors: Record<Belt, string> = {
   WHITE: '#FFFFFF',
   GRAY: '#808080',
@@ -38,7 +37,6 @@ export const beltColors: Record<Belt, string> = {
   BROWN: '#8B4513',
   BLACK: '#000000',
 };
-
 export const beltLabels: Record<Belt, string> = {
   WHITE: 'Branca',
   GRAY: 'Cinza',
@@ -50,9 +48,29 @@ export const beltLabels: Record<Belt, string> = {
   BROWN: 'Marrom',
   BLACK: 'Preta',
 };
-
 export const beltLabelsReferee: Record<BeltReferee, string> = {
   PURPLE: 'Roxa',
   BROWN: 'Marrom',
   BLACK: 'Preta',
 };
+
+export type BracketStatus = 
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'FINISHED'
+
+export interface Bracket {
+  id: string
+  title: string
+  belt: string
+
+  competitors: string[]
+  matches: string[]  
+
+  status: BracketStatus
+
+  refereeId: string | null
+  areaId: string | null
+
+  createdAt: string
+}
