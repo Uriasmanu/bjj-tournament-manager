@@ -10,7 +10,8 @@ import {
     Trophy,
     AlertTriangle,
     Loader2,
-    CheckCircle
+    CheckCircle,
+    ListChecks
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -124,13 +125,13 @@ export default function GerarChavesPage() {
             setSelectedIds([]);
             setTitle("");
             setBelt("");
-
+            
             alert(`Chave "${data.title}" criada com sucesso!`);
-
+            
             setTimeout(() => {
                 router.push('/brackets');
             }, 1000);
-
+            
         } catch (err: any) {
             console.error('Erro ao gerar chave:', err);
             setError(err.message || 'Erro ao gerar chave. Tente novamente.');
@@ -159,26 +160,27 @@ export default function GerarChavesPage() {
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
             <header className="bg-[#1A1A1A] text-white p-6 shadow-md">
-                <div className="flex items-center justify-between mb-2">
-                    <Link href="/" className="text-xs text-gray-400 flex items-center gap-2">
-                        <ArrowLeft size={14} />
-                        VOLTAR
-                    </Link>
-
-                    <Link href="/brackets">
-                        <Button
-                            variant="outline"
-                            className="h-8 text-xs border-gray-600 text-gray-200 hover:bg-gray-800 cursor-pointer"
-                        >
-                            Lista de chaves
-                        </Button>
-                    </Link>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <Link href="/" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
+                            <ArrowLeft size={14} />
+                            VOLTAR
+                        </Link>
+                        <h1 className="text-2xl font-black flex items-center gap-2">
+                            <Trophy className="text-[#D4AF37]" />
+                            Montar Chave
+                        </h1>
+                    </div>
+                    
+                    <Button
+                        onClick={() => router.push('/brackets')}
+                        variant="outline"
+                        className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black cursor-pointer"
+                    >
+                        <ListChecks size={18} className="mr-2" />
+                        Ver Chaves Criadas
+                    </Button>
                 </div>
-
-                <h1 className="text-2xl font-black flex items-center gap-2">
-                    <Trophy className="text-[#D4AF37]" />
-                    Montar Chave
-                </h1>
             </header>
 
             <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6 min-h-0">
@@ -194,12 +196,12 @@ export default function GerarChavesPage() {
                             className="h-11 w-64 text-gray-900 bg-white"
                         />
 
-                        <Select
+                        <Select 
                             onValueChange={(value) => {
                                 setBelt(value);
                                 setSelectedIds([]);
                                 setError("");
-                            }}
+                            }} 
                             value={belt}
                         >
                             <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37]">
@@ -282,7 +284,7 @@ export default function GerarChavesPage() {
                                     {atletasOrdenados.map((c, index) => {
                                         const idade = calculateAge(c.dateBirth);
                                         const isSelected = selectedIds.includes(c.id);
-
+                                        
                                         return (
                                             <tr
                                                 key={c.id}
@@ -298,12 +300,12 @@ export default function GerarChavesPage() {
                                                     <Checkbox
                                                         checked={isSelected}
                                                         onCheckedChange={() => toggleAtleta(c.id)}
-                            className="
-                              border-gray-400 
-                              data-[state=checked]:bg-[#D4AF37] 
-                              data-[state=checked]:border-[#D4AF37] 
-                              data-[state=checked]:text-black
-                            "
+                                                        className="
+                                                            border-gray-400 
+                                                            data-[state=checked]:bg-[#D4AF37] 
+                                                            data-[state=checked]:border-[#D4AF37] 
+                                                            data-[state=checked]:text-black
+                                                        "
                                                     />
                                                 </td>
                                                 <td className="px-6 py-3">
