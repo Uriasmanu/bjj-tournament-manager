@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     const bracketsData = await readBrackets()
     const competitorsData = await readCompetitors()
 
-    
     const selectedCompetitors = competitorsData.competitors.filter(c =>
         competitorIds.includes(c.id) && c.isActive
     )
@@ -29,12 +28,10 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    
     const weights = selectedCompetitors.map(c => c.weight)
     const weightMin = Math.min(...weights)
     const weightMax = Math.max(...weights)
 
-    
     const label = `${belt} - ${weightMin}kg a ${weightMax}kg`
 
     const newBracket: Bracket = {

@@ -193,16 +193,18 @@ export default function GerarChavesPage() {
                         `}
                       >
                         <td className="px-6 py-3">
-                          <Checkbox
-                            checked={selectedIds.includes(c.id)}
-                            onCheckedChange={() => toggleAtleta(c.id)} 
-                            className="
-                              border-gray-400 
-                              data-[state=checked]:bg-[#D4AF37] 
-                              data-[state=checked]:border-[#D4AF37] 
-                              data-[state=checked]:text-black
-                            "
-                          />
+                          <div onClick={(e) => e.stopPropagation()}> 
+                            <Checkbox
+                              checked={selectedIds.includes(c.id)}
+                              onCheckedChange={() => toggleAtleta(c.id)}
+                              className="
+                                border-gray-400 
+                                data-[state=checked]:bg-[#D4AF37] 
+                                data-[state=checked]:border-[#D4AF37] 
+                                data-[state=checked]:text-black
+                              "
+                            />
+                          </div>
                         </td>
                         <td className="px-6 py-3">
                           <div className="flex flex-col">
