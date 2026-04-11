@@ -66,18 +66,18 @@ export default function GerarChavesPage() {
     fetchData()
   }, [])
 
-const atletasOrdenados = [...competitors] 
-  .filter(c => c.belt === belt)
-  .sort((a, b) => {
-    const idadeA = calculateAge(a.dateBirth)
-    const idadeB = calculateAge(b.dateBirth)
+  const atletasOrdenados = [...competitors]
+    .filter(c => c.belt === belt)
+    .sort((a, b) => {
+      const idadeA = calculateAge(a.dateBirth)
+      const idadeB = calculateAge(b.dateBirth)
 
-    if (idadeA !== idadeB) {
-      return idadeA - idadeB
-    }
-    
-    return a.weight - b.weight
-  })
+      if (idadeA !== idadeB) {
+        return idadeA - idadeB
+      }
+
+      return a.weight - b.weight
+    })
 
   const toggleAtleta = (id: string) => {
     setSelectedIds(prev =>
@@ -195,8 +195,13 @@ const atletasOrdenados = [...competitors]
                         <td className="px-6 py-3">
                           <Checkbox
                             checked={selectedIds.includes(c.id)}
-                            onCheckedChange={() => { }}
-                            className="border-gray-400 data-[state=checked]:bg-[#D4AF37] data-[state=checked]:border-[#D4AF37]"
+                            onCheckedChange={() => toggleAtleta(c.id)} 
+                            className="
+                              border-gray-400 
+                              data-[state=checked]:bg-[#D4AF37] 
+                              data-[state=checked]:border-[#D4AF37] 
+                              data-[state=checked]:text-black
+                            "
                           />
                         </td>
                         <td className="px-6 py-3">
