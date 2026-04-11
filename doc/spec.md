@@ -511,11 +511,79 @@ Campos nao informados no JSON mantem os valores existentes:
 
 ### 4. Modulo de Chaves (Brackets)
 
-**Objetivo:** Organizar os competidores em brackets de eliminacao simples por faixa e categoria de peso.
+**Objetivo:** Organizar os competidores em brackets de eliminacao simples por faixa e categoria de peso e idade.
 
 **Categoria de peso (por faixa etaria e faixa de graduacao - simplificado para o sistema):**
 
-O usuario define manualmente os limites de peso e idade para criar uma categoria. Nao ha categorias pre-fixadas.
+O usuario define manualmente as chaves.
+
+**Interface de Criacao de Chave:**
+
+A tela de geracao de chaves apresenta:
+- **Header:** Fundo `#1A1A1A` com texto branco, botão de voltar estilizado e ícone de troféu (`Trophy`) na cor `#D4AF37`
+- **Card de Configuracao:** Container branco com borda cinza, contendo:
+  - Campo de texto para **Titulo da chave** (obrigatorio)
+  - Select para **Faixa** (obrigatorio)
+  - Botao **"Salvar Chave"** (desabilitado ate selecionar minimo 2 competidores)
+- **Tabela de Competidores:** Exibe lista filtrada por faixa selecionada
+  - Ordenacao padrao: **Idade (crescente)** → **Peso (crescente)**
+  - Linhas com hover em `#D4AF37/10` e selecao em `#D4AF37/20`
+  - Checkbox para selecao individual
+  - Colunas: Competidor (nome + equipe), Peso (kg), Faixa, Idade + categoria (Infantil/Adulto/Master)
+- **Footer da Tabela:** Exibe contador de selecionados e alerta visual para numero impar de competidores (bye automatico)
+
+**Ordenacao dos Competidores:**
+
+```typescript
+// Regra de ordenacao implementada
+const atletasOrdenados = [...competitors]
+  .filter(c => c.belt === belt)
+  .sort((a, b) => {
+    const idadeA = calculateAge(a.dateBirth)
+    const idadeB = calculateAge(b.dateBirth)
+    
+    if (idadeA !== idadeB) {
+      return idadeA - idadeB  // Ordena por idade primeiro
+    }
+    
+    return a.weight - b.weight  // Depois por peso
+  })
+```
+
+**Calculo de Idade:**
+
+```typescript
+function calculateAge(dateBirth: string): number {
+  if (!dateBirth) return 0
+  const [year, month, day] = dateBirth.split('-').map(Number)
+  const today = new Date()
+  const birth = new Date(year, month - 1, day)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+```
+
+**Classificacao Etaria:**
+
+| Idade          | Categoria |
+| -------------- | --------- |
+| Menos de 18    | Infantil  |
+| 18 a 29 anos   | Adulto    |
+| 30 anos ou mais| Master    |
+
+**Badges de Faixa na Tabela:**
+
+| Faixa  | Classes CSS                                 |
+| ------ | ------------------------------------------- |
+| WHITE  | `bg-gray-200 text-gray-700`                 |
+| BLUE   | `bg-blue-100 text-blue-700`                 |
+| PURPLE | `bg-purple-100 text-purple-700`             |
+| BROWN  | `bg-amber-200 text-amber-900`               |
+| BLACK  | `bg-gray-900 text-white`                    |
 
 **Dados da Chave:**
 
@@ -523,30 +591,41 @@ O usuario define manualmente os limites de peso e idade para criar uma categoria
 | ------------- | -------------------------------------- | ------------------------------------------------ |
 | `id`          | UUID                                   | Gerado automaticamente                           |
 | `belt`        | enum Belt                              | Faixa dos competidores                           |
-| `weightMin`   | number                                 | Peso minimo em kg                                |
-| `weightMax`   | number                                 | Peso maximo em kg                                |
+| `title`       | string                                 | Titulo definido pelo usuario na criacao          |
+| `weightMin`   | number                                 | Peso minimo em kg (calculado automaticamente)    |
+| `weightMax`   | number                                 | Peso maximo em kg (calculado automaticamente)    |
 | `label`       | string                                 | Nome da categoria (ex: "Azul - Leve")            |
-| `competitors` | Competitor[]                           | Competidores elegiveis filtrados automaticamente |
+| `competitors` | Competitor[]                           | Competidores selecionados manualmente             |
 | `matches`     | Match[]                                | Lutas geradas pelo bracket                       |
 | `status`      | enum: PENDING / IN_PROGRESS / FINISHED | Status da chave                                  |
 | `refereeId`   | UUID ou null                           | Arbitro responsavel pela chave                   |
 | `areaId`      | UUID ou null                           | Area preferencial para esta chave                |
 
-**Regras:**
+**Regras de Selecao:**
 
-- Ao criar uma chave, o sistema filtra automaticamente os competidores cadastrados que correspondem a faixa e ao intervalo de peso definidos.
-- O usuario pode remover ou adicionar competidores manualmente antes de gerar as lutas.
-- O bracket e de eliminacao simples (single elimination).
-- Com numero impar de competidores, o sistema distribui bye automaticamente.
-- Uma chave nao pode ser editada apos o status mudar para `IN_PROGRESS`.
-- Cada chave pode ter um arbitro designado.
+- Ao selecionar uma faixa no dropdown, a tabela exibe **apenas competidores daquela faixa**
+- O usuario seleciona manualmente os competidores via checkbox ou clicando na linha inteira
+- Nao ha filtro automatico por peso - o usuario decide quais competidores entram na chave
+- O sistema exibe alerta visual quando o numero de selecionados for **impar** (bye automatico na geracao)
+- O botao "Gerar Chave" fica desabilitado ate que:
+  - `title` esteja preenchido
+  - `belt` esteja selecionada
+  - Pelo menos 2 competidores estejam selecionados
+
+**Regras de Negocio:**
+
+- O usuario pode remover ou adicionar competidores manualmente antes de gerar as lutas
+- O bracket e de eliminacao simples (single elimination)
+- Com numero impar de competidores, o sistema distribui bye automaticamente
+- Uma chave nao pode ser editada apos o status mudar para `IN_PROGRESS`
+- Cada chave pode ter um arbitro designado
 
 **Acoes:**
 
-- `Criar chave` (definir faixa + faixa de peso + faixa de idade + arbitro)
-- `Ver competidores elegiveis`
-- `Adicionar/remover competidor da chave`
-- `Gerar bracket` (cria as lutas)
+- `Selecionar faixa` (filtra competidores na tabela)
+- `Selecionar competidores` (checkbox ou click na linha)
+- `Definir titulo da chave`
+- `Gerar chave` (cria bracket com os competidores selecionados)
 - `Visualizar bracket` (exibicao em arvore)
 - `Atribuir arbitro a chave`
 - `Excluir chave` (somente se PENDING)
@@ -565,6 +644,7 @@ O sistema deve exportar os dados no seguinte formato JSON:
     {
       "id": "uuid",
       "belt": "BLUE",
+      "title": "Azul - Leve",
       "weightMin": 70,
       "weightMax": 76,
       "label": "Azul - Leve",
@@ -601,6 +681,8 @@ O sistema deve exportar os dados no seguinte formato JSON:
   ]
 }
 ```
+
+**Observacao:** O campo `title` e armazenado juntamente com `label` para compatibilidade com a interface de criacao.
 
 ### Regras de Exportacao
 
@@ -642,7 +724,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 1. **Prioridade 1 - Busca por ID**  
    Se o campo `id` for fornecido no JSON, o sistema busca uma chave existente com o mesmo ID
 2. **Prioridade 2 - Busca por identificador unico**  
-   Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `weightMin` + `weightMax` + `label`
+   Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `title` + `label`
 
 #### Acoes resultantes:
 
@@ -651,6 +733,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 
 #### O que pode ser atualizado:
 
+- `title` - permite renomear chave
 - `label` - permite renomear categoria
 - `status` - atualiza status da chave
 - `refereeId` - altera arbitro responsavel
@@ -661,6 +744,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 #### Campos opcionais no JSON:
 
 - `id` - se nao informado → gera novo UUID
+- `title` - se nao informado → usa `label`
 - `competitors` - se nao informado → array vazio
 - `matches` - se nao informado → array vazio
 - `refereeId` - se nao informado → null
@@ -673,9 +757,8 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 | Campo       | Validacao                                                                       |
 | ----------- | ------------------------------------------------------------------------------- |
 | `belt`      | Obrigatorio, deve ser um valor valido do enum Belt                              |
-| `weightMin` | Obrigatorio, deve ser maior que 0                                               |
-| `weightMax` | Obrigatorio, deve ser maior que weightMin                                       |
-| `label`     | Obrigatorio, nao pode estar vazio                                               |
+| `title`     | Obrigatorio quando importando sem `label`, nao pode estar vazio                 |
+| `label`     | Obrigatorio quando importando sem `title`, nao pode estar vazio                 |
 | `brackets`  | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
 
 **Exemplo de erro de validacao:**
@@ -703,14 +786,14 @@ O sistema retorna um relatorio detalhado da operacao:
   "details": {
     "errors": [
       "Linha 2: belt obrigatorio",
-      "Linha 4: weightMax deve ser maior que weightMin"
+      "Linha 4: titulo obrigatorio"
     ],
     "inserted": [
       "Linha 1: \"Azul - Leve\" importado (novo ID)",
       "Linha 3: \"Roxa - Pesado\" importado (com ID existente)"
     ],
     "updated": [
-      "Linha 5: \"Azul - Medio\" atualizado (label: \"Azul - Medio\" → \"Azul - Medio Pesado\", status: PENDING → IN_PROGRESS) [match por id]"
+      "Linha 5: \"Azul - Medio\" atualizado (title: \"Azul - Medio\" → \"Azul - Medio Pesado\", status: PENDING → IN_PROGRESS) [match por id]"
     ],
     "skipped": []
   }
@@ -739,7 +822,7 @@ O sistema retorna um relatorio detalhado da operacao:
 Competidores importados junto com a chave sao validados:
 
 - Devem existir no banco de competidores (por ID ou nome+equipe)
-- Devem ser elegiveis para a chave (mesma faixa e peso dentro do intervalo)
+- Devem ser elegiveis para a chave (mesma faixa - validacao de peso e opcional)
 - Competidores invalidos sao removidos da lista com alerta
 
 #### Validacao de arbitro
@@ -766,7 +849,7 @@ Ao importar matches:
 
 #### Prevencao de conflitos
 
-- Chaves com mesmo `belt` + `weightMin` + `weightMax` + `label` sao consideradas duplicatas
+- Chaves com mesmo `belt` + `title` + `label` sao consideradas duplicatas
 - Use o `id` para garantir atualizacao correta em casos de alteracao de identificador
 
 ---
@@ -776,7 +859,7 @@ Ao importar matches:
 - Importacao e exportacao sao **simetricas** - o export pode ser reimportado
 - O sistema mantem **integridade referencial** com competidores, arbitros e areas
 - **Upsert** permite atualizacao em massa de chaves existentes
-- Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+pesos+label** (fallback)
+- Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+title+label** (fallback)
 - A importacao preserva o estado das lutas (PENDING, IN_PROGRESS, COMPLETED)
 - Logs detalhados ajudam a identificar cada alteracao realizada
 
