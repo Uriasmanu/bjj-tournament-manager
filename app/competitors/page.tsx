@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link'; // Importado para navegação
+import Link from 'next/link';
 import {
   Plus, Search, Upload, Download, Trash2, Edit,
-  Eye, EyeOff, Users, Filter, HardHat, ChevronLeft
+  Eye, EyeOff, Users, Filter, HardHat, ChevronLeft, Cake
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,47 @@ import { beltLabels, Competitor } from '@/types';
 import { BeltBadge } from './BeltBadge';
 import { CompetitorForm } from './CompetitorForm';
 import { ImportCompetitorsModal } from './ImportCompetitorsModal';
+
+
+function calculateAge(dateBirth: string | undefined): number | null {
+  if (!dateBirth) return null;
+
+  const parts = dateBirth.split('-');
+  if (parts.length !== 3) return null;
+
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  const birth = new Date(year, month, day);
+
+  if (isNaN(birth.getTime())) return null;
+
+  const today = new Date();
+
+  let age = today.getFullYear() - year;
+  const m = today.getMonth() - month;
+
+  if (m < 0 || (m === 0 && today.getDate() < day)) {
+    age--;
+  }
+
+  return age;
+}
+
+
+function getAgeBadgeColor(age: number): string {
+  if (age < 18) return "bg-amber-50 text-amber-700 border-amber-200";
+  if (age >= 18 && age < 30) return "bg-green-50 text-green-700 border-green-200";
+  return "bg-purple-50 text-purple-700 border-purple-200";
+}
+
+
+function getAgeIcon(age: number): string {
+  if (age < 18) return "🧒";
+  if (age >= 18 && age < 30) return "💪";
+  return "👑";
+}
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -148,7 +189,7 @@ export default function CompetitorsPage() {
     <div className="h-screen bg-[#F8F9FA] overflow-hidden flex flex-col font-sans">
       <div className="container mx-auto p-6 space-y-6 flex flex-col h-full">
 
-       
+        {/* Botão Voltar */}
         <div className="flex items-center justify-between flex-shrink-0">
           <Link href="/">
             <Button variant="ghost" className="text-gray-600 hover:text-bjj-black transition-colors group cursor-pointer">
@@ -158,7 +199,7 @@ export default function CompetitorsPage() {
           </Link>
         </div>
 
-       
+        {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="bg-bjj-black p-3 rounded-lg shadow-lg">
@@ -195,7 +236,7 @@ export default function CompetitorsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-         
+          {/* Filtros */}
           <Card className="lg:col-span-1 bg-white border-none shadow-md flex flex-col overflow-hidden">
             <CardHeader className="bg-gray-50 border-b border-gray-100 flex-shrink-0">
               <CardTitle className="text-sm font-bold uppercase flex items-center gap-2 text-bjj-black">
@@ -256,7 +297,7 @@ export default function CompetitorsPage() {
             </CardContent>
           </Card>
 
-         
+          {/* Lista de Competidores */}
           <Card className="lg:col-span-3 bg-white border-none shadow-md flex flex-col overflow-hidden">
             <div className="flex flex-col h-full">
               <div className="flex-shrink-0 bg-bjj-black shadow-md rounded-t-lg">
@@ -283,76 +324,83 @@ export default function CompetitorsPage() {
                       Nenhum competidor encontrado.
                     </div>
                   ) : (
-                    competitors.map((competitor) => (
-                      <div
-                        key={competitor.id}
-                        className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors ${!competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'
-                          }`}
-                      >
-                        <div className="col-span-4">
-                          <div className="flex flex-col">
-                            <span className={`font-bold ${!competitor.isActive ? 'text-gray-400 line-through' : 'text-bjj-black'}`}>
-                              {competitor.name}
-                            </span>
-                            {competitor.coach && (
-                              <span className="text-[10px] text-gray-400 flex items-center gap-1 uppercase">
-                                <HardHat className="w-3 h-3" /> {competitor.coach}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="col-span-2 text-gray-600 font-medium">{competitor.team}</div>
-                        <div className="col-span-2">
-                          <div className="flex flex-col items-center gap-1">
-                            <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 bg-white">
-                              {competitor.weight}kg
-                            </Badge>
-                            <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 bg-white">
-                              {competitor.dateBirth} anos
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="col-span-2">
-                          <BeltBadge belt={competitor.belt} />
-                        </div>
-                        <div className="col-span-2 text-right px-6">
-                          <div className="flex justify-end gap-2">
-                            {competitor.isActive ? (
-                              <>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => openEditForm(competitor)}
-                                  className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white cursor-pointer"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
+                    competitors.map((competitor) => {
+                      const idade = calculateAge(competitor.dateBirth);
+                      const idadeExibida = idade ? `${idade} anos` : '—';
+                      const idadeCor = idade ? getAgeBadgeColor(idade) : 'bg-gray-50 text-gray-500 border-gray-200';
+                      const idadeIcone = idade ? getAgeIcon(idade) : '❓';
 
+                      return (
+                        <div
+                          key={competitor.id}
+                          className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors ${!competitor.isActive ? 'bg-gray-50/50' : 'hover:bg-bjj-gold/5'
+                            }`}
+                        >
+                          <div className="col-span-4">
+                            <div className="flex flex-col">
+                              <span className={`font-bold ${!competitor.isActive ? 'text-gray-400 line-through' : 'text-bjj-black'}`}>
+                                {competitor.name}
+                              </span>
+                              {competitor.coach && (
+                                <span className="text-[10px] text-gray-400 flex items-center gap-1 uppercase">
+                                  <HardHat className="w-3 h-3" /> {competitor.coach}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="col-span-2 text-gray-600 font-medium">{competitor.team}</div>
+                          <div className="col-span-2">
+                            <div className="flex flex-col items-center gap-1">
+                              <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 bg-white">
+                                ⚖️ {competitor.weight}kg
+                              </Badge>
+                              <Badge className={`text-[10px] font-semibold ${idadeCor}`}>
+                                {idadeIcone} {idadeExibida}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <BeltBadge belt={competitor.belt} />
+                          </div>
+                          <div className="col-span-2 text-right px-6">
+                            <div className="flex justify-end gap-2">
+                              {competitor.isActive ? (
+                                <>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => openEditForm(competitor)}
+                                    className="h-8 w-8 text-bjj-blue hover:bg-bjj-blue hover:text-white cursor-pointer"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteCompetitor(competitor.id, competitor.name)}
+                                    className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              ) : (
                                 <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleDeleteCompetitor(competitor.id, competitor.name)}
-                                  className="h-8 w-8 text-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
+                                  size="sm"
+                                  onClick={() => handleReactivateCompetitor(competitor.id)}
+                                  className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer"
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  Reativar
                                 </Button>
-                              </>
-                            ) : (
-                              <Button
-                                size="sm"
-                                onClick={() => handleReactivateCompetitor(competitor.id)}
-                                className="rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer"
-                              >
-                                Reativar
-                              </Button>
+                              )}
+                            </div>
+                            {!competitor.isActive && (
+                              <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 mt-2">INATIVO</Badge>
                             )}
                           </div>
-                          {!competitor.isActive && (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 mt-2">INATIVO</Badge>
-                          )}
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>

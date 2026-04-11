@@ -80,17 +80,12 @@ export default function GerarChavesPage() {
           <ArrowLeft size={14} />
           VOLTAR
         </Link>
-
         <h1 className="text-2xl font-black flex items-center gap-2">
           <Trophy className="text-[#D4AF37]" />
           Montar Chave
         </h1>
       </header>
-
-
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6 min-h-0">
-
-
         <Card className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white border border-gray-200 shadow-sm">
           <div className="flex gap-4 w-full md:w-auto">
             <Input
@@ -215,7 +210,6 @@ export default function GerarChavesPage() {
               </table>
             )}
           </CardContent>
-
 
           <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
 

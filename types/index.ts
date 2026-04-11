@@ -11,7 +11,7 @@ export interface Competitor {
   name: string;
   team: string;
   weight: number;
-  dateBirth: Date;
+  dateBirth: string;
   belt: Belt;
   coach: string | null;
   registrationDate: string;
