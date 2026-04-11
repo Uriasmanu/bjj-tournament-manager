@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   Users,
   Filter,
-  Plus,
   ShieldCheck,
   Info,
   Search,
   ChevronRight,
   Trophy,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
 
@@ -24,19 +24,44 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
+// Tipo baseado na sua API
+interface Competitor {
+  id: string;
+  name: string;
+  team: string;
+  weight: string;
+  belt: string;
+  isActive: boolean;
+}
+
 export default function GerarChavesPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [atletas, setAtletas] = useState<Competitor[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const atletasElegiveis = [
-    { id: '1', nome: 'Manoela Silva', equipe: 'Alliance', peso: '68.5kg', faixa: 'AZUL' },
-    { id: '2', nome: 'Ana Oliveira', equipe: 'Checkmat', peso: '69.2kg', faixa: 'AZUL' },
-    { id: '3', nome: 'Beatriz Santos', equipe: 'Gracie Barra', peso: '70.0kg', faixa: 'AZUL' },
-    { id: '4', nome: 'Carla Souza', equipe: 'Dream Art', weight: '67.8kg', faixa: 'AZUL' },
-    { id: '5', nome: 'Daniela Lima', equipe: 'Nova União', weight: '69.9kg', faixa: 'AZUL' },
-    { id: '6', nome: 'Fernanda Rocha', equipe: 'Alliance', peso: '65.5kg', faixa: 'AZUL' },
-    { id: '7', nome: 'Juliana Paes', equipe: 'Checkmat', peso: '66.2kg', faixa: 'AZUL' },
-    { id: '8', nome: 'Patrícia Amorim', equipe: 'Gracie Barra', peso: '71.0kg', faixa: 'AZUL' },
-  ]
+  // Busca os dados da API
+  useEffect(() => {
+    async function fetchAtletas() {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/competitors')
+        const data = await response.json()
+        setAtletas(data)
+      } catch (error) {
+        console.error("Erro ao carregar competidores:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAtletas()
+  }, [])
+
+  // Filtro local por nome/equipe (além do filtro da API se desejar implementar)
+  const atletasFiltrados = atletas.filter(a =>
+    a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.team.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const toggleAtleta = (id: string) => {
     setSelectedIds(prev =>
@@ -46,7 +71,7 @@ export default function GerarChavesPage() {
 
   return (
     <div className="max-h-screen overflow-hidden bg-gray-50 flex flex-col">
-      {/* HEADER FIXO */}
+
       <header className="bg-gradient-to-r from-[#1A1A1A] to-gray-800 text-white p-6 shadow-xl shrink-0">
         <div className="max-w-7xl mx-auto">
           <Link
@@ -62,16 +87,16 @@ export default function GerarChavesPage() {
                 <Trophy className="text-[#D4AF37]" size={24} />
                 Gerar Nova Chave
               </h1>
-              <p className="text-gray-400 text-xs font-medium">Configure os parâmetros e selecione os atletas.</p>
+              <p className="text-gray-400 text-xs font-medium">Configure os parâmetros e selecione os atletas da API.</p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* CONTEÚDO PRINCIPAL COM ALTURA CALCULADA */}
+
       <main className="max-w-7xl w-full mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
-        
-        {/* COLUNA ESQUERDA - FILTROS (SCROLL INDEPENDENTE SE NECESSÁRIO) */}
+
+
         <div className="lg:col-span-4 space-y-6 overflow-y-auto pr-2">
           <Card className="border-0 shadow-2xl overflow-hidden rounded-xl bg-white">
             <CardHeader className="bg-[#1A1A1A] text-white py-4">
@@ -94,6 +119,9 @@ export default function GerarChavesPage() {
                   <SelectContent>
                     <SelectItem value="WHITE">BRANCA</SelectItem>
                     <SelectItem value="BLUE">AZUL</SelectItem>
+                    <SelectItem value="PURPLE">ROXA</SelectItem>
+                    <SelectItem value="BROWN">MARROM</SelectItem>
+                    <SelectItem value="BLACK">PRETA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -105,7 +133,7 @@ export default function GerarChavesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Peso Máx</label>
-                  <Input type="number" placeholder="70.0" className="h-11 bg-gray-50" />
+                  <Input type="number" placeholder="100.0" className="h-11 bg-gray-50" />
                 </div>
               </div>
 
@@ -116,18 +144,17 @@ export default function GerarChavesPage() {
                   <Info size={16} className="shrink-0" />
                   <p className="text-xs font-bold uppercase">Validação</p>
                 </div>
-                <p className="text-[11px] text-gray-600">O sistema filtrará atletas conforme peso e faixa.</p>
+                <p className="text-[11px] text-gray-600">Apenas competidores ativos são listados por padrão.</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* COLUNA DIREITA - TABELA COM SCROLL INTERNO */}
         <div className="lg:col-span-8 h-full min-h-0">
           <Card className="border-0 shadow-2xl overflow-hidden rounded-xl bg-white h-full flex flex-col">
-            
-            {/* SUB-HEADER CARD (FIXO) */}
-            <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-5 border-b border-gray-100 shrink-0">
+
+
+            <div className="bg-white px-8 py-4 shrink-0">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-6 bg-[#D4AF37] rounded-full"></div>
@@ -137,89 +164,113 @@ export default function GerarChavesPage() {
                   <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Buscar atleta..."
-                    className="pl-11 h-10 bg-white text-sm rounded-lg"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-11 text-gray-900 h-10 bg-gray-50 border-none text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-[#D4AF37]"
                   />
                 </div>
               </div>
             </div>
-            
-            {/* ÁREA DE SCROLL DA TABELA */}
+
+
             <CardContent className="p-0 flex-1 overflow-y-auto scrollbar-thin">
-              <div className="min-w-[600px]">
-                <table className="w-full">
-                  <thead className="bg-gray-50 sticky top-0 z-20 shadow-sm">
-                    <tr className="border-b border-gray-200">
-                      <th className="px-8 py-3 w-12"></th>
-                      <th className="px-8 py-3 text-left text-[11px] font-black uppercase text-gray-500 tracking-wider">Competidor</th>
-                      <th className="px-8 py-3 text-center text-[11px] font-black uppercase text-gray-500 tracking-wider">Peso</th>
-                      <th className="px-8 py-3 text-right text-[11px] font-black uppercase text-gray-500 tracking-wider">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {atletasElegiveis.map((atleta) => (
-                      <tr
-                        key={atleta.id}
-                        className={`group hover:bg-[#D4AF37]/5 transition-colors cursor-pointer ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]/5' : ''}`}
-                        onClick={() => toggleAtleta(atleta.id)}
-                      >
-                        <td className="px-8 py-4">
-                          <Checkbox
-                            checked={selectedIds.includes(atleta.id)}
-                            onCheckedChange={() => toggleAtleta(atleta.id)}
-                            className="data-[state=checked]:bg-[#D4AF37] border-gray-300"
-                          />
-                        </td>
-                        <td className="px-8 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}>
-                              {atleta.nome.charAt(0)}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className={`text-sm font-bold ${selectedIds.includes(atleta.id) ? 'text-[#D4AF37]' : 'text-gray-900'}`}>{atleta.nome}</span>
-                              <span className="text-[10px] text-gray-400 font-bold uppercase">{atleta.equipe}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-4 text-center">
-                          <Badge variant="outline" className="font-mono text-[10px] font-bold">{atleta.peso}</Badge>
-                        </td>
-                        <td className="px-8 py-4 text-right">
-                          <ChevronRight size={16} className="inline text-gray-300 group-hover:text-[#D4AF37]" />
-                        </td>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
+                  <Loader2 className="animate-spin" size={32} />
+                  <span className="text-sm font-medium">Carregando competidores...</span>
+                </div>
+              ) : (
+                <div className="min-w-[600px]">
+                  <table className="w-full border-collapse">
+
+                    <thead className="bg-white sticky top-0 z-20">
+                      <tr className="border-b border-gray-100">
+                        <th className="w-16 px-8 py-3 text-left">
+
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Competidor / Equipe</span>
+                        </th>
+                        <th className="px-4 py-3 text-center">
+                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Peso / Faixa</span>
+                        </th>
+                        <th className="px-8 py-3 text-right w-20"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {atletasFiltrados.map((atleta) => (
+                        <tr
+                          key={atleta.id}
+                          className={`group hover:bg-[#D4AF37]/5 transition-colors cursor-pointer ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]/5' : ''}`}
+                          onClick={() => toggleAtleta(atleta.id)}
+                        >
+                          <td className="px-8 py-4">
+                            <Checkbox
+                              checked={selectedIds.includes(atleta.id)}
+                              className="data-[state=checked]:bg-[#D4AF37] border-gray-300"
+                            />
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]' : 'bg-gray-400'}`}>
+                                {atleta.name.charAt(0)}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className={`text-sm font-bold leading-tight ${selectedIds.includes(atleta.id) ? 'text-[#D4AF37]' : 'text-gray-900'}`}>{atleta.name}</span>
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{atleta.team}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <div className="flex flex-col items-center gap-1">
+                              <Badge variant="outline" className="font-mono text-[10px] font-bold border-gray-200 text-gray-900">{atleta.weight}kg</Badge>
+                              <span className="text-[9px] font-black text-gray-500 uppercase">{atleta.belt}</span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-4 text-right">
+                            <ChevronRight size={18} className="inline text-gray-200 group-hover:text-[#D4AF37] transition-all group-hover:translate-x-1" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {atletasFiltrados.length === 0 && (
+                    <div className="flex flex-col items-center py-20 text-gray-400">
+                      <Users size={40} className="mb-4 opacity-20" />
+                      <p className="text-sm font-medium">Nenhum competidor encontrado.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
 
-            {/* RODAPÉ DO CARD (FIXO) */}
-            <div className="bg-gray-50 px-8 py-5 border-t border-gray-100 shrink-0 mt-auto">
+
+            <div className="bg-white px-8 py-5 border-t border-gray-100 shrink-0 mt-auto">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-3">
-                    <div className="bg-[#1A1A1A] p-2 rounded-lg text-[#D4AF37]">
+                    <div className="bg-[#1A1A1A] p-2 rounded-lg text-[#D4AF37] shadow-lg">
                       <Users size={20} />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xl font-black text-gray-900 leading-none">{selectedIds.length}</span>
-                      <span className="text-[10px] text-gray-500 font-bold uppercase">Selecionados</span>
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Selecionados</span>
                     </div>
                   </div>
 
                   {selectedIds.length % 2 !== 0 && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
-                      <AlertTriangle size={12} className="text-amber-600" />
-                      <span className="text-[10px] font-black text-amber-800 uppercase">Número Ímpar (1 Bye)</span>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
+                      <AlertTriangle size={14} className="text-amber-600" />
+                      <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter">Número Ímpar (1 Bye)</span>
                     </div>
                   )}
                 </div>
 
                 <Button
-                  disabled={selectedIds.length < 2}
-                  className="w-full md:w-auto px-8 bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold uppercase text-xs tracking-wider rounded-xl gap-2 transition-all"
+                  disabled={selectedIds.length < 2 || loading}
+                  className="w-full md:w-auto h-12 px-10 bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold uppercase text-xs tracking-[0.15em] rounded-xl gap-3 transition-all shadow-md active:scale-95"
                 >
-                  <ShieldCheck size={16} />
+                  <ShieldCheck size={18} />
                   Gerar Chaveamento
                 </Button>
               </div>
