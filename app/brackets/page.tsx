@@ -92,29 +92,27 @@ export default function GerarChavesPage() {
               placeholder="Título da chave"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-11 w-64 text-gray-900"
+              className="h-11 w-64 text-gray-900 bg-white"
             />
 
-            <Select onValueChange={setBelt}>
-              <SelectTrigger className="h-11 w-48 bg-white border-slate-300 text-slate-900 font-bold shadow-sm focus:ring-2 focus:ring-[#D4AF37] ">
-                <SelectValue placeholder="Selecionar faixa" className='text-gray-900' />
+            <Select onValueChange={setBelt} value={belt}>
+              <SelectTrigger className="h-11 w-48 bg-white border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37] [&>span]:text-gray-900">
+                <SelectValue placeholder="Selecionar faixa" />
               </SelectTrigger>
 
-              <SelectContent className="bg-white border border-slate-300 shadow-xl ">
+              <SelectContent className="bg-white border border-slate-300 shadow-xl">
                 {(Object.keys(beltLabels) as Belt[]).map((belt) => (
                   <SelectItem
                     key={belt}
                     value={belt}
-                    className="focus:bg-slate-100 cursor-pointer py-3 "
+                    className="focus:bg-slate-100 cursor-pointer py-3 text-gray-900 hover:text-gray-900 [&>span]:text-gray-900"
                   >
                     <div className="flex items-center gap-2">
-
                       <span
                         className="w-3 h-3 rounded-full border border-slate-400 shrink-0"
                         style={{ backgroundColor: beltColors[belt] }}
                       />
-
-                      <span className="text-slate-900 font-bold uppercase text-xs">
+                      <span className="font-bold uppercase text-xs text-gray-900">
                         {beltLabels[belt]}
                       </span>
                     </div>
@@ -133,11 +131,8 @@ export default function GerarChavesPage() {
           </Button>
         </Card>
 
-
         <Card className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 shadow-sm">
-
           <CardContent className="p-0 flex-1 overflow-y-auto">
-
             {loading ? (
               <div className="h-full flex items-center justify-center text-gray-400">
                 <Loader2 className="animate-spin" />
@@ -148,7 +143,6 @@ export default function GerarChavesPage() {
               </div>
             ) : (
               <table className="w-full">
-
                 <thead className="sticky top-0 bg-gray-100">
                   <tr>
                     <th className="px-6 py-2"></th>
@@ -157,7 +151,6 @@ export default function GerarChavesPage() {
                     <th></th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {atletasFiltrados.map((c, index) => (
                     <tr
@@ -176,11 +169,9 @@ export default function GerarChavesPage() {
                           className="data-[state=checked]:bg-[#D4AF37] border-gray-400"
                         />
                       </td>
-
                       <td className="px-6 py-3">
                         <div className="flex flex-col">
-                          <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'
-                            }`}>
+                          <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'}`}>
                             {c.name}
                           </span>
                           <span className="text-xs text-gray-500 font-medium">
@@ -188,37 +179,32 @@ export default function GerarChavesPage() {
                           </span>
                         </div>
                       </td>
-
                       <td className="px-6 py-3 text-center">
                         <div className="flex flex-col items-center gap-1">
                           <Badge className="bg-gray-100 text-gray-800 border border-gray-200 text-xs">
                             {c.weight}kg
                           </Badge>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getBeltColor(c.belt)}`}>
-                            {c.belt}
+                            {beltLabels[c.belt as Belt] || c.belt}
                           </span>
                         </div>
                       </td>
-
                       <td className="pr-6 text-right">
                         <ChevronRight size={16} className="text-gray-300" />
                       </td>
                     </tr>
                   ))}
                 </tbody>
-
               </table>
             )}
           </CardContent>
 
           <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
-
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-gray-700">
                 <Users size={18} />
                 <span className="font-bold text-sm">{selectedIds.length}</span>
               </div>
-
               {selectedIds.length % 2 !== 0 && selectedIds.length > 0 && (
                 <div className="flex items-center gap-2 text-amber-600 text-xs font-semibold">
                   <AlertTriangle size={14} />
@@ -226,7 +212,6 @@ export default function GerarChavesPage() {
                 </div>
               )}
             </div>
-
             <Button
               disabled={selectedIds.length < 2 || !title || !belt}
               className="bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white"
@@ -234,11 +219,8 @@ export default function GerarChavesPage() {
               <ShieldCheck size={16} />
               Gerar Chave
             </Button>
-
           </div>
-
         </Card>
-
       </main>
     </div>
   )
