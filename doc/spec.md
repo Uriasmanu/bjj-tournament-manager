@@ -45,7 +45,7 @@ Para garantir a visibilidade em fundos claros e evitar que o conteúdo "desapare
     * **Implementação:** `border-red-200 text-red-600 hover:bg-red-600 hover:text-white`.
 * **Acessibilidade:** Todos os botões interativos devem incluir `cursor-pointer` e `transition-all`.
 
-placehoder term que ter a cor text-gray-900
+Os textos precisam sempre ser text-gray-900
 
 #### 3. Tipografia e Feedback
 * **Títulos:** Semibold ou Bold, cor `gray-900`.

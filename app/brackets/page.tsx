@@ -1,13 +1,10 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ArrowLeft,
   Users,
-  Filter,
   ShieldCheck,
-  Info,
-  Search,
   ChevronRight,
   Trophy,
   AlertTriangle,
@@ -15,53 +12,49 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
-// --- COMPONENTES SHADCN ---
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Belt, beltLabels, beltColors } from "@/types"
 
-// Tipo baseado na sua API
 interface Competitor {
-  id: string;
-  name: string;
-  team: string;
-  weight: string;
-  belt: string;
-  isActive: boolean;
+  id: string
+  name: string
+  team: string
+  weight: string
+  belt: string
+  isActive: boolean
 }
 
 export default function GerarChavesPage() {
+  const [competitors, setCompetitors] = useState<Competitor[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [atletas, setAtletas] = useState<Competitor[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
 
-  // Busca os dados da API
+  const [belt, setBelt] = useState("")
+  const [title, setTitle] = useState("")
+
   useEffect(() => {
-    async function fetchAtletas() {
+    async function fetchData() {
       try {
         setLoading(true)
-        const response = await fetch('/api/competitors')
-        const data = await response.json()
-        setAtletas(data)
-      } catch (error) {
-        console.error("Erro ao carregar competidores:", error)
+        const res = await fetch('/api/competitors')
+        const data = await res.json()
+        setCompetitors(data)
+      } catch (e) {
+        console.error(e)
       } finally {
         setLoading(false)
       }
     }
-    fetchAtletas()
+
+    fetchData()
   }, [])
 
-  // Filtro local por nome/equipe (além do filtro da API se desejar implementar)
-  const atletasFiltrados = atletas.filter(a =>
-    a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.team.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const atletasFiltrados = competitors.filter(c => c.belt === belt)
 
   const toggleAtleta = (id: string) => {
     setSelectedIds(prev =>
@@ -69,214 +62,188 @@ export default function GerarChavesPage() {
     )
   }
 
-  return (
-    <div className="max-h-screen overflow-hidden bg-gray-50 flex flex-col">
+  // 🎨 cores da faixa
+  const getBeltColor = (belt: string) => {
+    switch (belt) {
+      case "WHITE": return "bg-gray-200 text-gray-700"
+      case "BLUE": return "bg-blue-100 text-blue-700"
+      case "PURPLE": return "bg-purple-100 text-purple-700"
+      case "BROWN": return "bg-amber-200 text-amber-900"
+      case "BLACK": return "bg-gray-900 text-white"
+      default: return "bg-gray-100 text-gray-600"
+    }
+  }
 
-      <header className="bg-gradient-to-r from-[#1A1A1A] to-gray-800 text-white p-6 shadow-xl shrink-0">
-        <div className="max-w-7xl mx-auto">
-          <Link
-            href="/brackets"
-            className="group inline-flex items-center text-xs font-bold text-gray-400 hover:text-[#D4AF37] transition-all mb-3 tracking-widest"
-          >
-            <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-            VOLTAR PARA O TORNEIO
-          </Link>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
-                <Trophy className="text-[#D4AF37]" size={24} />
-                Gerar Nova Chave
-              </h1>
-              <p className="text-gray-400 text-xs font-medium">Configure os parâmetros e selecione os atletas da API.</p>
-            </div>
-          </div>
-        </div>
+  return (
+    <div className="h-screen bg-gray-50 flex flex-col">
+
+      {/* HEADER */}
+      <header className="bg-[#1A1A1A] text-white p-6 shadow-md">
+        <Link href="/brackets" className="text-xs text-gray-400 flex items-center gap-2 mb-2">
+          <ArrowLeft size={14} />
+          VOLTAR
+        </Link>
+
+        <h1 className="text-2xl font-black flex items-center gap-2">
+          <Trophy className="text-[#D4AF37]" />
+          Montar Chave
+        </h1>
       </header>
 
+      {/* CONTEÚDO */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6 min-h-0">
 
-      <main className="max-w-7xl w-full mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
+        {/* CONFIG */}
+        <Card className="p-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white border border-gray-200 shadow-sm">
+          <div className="flex gap-4 w-full md:w-auto">
+            <Input
+              placeholder="Título da chave"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="h-11 w-64 text-gray-900"
+            />
 
+            <Select onValueChange={setBelt}>
+              <SelectTrigger className="h-11 w-48 text-gray-900">
+                <SelectValue placeholder="Selecionar faixa" />
+              </SelectTrigger>
 
-        <div className="lg:col-span-4 space-y-6 overflow-y-auto pr-2">
-          <Card className="border-0 shadow-2xl overflow-hidden rounded-xl bg-white">
-            <CardHeader className="bg-[#1A1A1A] text-white py-4">
-              <CardTitle className="text-xs font-bold flex items-center gap-2 uppercase tracking-[0.2em]">
-                <Filter size={16} className="text-[#D4AF37]" /> Parâmetros
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Título da Chave</label>
-                <Input placeholder="Ex: Adulto / Azul / Pena" className="h-11 bg-gray-50" />
-              </div>
+              <SelectContent>
+                {(Object.keys(beltLabels) as Belt[]).map((belt) => (
+                  <SelectItem key={belt} value={belt}>
+                    <div className="flex items-center gap-2 text-gray-900">
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Graduação</label>
-                <Select>
-                  <SelectTrigger className="h-11 bg-gray-50">
-                    <SelectValue placeholder="Selecione a faixa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WHITE">BRANCA</SelectItem>
-                    <SelectItem value="BLUE">AZUL</SelectItem>
-                    <SelectItem value="PURPLE">ROXA</SelectItem>
-                    <SelectItem value="BROWN">MARROM</SelectItem>
-                    <SelectItem value="BLACK">PRETA</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                      {/* bolinha da cor */}
+                      <span
+                        className="w-3 h-3 rounded-full border border-gray-300"
+                        style={{ backgroundColor: beltColors[belt] }}
+                      />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Peso Mín</label>
-                  <Input type="number" placeholder="0.0" className="h-11 bg-gray-50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Peso Máx</label>
-                  <Input type="number" placeholder="100.0" className="h-11 bg-gray-50" />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="p-4 bg-[#003366]/5 border-l-4 border-[#003366] rounded-r-lg">
-                <div className="flex gap-2 text-[#003366] mb-1">
-                  <Info size={16} className="shrink-0" />
-                  <p className="text-xs font-bold uppercase">Validação</p>
-                </div>
-                <p className="text-[11px] text-gray-600">Apenas competidores ativos são listados por padrão.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-8 h-full min-h-0">
-          <Card className="border-0 shadow-2xl overflow-hidden rounded-xl bg-white h-full flex flex-col">
-
-
-            <div className="bg-white px-8 py-4 shrink-0">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-6 bg-[#D4AF37] rounded-full"></div>
-                  <h3 className="text-xl font-black text-gray-900 tracking-tight">Atletas Elegíveis</h3>
-                </div>
-                <div className="relative w-full md:w-72">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Buscar atleta..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-11 text-gray-900 h-10 bg-gray-50 border-none text-sm rounded-lg focus-visible:ring-1 focus-visible:ring-[#D4AF37]"
-                  />
-                </div>
-              </div>
-            </div>
-
-
-            <CardContent className="p-0 flex-1 overflow-y-auto scrollbar-thin">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
-                  <Loader2 className="animate-spin" size={32} />
-                  <span className="text-sm font-medium">Carregando competidores...</span>
-                </div>
-              ) : (
-                <div className="min-w-[600px]">
-                  <table className="w-full border-collapse">
-
-                    <thead className="bg-white sticky top-0 z-20">
-                      <tr className="border-b border-gray-100">
-                        <th className="w-16 px-8 py-3 text-left">
-
-                        </th>
-                        <th className="px-4 py-3 text-left">
-                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Competidor / Equipe</span>
-                        </th>
-                        <th className="px-4 py-3 text-center">
-                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Peso / Faixa</span>
-                        </th>
-                        <th className="px-8 py-3 text-right w-20"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {atletasFiltrados.map((atleta) => (
-                        <tr
-                          key={atleta.id}
-                          className={`group hover:bg-[#D4AF37]/5 transition-colors cursor-pointer ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]/5' : ''}`}
-                          onClick={() => toggleAtleta(atleta.id)}
-                        >
-                          <td className="px-8 py-4">
-                            <Checkbox
-                              checked={selectedIds.includes(atleta.id)}
-                              className="data-[state=checked]:bg-[#D4AF37] border-gray-300"
-                            />
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ${selectedIds.includes(atleta.id) ? 'bg-[#D4AF37]' : 'bg-gray-400'}`}>
-                                {atleta.name.charAt(0)}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className={`text-sm font-bold leading-tight ${selectedIds.includes(atleta.id) ? 'text-[#D4AF37]' : 'text-gray-900'}`}>{atleta.name}</span>
-                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{atleta.team}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <Badge variant="outline" className="font-mono text-[10px] font-bold border-gray-200 text-gray-900">{atleta.weight}kg</Badge>
-                              <span className="text-[9px] font-black text-gray-500 uppercase">{atleta.belt}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-4 text-right">
-                            <ChevronRight size={18} className="inline text-gray-200 group-hover:text-[#D4AF37] transition-all group-hover:translate-x-1" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {atletasFiltrados.length === 0 && (
-                    <div className="flex flex-col items-center py-20 text-gray-400">
-                      <Users size={40} className="mb-4 opacity-20" />
-                      <p className="text-sm font-medium">Nenhum competidor encontrado.</p>
+                      {/* label */}
+                      {beltLabels[belt]}
                     </div>
-                  )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            disabled={selectedIds.length < 2 || !title || !belt}
+            className="h-11 px-6 bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold"
+          >
+            <ShieldCheck size={16} />
+            Salvar Chave
+          </Button>
+        </Card>
+
+        {/* LISTA */}
+        <Card className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 shadow-sm">
+
+          <CardContent className="p-0 flex-1 overflow-y-auto">
+
+            {loading ? (
+              <div className="h-full flex items-center justify-center text-gray-400">
+                <Loader2 className="animate-spin" />
+              </div>
+            ) : !belt ? (
+              <div className="h-full flex items-center justify-center text-gray-400">
+                Selecione uma faixa para começar
+              </div>
+            ) : (
+              <table className="w-full">
+
+                <thead className="sticky top-0 bg-gray-100">
+                  <tr>
+                    <th className="px-6 py-2"></th>
+                    <th className="px-6 py-2 text-left text-xs text-gray-600">Competidor</th>
+                    <th className="px-6 py-2 text-center text-xs text-gray-600">Peso / Faixa</th>
+                    <th></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {atletasFiltrados.map((c, index) => (
+                    <tr
+                      key={c.id}
+                      onClick={() => toggleAtleta(c.id)}
+                      className={`
+                        cursor-pointer transition-colors
+                        ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                        hover:bg-[#D4AF37]/10
+                        ${selectedIds.includes(c.id) ? 'bg-[#D4AF37]/20' : ''}
+                      `}
+                    >
+                      <td className="px-6 py-3">
+                        <Checkbox
+                          checked={selectedIds.includes(c.id)}
+                          className="data-[state=checked]:bg-[#D4AF37] border-gray-400"
+                        />
+                      </td>
+
+                      <td className="px-6 py-3">
+                        <div className="flex flex-col">
+                          <span className={`text-sm font-semibold ${selectedIds.includes(c.id) ? 'text-[#B8960F]' : 'text-gray-800'
+                            }`}>
+                            {c.name}
+                          </span>
+                          <span className="text-xs text-gray-500 font-medium">
+                            {c.team}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <Badge className="bg-gray-100 text-gray-800 border border-gray-200 text-xs">
+                            {c.weight}kg
+                          </Badge>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getBeltColor(c.belt)}`}>
+                            {c.belt}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="pr-6 text-right">
+                        <ChevronRight size={16} className="text-gray-300" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            )}
+          </CardContent>
+
+          {/* FOOTER */}
+          <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-gray-700">
+                <Users size={18} />
+                <span className="font-bold text-sm">{selectedIds.length}</span>
+              </div>
+
+              {selectedIds.length % 2 !== 0 && selectedIds.length > 0 && (
+                <div className="flex items-center gap-2 text-amber-600 text-xs font-semibold">
+                  <AlertTriangle size={14} />
+                  Bye automático
                 </div>
               )}
-            </CardContent>
-
-
-            <div className="bg-white px-8 py-5 border-t border-gray-100 shrink-0 mt-auto">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#1A1A1A] p-2 rounded-lg text-[#D4AF37] shadow-lg">
-                      <Users size={20} />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xl font-black text-gray-900 leading-none">{selectedIds.length}</span>
-                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Selecionados</span>
-                    </div>
-                  </div>
-
-                  {selectedIds.length % 2 !== 0 && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
-                      <AlertTriangle size={14} className="text-amber-600" />
-                      <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter">Número Ímpar (1 Bye)</span>
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  disabled={selectedIds.length < 2 || loading}
-                  className="w-full md:w-auto h-12 px-10 bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white font-bold uppercase text-xs tracking-[0.15em] rounded-xl gap-3 transition-all shadow-md active:scale-95"
-                >
-                  <ShieldCheck size={18} />
-                  Gerar Chaveamento
-                </Button>
-              </div>
             </div>
-          </Card>
-        </div>
+
+            <Button
+              disabled={selectedIds.length < 2 || !title || !belt}
+              className="bg-[#1A1A1A] hover:bg-[#D4AF37] hover:text-black text-white"
+            >
+              <ShieldCheck size={16} />
+              Gerar Chave
+            </Button>
+
+          </div>
+
+        </Card>
+
       </main>
     </div>
   )
