@@ -126,8 +126,6 @@ export default function GerarChavesPage() {
             setTitle("");
             setBelt("");
             
-            alert(`Chave "${data.title}" criada com sucesso!`);
-            
             setTimeout(() => {
                 router.push('/brackets');
             }, 1000);

@@ -85,6 +85,75 @@
         },
         "hasBye": true
       }
+    },
+    {
+      "id": "fa5db410-a44f-4c91-badc-106fc8dc8918",
+      "title": "chave 2",
+      "belt": "BLUE",
+      "competitors": [
+        "comp-046",
+        "comp-029",
+        "comp-020",
+        "comp-058"
+      ],
+      "matches": [
+        {
+          "id": "2c9fe905-2c41-4a34-af42-576d14d3ddf1",
+          "fighter1": "comp-046",
+          "fighter2": "comp-029",
+          "score1": {
+            "competitorId": "comp-046",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-029",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "c6d08443-f502-42f5-a0af-ab854d7d0852",
+          "fighter1": "comp-020",
+          "fighter2": "comp-058",
+          "score1": {
+            "competitorId": "comp-020",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-058",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        }
+      ],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-11T23:51:22.022Z",
+      "metadata": {
+        "totalCompetitors": 4,
+        "weightRange": {
+          "min": 53.1,
+          "max": 72.4
+        },
+        "hasBye": false
+      }
     }
   ]
 }
