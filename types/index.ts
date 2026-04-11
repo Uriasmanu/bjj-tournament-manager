@@ -59,18 +59,23 @@ export type BracketStatus =
   | 'IN_PROGRESS'
   | 'FINISHED'
 
+// src/types/bracket.ts
 export interface Bracket {
-  id: string
-  title: string
-  belt: string
-
-  competitors: string[]
-  matches: string[]  
-
-  status: BracketStatus
-
-  refereeId: string | null
-  areaId: string | null
-
-  createdAt: string
+    id: string
+    title: string
+    belt: string
+    competitors: string[] // IDs dos competidores
+    matches: any[]
+    status: 'PENDING' | 'ACTIVE' | 'COMPLETED'
+    refereeId: string | null
+    areaId: string | null
+    createdAt: string
+    metadata?: {
+        totalCompetitors: number
+        weightRange: {
+            min: number
+            max: number
+        }
+        hasBye: boolean
+    }
 }

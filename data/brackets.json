@@ -1,7 +1,7 @@
 {
   "brackets": [
     {
-      "id": "7c3fd74d-943c-46aa-be01-b6f7e2f463b2",
+      "id": "d49f594f-5667-40c0-aab7-a6431ed3355f",
       "title": "chave",
       "belt": "WHITE",
       "competitors": [
@@ -13,7 +13,15 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-11T22:47:20.183Z"
+      "createdAt": "2026-04-11T22:56:40.441Z",
+      "metadata": {
+        "totalCompetitors": 3,
+        "weightRange": {
+          "min": 58.7,
+          "max": 64.7
+        },
+        "hasBye": true
+      }
     }
   ]
 }
