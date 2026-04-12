@@ -10,6 +10,7 @@ export interface Competitor {
   name: string;
   team: string;
   weight: number;
+  alreadyInBracket: boolean;
   dateBirth: string;
   belt: Belt;
   coach: string | null;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readBrackets, writeBrackets, readCompetitors } from '@/lib/storage';
-import { Bracket, BracketStatus, Competitor, Match } from '@/types';
+import { readBrackets, writeBrackets, readCompetitors, writeCompetitors } from '@/lib/storage';
+import { Bracket, Competitor, Match } from '@/types';
 
 function createEmptyScore(competitor: Competitor) {
   return {
@@ -32,9 +32,11 @@ export async function POST(request: NextRequest) {
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       return NextResponse.json({ error: 'Título é obrigatório' }, { status: 400 });
     }
+
     if (!belt) {
       return NextResponse.json({ error: 'Faixa é obrigatória' }, { status: 400 });
     }
+
     if (!competitorIds || !Array.isArray(competitorIds) || competitorIds.length < 2) {
       return NextResponse.json({ error: 'Selecione pelo menos 2 competidores' }, { status: 400 });
     }
@@ -57,7 +59,6 @@ export async function POST(request: NextRequest) {
     const weightMin = Math.min(...weights);
     const weightMax = Math.max(...weights);
 
-    // Sorteia os objetos completos, não apenas os IDs
     const shuffled: Competitor[] = shuffleArray(selectedCompetitors);
     const matches: Match[] = [];
 
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
       id: crypto.randomUUID(),
       title: title.trim(),
       belt,
-      competitors: shuffled, // Competitor[] completo, na ordem sorteada
+      competitors: shuffled,
       matches,
       status: 'PENDING',
       refereeId: null,
@@ -138,13 +139,27 @@ export async function POST(request: NextRequest) {
       },
     };
 
+    // salva bracket
     bracketsData.brackets.push(newBracket);
     await writeBrackets(bracketsData);
 
+    // 🔥 atualiza competidores
+    competitorsData.competitors = competitorsData.competitors.map((c) =>
+      competitorIds.includes(c.id)
+        ? { ...c, alreadyInBracket: true }
+        : c
+    );
+
+    await writeCompetitors(competitorsData);
+
     return NextResponse.json(newBracket, { status: 201 });
+
   } catch (error) {
     console.error('Erro ao criar chave:', error);
-    return NextResponse.json({ error: 'Erro interno ao criar chave' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Erro interno ao criar chave' },
+      { status: 500 }
+    );
   }
 }
 
@@ -154,6 +169,9 @@ export async function GET() {
     return NextResponse.json(data.brackets, { status: 200 });
   } catch (error) {
     console.error('Erro ao buscar chaves:', error);
-    return NextResponse.json({ error: 'Erro interno ao buscar chaves' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Erro interno ao buscar chaves' },
+      { status: 500 }
+    );
   }
 }

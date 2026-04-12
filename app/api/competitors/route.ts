@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
     dateBirth: body.dateBirth,
     belt: body.belt,
     coach: body.coach || null,
+    alreadyInBracket: false,
     registrationDate: new Date().toISOString(),
     isActive: true,
   };

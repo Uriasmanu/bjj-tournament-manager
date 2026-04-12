@@ -1,10 +1,22 @@
 {
   "brackets": [
     {
-      "id": "c44fdc77-9047-4ba3-a577-14b722abdcde",
+      "id": "970a0208-2036-4651-98bb-70a01a177307",
       "title": "chave 1",
       "belt": "WHITE",
       "competitors": [
+        {
+          "id": "comp-052",
+          "name": "Viviane Costa",
+          "team": "Gracie Barra",
+          "weight": 61.3,
+          "dateBirth": "2004-08-30",
+          "belt": "WHITE",
+          "coach": "Professor Roberto",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-07T17:25:00.000Z",
+          "isActive": true
+        },
         {
           "id": "comp-098",
           "name": "Roberta Lima",
@@ -13,6 +25,7 @@
           "dateBirth": "2003-04-17",
           "belt": "WHITE",
           "coach": "Professor Marcos",
+          "alreadyInBracket": false,
           "registrationDate": "2026-04-11T14:35:00.000Z",
           "isActive": true
         },
@@ -24,40 +37,30 @@
           "dateBirth": "2003-08-11",
           "belt": "WHITE",
           "coach": "Professor Marcos",
+          "alreadyInBracket": false,
           "registrationDate": "2026-02-01T13:45:00.000Z",
-          "isActive": true
-        },
-        {
-          "id": "comp-052",
-          "name": "Viviane Costa",
-          "team": "Gracie Barra",
-          "weight": 61.3,
-          "dateBirth": "2004-08-30",
-          "belt": "WHITE",
-          "coach": "Professor Roberto",
-          "registrationDate": "2026-03-07T17:25:00.000Z",
           "isActive": true
         }
       ],
       "matches": [
         {
-          "id": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
-          "fighter1": "comp-098",
-          "fighter2": "comp-018",
+          "id": "720e7e03-8829-4fd9-a558-1de52fe34070",
+          "fighter1": "comp-052",
+          "fighter2": "comp-098",
           "score1": {
-            "competitorId": "comp-098",
-            "name": "Roberta Lima",
-            "weight": 58.7,
-            "coach": "Professor Marcos",
+            "competitorId": "comp-052",
+            "name": "Viviane Costa",
+            "weight": 61.3,
+            "coach": "Professor Roberto",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
-            "competitorId": "comp-018",
-            "name": "Camila Ribeiro",
-            "weight": 64.7,
+            "competitorId": "comp-098",
+            "name": "Roberta Lima",
+            "weight": 58.7,
             "coach": "Professor Marcos",
             "points": 0,
             "advantages": 0,
@@ -69,14 +72,14 @@
           "finished": false
         },
         {
-          "id": "b984a151-d9c8-444a-9ad8-500874b91f46",
-          "fighter1": "comp-052",
+          "id": "5ec55c3b-322f-4a1d-810a-395073dd2e6a",
+          "fighter1": "comp-018",
           "fighter2": null,
           "score1": {
-            "competitorId": "comp-052",
-            "name": "Viviane Costa",
-            "weight": 61.3,
-            "coach": "Professor Roberto",
+            "competitorId": "comp-018",
+            "name": "Camila Ribeiro",
+            "weight": 64.7,
+            "coach": "Professor Marcos",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -84,7 +87,7 @@
           },
           "score2": null,
           "dependsOn": {
-            "matchId": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
+            "matchId": "720e7e03-8829-4fd9-a558-1de52fe34070",
             "type": "LOSER"
           },
           "winnerId": null,
@@ -92,18 +95,18 @@
           "finished": false
         },
         {
-          "id": "11f0e926-8f51-4d6f-9174-2afbee890d21",
+          "id": "cc1d9917-67f3-470f-aebc-de6ebed41b9c",
           "fighter1": null,
           "fighter2": null,
           "score1": null,
           "score2": null,
           "dependsOn": [
             {
-              "matchId": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
+              "matchId": "720e7e03-8829-4fd9-a558-1de52fe34070",
               "type": "WINNER"
             },
             {
-              "matchId": "b984a151-d9c8-444a-9ad8-500874b91f46",
+              "matchId": "5ec55c3b-322f-4a1d-810a-395073dd2e6a",
               "type": "WINNER"
             }
           ],
@@ -115,7 +118,7 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-12T01:57:37.656Z",
+      "createdAt": "2026-04-12T02:32:08.208Z",
       "metadata": {
         "totalCompetitors": 3,
         "weightRange": {
@@ -123,127 +126,6 @@
           "max": 64.7
         },
         "hasBye": true
-      }
-    },
-    {
-      "id": "f2301d50-8d7c-48c1-b20c-8943f415a9a9",
-      "title": "chave 2",
-      "belt": "GREEN",
-      "competitors": [
-        {
-          "id": "comp-022",
-          "name": "Larissa Freitas",
-          "team": "Gracie Barra",
-          "weight": 59.4,
-          "dateBirth": "2004-04-23",
-          "belt": "GREEN",
-          "coach": "Professor Roberto",
-          "registrationDate": "2026-02-05T17:55:00.000Z",
-          "isActive": true
-        },
-        {
-          "id": "comp-050",
-          "name": "Sandra Carvalho",
-          "team": "De La Riva",
-          "weight": 54.2,
-          "dateBirth": "2000-05-21",
-          "belt": "GREEN",
-          "coach": "Professor Daniel",
-          "registrationDate": "2026-03-05T08:35:00.000Z",
-          "isActive": true
-        },
-        {
-          "id": "comp-091",
-          "name": "Eliana Castro",
-          "team": "Alliance",
-          "weight": 61.6,
-          "dateBirth": "2001-12-01",
-          "belt": "GREEN",
-          "coach": "Mestre Carlos",
-          "registrationDate": "2026-04-11T15:40:00.000Z",
-          "isActive": true
-        },
-        {
-          "id": "comp-010",
-          "name": "Carla Souza",
-          "team": "De La Riva",
-          "weight": 55.5,
-          "dateBirth": "2001-10-30",
-          "belt": "GREEN",
-          "coach": "Professor Daniel",
-          "registrationDate": "2026-01-24T09:40:00.000Z",
-          "isActive": true
-        }
-      ],
-      "matches": [
-        {
-          "id": "7fbcf49f-2083-4d5e-a53d-b2b73d5ddaa9",
-          "fighter1": "comp-022",
-          "fighter2": "comp-050",
-          "score1": {
-            "competitorId": "comp-022",
-            "name": "Larissa Freitas",
-            "weight": 59.4,
-            "coach": "Professor Roberto",
-            "points": 0,
-            "advantages": 0,
-            "penalties": 0,
-            "submission": false
-          },
-          "score2": {
-            "competitorId": "comp-050",
-            "name": "Sandra Carvalho",
-            "weight": 54.2,
-            "coach": "Professor Daniel",
-            "points": 0,
-            "advantages": 0,
-            "penalties": 0,
-            "submission": false
-          },
-          "winnerId": null,
-          "round": 1,
-          "finished": false
-        },
-        {
-          "id": "2b13e31f-8f0e-4e56-a9ac-780839bc1102",
-          "fighter1": "comp-091",
-          "fighter2": "comp-010",
-          "score1": {
-            "competitorId": "comp-091",
-            "name": "Eliana Castro",
-            "weight": 61.6,
-            "coach": "Mestre Carlos",
-            "points": 0,
-            "advantages": 0,
-            "penalties": 0,
-            "submission": false
-          },
-          "score2": {
-            "competitorId": "comp-010",
-            "name": "Carla Souza",
-            "weight": 55.5,
-            "coach": "Professor Daniel",
-            "points": 0,
-            "advantages": 0,
-            "penalties": 0,
-            "submission": false
-          },
-          "winnerId": null,
-          "round": 1,
-          "finished": false
-        }
-      ],
-      "status": "PENDING",
-      "refereeId": null,
-      "areaId": null,
-      "createdAt": "2026-04-12T01:57:46.494Z",
-      "metadata": {
-        "totalCompetitors": 4,
-        "weightRange": {
-          "min": 54.2,
-          "max": 61.6
-        },
-        "hasBye": false
       }
     }
   ]

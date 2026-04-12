@@ -83,3 +83,19 @@ export async function writeBrackets(data: BracketsData): Promise<void> {
   await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
   await fs.rename(tempPath, filePath);
 }
+
+export async function markCompetitorsAsInBracket(ids: string[]) {
+  const data = await readCompetitors();
+
+  data.competitors = data.competitors.map((c) => {
+    if (ids.includes(c.id)) {
+      return {
+        ...c,
+        alreadyInBracket: true,
+      };
+    }
+    return c;
+  });
+
+  await writeCompetitors(data);
+}
