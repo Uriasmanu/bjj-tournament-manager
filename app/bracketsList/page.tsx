@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Belt, beltLabels, Bracket, Match } from "@/types";
 import { BracketModal } from "@/components/BracketModal";
 
-// Função auxiliar para cores das faixas
 function getBeltColor(belt: Belt) {
     switch (belt) {
         case "WHITE": return "bg-gray-100 text-gray-900 border-gray-300";

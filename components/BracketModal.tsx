@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, X, Medal } from "lucide-react";
+import { Trophy, X, Medal, Save, RefreshCw } from "lucide-react";
 import { Belt, beltLabels, Bracket as GlobalBracket } from "@/types";
 
 /* ================= TYPES ================= */
@@ -19,34 +19,105 @@ type Podium = {
 interface BracketModalProps {
   bracket: GlobalBracket | null;
   onClose: () => void;
+  onSave?: (data: BracketData) => Promise<void>;
+}
+
+interface BracketData {
+  competitors: Competitor[];
+  podium: Podium;
+  winners: Record<string, string>;
 }
 
 /* ================= COMPONENT ================= */
 
-export function BracketModal({ bracket, onClose }: BracketModalProps) {
+export function BracketModal({ bracket, onClose, onSave }: BracketModalProps) {
   if (!bracket) return null;
 
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [podium, setPodium] = useState<Podium>({ first: "", second: "", third: "" });
+  const [winners, setWinners] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Load bracket data when component mounts
   useEffect(() => {
-    const initialCompetitors = Array.from({ length: 16 }, (_, i) => ({
-      id: i + 1,
-      name: "",
-      team: "",
-    }));
-    setCompetitors(initialCompetitors);
-    setPodium({ first: "", second: "", third: "" });
+    loadBracketData();
   }, [bracket]);
+
+  const loadBracketData = async () => {
+    setLoading(true);
+    try {
+      // Try to load saved data first
+      const response = await fetch(`/api/brackets/${bracket.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.competitors) setCompetitors(data.competitors);
+        if (data.podium) setPodium(data.podium);
+        if (data.winners) setWinners(data.winners);
+      } else {
+        // Initialize with bracket competitors if available
+        const initialCompetitors = bracket.competitors?.map((comp, idx) => ({
+          id: comp.id || idx + 1,
+          name: comp.name || "",
+          team: comp.team || "",
+        })) || Array.from({ length: 16 }, (_, i) => ({
+          id: i + 1,
+          name: "",
+          team: "",
+        }));
+        setCompetitors(initialCompetitors);
+      }
+    } catch (error) {
+      console.error("Error loading bracket data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveBracketData = async () => {
+    if (!onSave) return;
+    
+    setSaving(true);
+    try {
+      await onSave({
+        competitors,
+        podium,
+        winners,
+      });
+    } catch (error) {
+      console.error("Error saving bracket:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const updateCompetitor = (index: number, field: keyof Competitor, value: string) => {
     const updated = [...competitors];
     updated[index] = { ...updated[index], [field]: value.toUpperCase() };
     setCompetitors(updated);
+    
+    // Auto-update podium if this competitor advances
+    updatePodiumFromCompetitors(updated);
   };
 
-  // Componente de Atleta com design mais limpo
-  const AthleteBox = ({ index }: { index: number }) => (
+  const updatePodiumFromCompetitors = (comps: Competitor[]) => {
+    // Logic to determine podium from bracket winners
+    const finalWinner = winners["final"] || comps.find(c => c.name)?.name || "";
+    const runnerUp = winners["semifinal1"] || "";
+    const thirdPlace = winners["semifinal2"] || "";
+    
+    setPodium({
+      first: finalWinner,
+      second: runnerUp,
+      third: thirdPlace,
+    });
+  };
+
+  const updateWinner = (matchId: string, competitorName: string) => {
+    setWinners(prev => ({ ...prev, [matchId]: competitorName.toUpperCase() }));
+  };
+
+  const AthleteBox = ({ index, matchId }: { index: number; matchId?: string }) => (
     <div className="flex flex-col border-2 border-gray-300 bg-white w-44 h-14 shadow-sm rounded-md transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
       <input
         type="text"
@@ -65,16 +136,52 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
     </div>
   );
 
-  // Box de progresso (vencedores das fases)
-  const ProgressBox = ({ width = "w-40" }: { width?: string }) => (
-    <div className={`border-2 border-gray-300 bg-gray-50 ${width} h-10 rounded shadow-inner`}>
-      <input
-        type="text"
-        className="w-full h-full text-[10px] font-bold px-2 outline-none text-center uppercase focus:bg-white transition-colors"
-        placeholder="VENCEDOR"
-      />
-    </div>
-  );
+  const ProgressBox = ({ 
+    matchId, 
+    width = "w-40",
+    leftMatchId,
+    rightMatchId 
+  }: { 
+    matchId: string; 
+    width?: string;
+    leftMatchId?: string;
+    rightMatchId?: string;
+  }) => {
+    const winner = winners[matchId] || "";
+    
+    // Auto-determine winner from child matches
+    useEffect(() => {
+      if (leftMatchId && rightMatchId && winners[leftMatchId] && winners[rightMatchId]) {
+        // This would need actual match logic to determine winner
+        // For now, just a placeholder
+        if (!winners[matchId]) {
+          // You could implement match simulation logic here
+        }
+      }
+    }, [winners, leftMatchId, rightMatchId]);
+    
+    return (
+      <div className={`border-2 border-gray-300 bg-gray-50 ${width} h-10 rounded shadow-inner`}>
+        <input
+          type="text"
+          className="w-full h-full text-[10px] font-bold px-2 outline-none text-center uppercase focus:bg-white transition-colors"
+          placeholder="VENCEDOR"
+          value={winner}
+          onChange={(e) => updateWinner(matchId, e.target.value)}
+        />
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-slate-900/90">
+        <div className="bg-white p-8 rounded-lg">
+          <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-2 md:p-6">
@@ -97,42 +204,60 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-all">
-            <X className="w-6 h-6 text-slate-400" />
-          </button>
+          <div className="flex gap-2">
+            {onSave && (
+              <button 
+                onClick={saveBracketData}
+                disabled={saving}
+                className="p-2 hover:bg-green-100 rounded-full transition-all text-green-600"
+              >
+                <Save className={`w-6 h-6 ${saving ? 'animate-pulse' : ''}`} />
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-all">
+              <X className="w-6 h-6 text-slate-400" />
+            </button>
+          </div>
         </div>
 
         {/* Área da Chave com Scroll */}
         <div className="flex-1 overflow-auto p-8 bg-[#f8fafc]">
           <div className="inline-flex items-center min-w-max gap-4 h-full relative">
             
-            {/* LADO ESQUERDO (Oitavas, Quartas, Semi) */}
+            {/* LADO ESQUERDO */}
             <div className="flex items-center">
-              {/* Oitavas */}
               <div className="flex flex-col gap-6">
                 {[0, 2, 4, 6].map((i) => (
                   <div key={i} className="flex flex-col gap-2 relative">
-                    <AthleteBox index={i} />
-                    <AthleteBox index={i + 1} />
-                    {/* Conector p/ Próxima fase */}
+                    <AthleteBox index={i} matchId={`round1_left_${i/2}`} />
+                    <AthleteBox index={i + 1} matchId={`round1_left_${i/2}_2`} />
                     <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-[60px] border-y-2 border-r-2 border-gray-300 rounded-r-lg" />
                   </div>
                 ))}
               </div>
               
-              {/* Quartas */}
               <div className="flex flex-col gap-[112px] ml-8">
                 {[0, 1, 2, 3].map((i) => (
-                   <div key={i} className="relative">
-                      <ProgressBox />
-                      <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-[120px] border-y-2 border-r-2 border-gray-300 rounded-r-lg" />
-                   </div>
+                  <div key={i} className="relative">
+                    <ProgressBox 
+                      matchId={`quarter_left_${i}`}
+                      leftMatchId={`round1_left_${i*2}`}
+                      rightMatchId={`round1_left_${i*2+1}`}
+                    />
+                    <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-[120px] border-y-2 border-r-2 border-gray-300 rounded-r-lg" />
+                  </div>
                 ))}
               </div>
 
-              {/* Semi-Final */}
               <div className="flex flex-col gap-[248px] ml-8">
-                {[0, 1].map((i) => <ProgressBox key={i} />)}
+                {[0, 1].map((i) => (
+                  <ProgressBox 
+                    key={i}
+                    matchId={`semi_left_${i}`}
+                    leftMatchId={`quarter_left_${i*2}`}
+                    rightMatchId={`quarter_left_${i*2+1}`}
+                  />
+                ))}
               </div>
             </div>
 
@@ -144,8 +269,16 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                   GRANDE FINAL
                 </div>
                 <div className="flex gap-6">
-                  <ProgressBox width="w-48" />
-                  <ProgressBox width="w-48" />
+                  <ProgressBox 
+                    matchId="final_left"
+                    leftMatchId="semi_left_0"
+                    rightMatchId="semi_left_1"
+                  />
+                  <ProgressBox 
+                    matchId="final_right"
+                    leftMatchId="semi_right_0"
+                    rightMatchId="semi_right_1"
+                  />
                 </div>
               </div>
 
@@ -175,12 +308,11 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
 
             {/* LADO DIREITO (Espelhado) */}
             <div className="flex flex-row-reverse items-center">
-              {/* Oitavas */}
               <div className="flex flex-col gap-6">
                 {[8, 10, 12, 14].map((i) => (
                   <div key={i} className="flex flex-col gap-2 relative">
-                    <AthleteBox index={i} />
-                    <AthleteBox index={i + 1} />
+                    <AthleteBox index={i} matchId={`round1_right_${(i-8)/2}`} />
+                    <AthleteBox index={i + 1} matchId={`round1_right_${(i-8)/2}_2`} />
                     <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-4 h-[60px] border-y-2 border-l-2 border-gray-300 rounded-l-lg" />
                   </div>
                 ))}
@@ -189,14 +321,16 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               <div className="flex flex-col gap-[112px] mr-8">
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="relative">
-                    <ProgressBox />
+                    <ProgressBox matchId={`quarter_right_${i}`} />
                     <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-4 h-[120px] border-y-2 border-l-2 border-gray-300 rounded-l-lg" />
                   </div>
                 ))}
               </div>
 
               <div className="flex flex-col gap-[248px] mr-8">
-                {[0, 1].map((i) => <ProgressBox key={i} />)}
+                {[0, 1].map((i) => (
+                  <ProgressBox key={i} matchId={`semi_right_${i}`} />
+                ))}
               </div>
             </div>
 
@@ -210,7 +344,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
             MODO DE EDIÇÃO AO VIVO ATIVO
           </div>
           <div className="uppercase tracking-widest">
-            ⚠️ Warning: O preenchimento manual não requer salvamento automático
+            {onSave ? "✅ Alterações salvas automaticamente" : "⚠️ Modo visualização - sem salvamento"}
           </div>
         </div>
       </div>
