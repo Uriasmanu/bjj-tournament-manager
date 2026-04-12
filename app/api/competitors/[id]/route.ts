@@ -112,3 +112,23 @@ export async function PATCH(
 
   return NextResponse.json({ success: true });
 }
+
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+  const data = await readCompetitors();
+
+  const competitor = data.competitors.find(c => c.id === id);
+
+  if (!competitor) {
+    return NextResponse.json(
+      { error: 'Competidor não encontrado' },
+      { status: 404 }
+    );
+  }
+
+  // Retorna o objeto completo ou apenas { name, team } conforme sua necessidade
+  return NextResponse.json(competitor);
+}

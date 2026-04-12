@@ -4,10 +4,30 @@ import React, { useState } from 'react';
 import { X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Bracket, Match, Belt, beltLabels } from "@/types";
+import { useCompetitor } from "@/hooks/useCompetitor"; // Importe o hook acima
 
 interface BracketModalProps {
     bracket: Bracket | null;
     onClose: () => void;
+}
+
+// Sub-componente para exibir Nome e Equipe via ID
+function AthleteDisplay({ id }: { id: string | null }) {
+    const { data, loading } = useCompetitor(id);
+
+    if (!id || id.startsWith('bye')) return <span className="text-gray-400 italic">Aguardando</span>;
+    if (loading) return <span className="animate-pulse text-gray-300 italic">Carregando...</span>;
+    
+    return (
+        <div className="flex flex-col leading-tight overflow-hidden text-left">
+            <span className="truncate font-semibold">{data?.name || "Desconhecido"}</span>
+            {data?.team && (
+                <span className="text-[10px] opacity-60 truncate uppercase font-normal">
+                    {data.team}
+                </span>
+            )}
+        </div>
+    );
 }
 
 export function BracketModal({ bracket, onClose }: BracketModalProps) {
@@ -24,7 +44,6 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
         return rounds;
     };
 
-    const getCompetitorName = (id: string | null) => id ? id.replace('comp-', 'Atleta ') : "Aguardando";
     const rounds = getMatchesByRound();
     const maxRound = Math.max(...bracket.matches.map(m => m.round));
 
@@ -32,7 +51,6 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="relative bg-gray-50 rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 
-                {/* Header - Fixo */}
                 <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 shrink-0">
                     <div className="flex items-center justify-between">
                         <div>
@@ -50,16 +68,13 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                     </div>
                 </header>
 
-                {/* Conteúdo Principal - Scrolável Vertical */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                    
-                    {/* Container da Chave - Scrolável Horizontal */}
                     <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
                         <div className="flex gap-8 min-w-max px-2">
                             {Object.entries(rounds)
                                 .sort(([a], [b]) => Number(a) - Number(b))
                                 .map(([round, matches]) => (
-                                    <div key={round} className="flex flex-col gap-4 w-[240px]">
+                                    <div key={round} className="flex flex-col gap-4 w-[260px]">
                                         <div className="text-center">
                                             <h3 className="font-bold text-gray-900 uppercase">
                                                 {Number(round) === maxRound ? "Final" : `${round}ª Rodada`}
@@ -75,7 +90,6 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                                                     isFinal={Number(round) === maxRound}
                                                     isSelected={selectedMatch?.id === match.id}
                                                     onSelect={() => setSelectedMatch(match)}
-                                                    getName={getCompetitorName}
                                                 />
                                             ))}
                                         </div>
@@ -84,16 +98,13 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                         </div>
                     </div>
 
-                    {/* Detalhes da Luta - Aparece ao selecionar */}
                     {selectedMatch && (
                         <MatchDetails 
                             match={selectedMatch} 
-                            getName={getCompetitorName} 
                         />
                     )}
                 </div>
 
-                {/* Footer - Fixo */}
                 <footer className="bg-gray-100 p-4 shrink-0 flex justify-end border-t border-gray-200">
                     <Button variant="outline" onClick={onClose}>Fechar</Button>
                 </footer>
@@ -102,8 +113,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
     );
 }
 
-// Sub-componente para o Card da Luta
-function MatchItem({ match, isFinal, isSelected, onSelect, getName }: any) {
+function MatchItem({ match, isFinal, isSelected, onSelect }: any) {
     return (
         <div className="relative group">
             <div 
@@ -114,9 +124,9 @@ function MatchItem({ match, isFinal, isSelected, onSelect, getName }: any) {
                 `}
                 onClick={onSelect}
             >
-                <AthleteRow name={getName(match.fighter1)} score={match.score1} isWinner={match.winnerId === match.fighter1} />
+                <AthleteRow id={match.fighter1} score={match.score1} isWinner={match.winnerId === match.fighter1} />
                 <div className="text-center text-[10px] text-gray-400 font-bold my-1">VS</div>
-                <AthleteRow name={getName(match.fighter2)} score={match.score2} isWinner={match.winnerId === match.fighter2} />
+                <AthleteRow id={match.fighter2} score={match.score2} isWinner={match.winnerId === match.fighter2} />
             </div>
 
             {!isFinal && (
@@ -128,16 +138,22 @@ function MatchItem({ match, isFinal, isSelected, onSelect, getName }: any) {
     );
 }
 
-function AthleteRow({ name, score, isWinner }: any) {
+function AthleteRow({ id, score, isWinner }: any) {
     return (
-        <div className={`flex items-center justify-between p-1.5 rounded ${isWinner ? 'bg-green-100 font-bold text-green-800' : 'text-gray-700'}`}>
-            <span className="text-sm truncate mr-2">{name}</span>
-            {score && <span className="text-xs">{score.points}</span>}
+        <div className={`flex items-center justify-between p-1.5 rounded min-h-[40px] ${isWinner ? 'bg-green-100 font-bold text-green-800 border-l-4 border-green-500' : 'text-gray-700'}`}>
+            <div className="flex-1 min-w-0">
+                <AthleteDisplay id={id} />
+            </div>
+            {score && (
+                <div className="ml-2 flex flex-col items-end">
+                    <span className="text-xs font-bold">{score.points}</span>
+                </div>
+            )}
         </div>
     );
 }
 
-function MatchDetails({ match, getName }: any) {
+function MatchDetails({ match }: any) {
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm animate-in slide-in-from-bottom-4 duration-300">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -151,7 +167,9 @@ function MatchDetails({ match, getName }: any) {
                 ].map((item, idx) => (
                     <div key={idx} className={`p-4 rounded-lg border ${item.color}`}>
                         <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{item.label}</p>
-                        <p className="text-gray-900 font-bold text-lg">{getName(item.athlete)}</p>
+                        <div className="text-lg mb-2">
+                            <AthleteDisplay id={item.athlete} />
+                        </div>
                         {item.score && (
                             <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
                                 <div className="bg-white p-2 rounded shadow-sm">
@@ -175,7 +193,6 @@ function MatchDetails({ match, getName }: any) {
     );
 }
 
-// Utility mantida para cores
 function getBeltColor(belt: Belt) {
     const colors: Record<string, string> = {
         WHITE: "bg-gray-100 text-gray-900 border-gray-300",
