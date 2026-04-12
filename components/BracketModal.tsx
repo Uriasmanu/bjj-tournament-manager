@@ -10,9 +10,6 @@ interface BracketModalProps {
 export function BracketModal({ bracket, onClose }: BracketModalProps) {
   if (!bracket) return null;
 
-  const leftSide = [0, 2, 4, 6];
-  const rightSide = [0, 1, 2, 3];
-
   const slots = Array.from({ length: 16 }, (_, i) => ({
     name: bracket.competitors[i]?.name || "",
     team: bracket.competitors[i]?.team || "",
@@ -24,12 +21,14 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
 
     return (
       <div
-        className={`flex flex-col border-2 bg-white w-44 h-14 shadow-sm rounded-md overflow-hidden ${isEmpty ? "border-gray-100" : "border-gray-200"
-          }`}
+        className={`flex flex-col border-2 bg-white w-44 h-14 shadow-sm rounded-md overflow-hidden ${
+          isEmpty ? "border-gray-100" : "border-gray-200"
+        }`}
       >
         <div
-          className={`text-[11px] font-bold px-2 h-1/2 border-b border-gray-50 flex items-center uppercase truncate ${isEmpty ? "text-gray-300" : "text-gray-800"
-            }`}
+          className={`text-[11px] font-bold px-2 h-1/2 border-b border-gray-50 flex items-center uppercase truncate ${
+            isEmpty ? "text-gray-300" : "text-gray-800"
+          }`}
         >
           {name || "—"}
         </div>
@@ -78,10 +77,9 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
         <div className="flex-1 overflow-auto p-8 bg-[#f8fafc]">
           <div className="inline-flex items-center min-w-max gap-4 h-full relative">
 
-            
             <div className="flex items-center">
               <div className="flex flex-col gap-6">
-                {leftSide.map((i) => (
+                {[0, 4, 8, 12].map((i) => (
                   <div key={i} className="flex flex-col gap-2 relative">
                     <AthleteBox index={i} />
                     <AthleteBox index={i + 1} />
@@ -91,7 +89,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </div>
 
               <div className="flex flex-col gap-[112px] ml-8">
-                {rightSide.map((i) => (
+                {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="relative">
                     <ProgressBox value={bracket.winners?.[`quarter_left_${i}`]} />
                     <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-[120px] border-y-2 border-r-2 border-gray-200 rounded-r-lg" />
@@ -106,7 +104,6 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </div>
             </div>
 
-            
             <div className="flex flex-col items-center gap-10 px-12">
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-2 font-black bg-amber-100 text-amber-700 px-8 py-3 rounded-xl border-2 border-amber-200 shadow-md">
@@ -141,10 +138,9 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </div>
             </div>
 
-            
             <div className="flex flex-row-reverse items-center">
               <div className="flex flex-col gap-6">
-                {[8, 10, 12, 14].map((i) => (
+                {[2, 6, 10, 14].map((i) => (
                   <div key={i} className="flex flex-col gap-2 relative">
                     <AthleteBox index={i} />
                     <AthleteBox index={i + 1} />
