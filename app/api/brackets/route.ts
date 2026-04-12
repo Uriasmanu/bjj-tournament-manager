@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readBrackets, writeBrackets, readCompetitors } from '@/lib/storage';
 import { Bracket, BracketStatus, Match } from '@/types';
 
-
 function createEmptyScore(competitor: { id: string; name: string; weight: number; coach: string | null }) {
     return {
         competitorId: competitor.id,

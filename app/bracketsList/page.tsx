@@ -58,7 +58,7 @@ export default function BracketsListPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
             
-            {/* Header */}
+            
             <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 shadow-lg border-b border-gray-700">
                 <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
                     <div>
@@ -97,7 +97,7 @@ export default function BracketsListPage() {
                 </div>
             </header>
 
-            {/* Main Content */}
+            
             <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                 {loading ? (
