@@ -1,4 +1,3 @@
-
 export type Belt =
   | 'WHITE' | 'GRAY' | 'YELLOW' | 'ORANGE' | 'GREEN'
   | 'BLUE' | 'PURPLE' | 'BROWN' | 'BLACK';
@@ -26,6 +25,7 @@ export interface Referee {
   registrationDate: string;
   isActive: boolean;
 }
+
 export const beltColors: Record<Belt, string> = {
   WHITE: '#FFFFFF',
   GRAY: '#808080',
@@ -37,6 +37,7 @@ export const beltColors: Record<Belt, string> = {
   BROWN: '#8B4513',
   BLACK: '#000000',
 };
+
 export const beltLabels: Record<Belt, string> = {
   WHITE: 'Branca',
   GRAY: 'Cinza',
@@ -48,6 +49,7 @@ export const beltLabels: Record<Belt, string> = {
   BROWN: 'Marrom',
   BLACK: 'Preta',
 };
+
 export const beltLabelsReferee: Record<BeltReferee, string> = {
   PURPLE: 'Roxa',
   BROWN: 'Marrom',
@@ -57,11 +59,10 @@ export const beltLabelsReferee: Record<BeltReferee, string> = {
 export type BracketStatus =
   | 'PENDING'
   | 'IN_PROGRESS'
-  | 'FINISHED'
-
+  | 'FINISHED';
 
 export interface MatchScore {
-  competitorId: string | null; 
+  competitorId: string | null;
   points: number;
   advantages: number;
   penalties: number;
@@ -70,40 +71,66 @@ export interface MatchScore {
 
 export interface Match {
   id: string;
-  fighter1: string | null; 
+  fighter1: string | null;
   fighter2: string | null;
-  score1: MatchScore | null; 
+  score1: MatchScore | null;
   score2: MatchScore | null;
   winnerId: string | null;
   round: number;
   finished: boolean;
-
-  
-  dependsOn?: 
+  dependsOn?:
     | { matchId: string; type: 'WINNER' | 'LOSER' }
     | { matchId: string; type: 'WINNER' | 'LOSER' }[];
 }
+
+export interface BracketWinners {
+  quarter_left_0?: string;
+  quarter_left_1?: string;
+  quarter_left_2?: string;
+  quarter_left_3?: string;
+  quarter_right_0?: string;
+  quarter_right_1?: string;
+  quarter_right_2?: string;
+  quarter_right_3?: string;
+  semi_left_0?: string;
+  semi_left_1?: string;
+  semi_right_0?: string;
+  semi_right_1?: string;
+  final_left?: string;
+  final_right?: string;
+  [key: string]: string | undefined;
+}
+
+export interface BracketPodium {
+  first?: string;
+  second?: string;
+  third?: string;
+}
+
 export interface Bracket {
-  id: string
-  title: string
-  belt: string
-
-  competitors: string[]
-  matches: Match[]
-
-  status: BracketStatus
-
-  refereeId: string | null
-  areaId: string | null
-
-  createdAt: string
-
+  id: string;
+  title: string;
+  belt: string;
+  competitors: Competitor[];
+  matches: Match[];
+  status: BracketStatus;
+  refereeId: string | null;
+  areaId: string | null;
+  createdAt: string;
+  winners?: BracketWinners;
+  podium?: BracketPodium;
+  placements?: BracketPlacement[];
   metadata?: {
-    totalCompetitors: number
+    totalCompetitors: number;
     weightRange: {
-      min: number
-      max: number
-    }
-    hasBye: boolean
-  }
+      min: number;
+      max: number;
+    };
+    hasBye: boolean;
+  };
+}
+
+export interface BracketPlacement {
+  competitorId: string;
+  position: number;
 }

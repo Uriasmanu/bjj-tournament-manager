@@ -1,26 +1,64 @@
 {
   "brackets": [
     {
-      "id": "6eb4eeb2-5772-4c94-8423-9177ae4f4df6",
-      "title": "chave",
+      "id": "c44fdc77-9047-4ba3-a577-14b722abdcde",
+      "title": "chave 1",
       "belt": "WHITE",
       "competitors": [
-        "comp-018",
-        "comp-052",
-        "comp-098"
+        {
+          "id": "comp-098",
+          "name": "Roberta Lima",
+          "team": "Fight Sports",
+          "weight": 58.7,
+          "dateBirth": "2003-04-17",
+          "belt": "WHITE",
+          "coach": "Professor Marcos",
+          "registrationDate": "2026-04-11T14:35:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-018",
+          "name": "Camila Ribeiro",
+          "team": "Fight Sports",
+          "weight": 64.7,
+          "dateBirth": "2003-08-11",
+          "belt": "WHITE",
+          "coach": "Professor Marcos",
+          "registrationDate": "2026-02-01T13:45:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-052",
+          "name": "Viviane Costa",
+          "team": "Gracie Barra",
+          "weight": 61.3,
+          "dateBirth": "2004-08-30",
+          "belt": "WHITE",
+          "coach": "Professor Roberto",
+          "registrationDate": "2026-03-07T17:25:00.000Z",
+          "isActive": true
+        }
       ],
       "matches": [
         {
-          "id": "011c9541-ec53-4510-bdeb-69b12ef348f9",
-          "fighter1": "comp-018",
-          "fighter2": "comp-052",
+          "id": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
+          "fighter1": "comp-098",
+          "fighter2": "comp-018",
           "score1": {
+            "competitorId": "comp-098",
+            "name": "Roberta Lima",
+            "weight": 58.7,
+            "coach": "Professor Marcos",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
+            "competitorId": "comp-018",
+            "name": "Camila Ribeiro",
+            "weight": 64.7,
+            "coach": "Professor Marcos",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -31,10 +69,14 @@
           "finished": false
         },
         {
-          "id": "5bb63f92-062b-4b96-92f8-44f22a289802",
-          "fighter1": "comp-098",
+          "id": "b984a151-d9c8-444a-9ad8-500874b91f46",
+          "fighter1": "comp-052",
           "fighter2": null,
           "score1": {
+            "competitorId": "comp-052",
+            "name": "Viviane Costa",
+            "weight": 61.3,
+            "coach": "Professor Roberto",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -42,7 +84,7 @@
           },
           "score2": null,
           "dependsOn": {
-            "matchId": "011c9541-ec53-4510-bdeb-69b12ef348f9",
+            "matchId": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
             "type": "LOSER"
           },
           "winnerId": null,
@@ -50,18 +92,18 @@
           "finished": false
         },
         {
-          "id": "da50ba15-eff7-4a10-a7bd-8bd2b3c1ca71",
+          "id": "11f0e926-8f51-4d6f-9174-2afbee890d21",
           "fighter1": null,
           "fighter2": null,
           "score1": null,
           "score2": null,
           "dependsOn": [
             {
-              "matchId": "011c9541-ec53-4510-bdeb-69b12ef348f9",
+              "matchId": "c6b249fa-c005-4e2c-92e5-c18b904ccedb",
               "type": "WINNER"
             },
             {
-              "matchId": "5bb63f92-062b-4b96-92f8-44f22a289802",
+              "matchId": "b984a151-d9c8-444a-9ad8-500874b91f46",
               "type": "WINNER"
             }
           ],
@@ -73,7 +115,7 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-12T00:27:05.808Z",
+      "createdAt": "2026-04-12T01:57:37.656Z",
       "metadata": {
         "totalCompetitors": 3,
         "weightRange": {
@@ -84,27 +126,75 @@
       }
     },
     {
-      "id": "b0f27249-9c66-4903-b6c7-533694c42ea2",
+      "id": "f2301d50-8d7c-48c1-b20c-8943f415a9a9",
       "title": "chave 2",
-      "belt": "YELLOW",
+      "belt": "GREEN",
       "competitors": [
-        "comp-064",
-        "comp-093",
-        "comp-014",
-        "comp-044"
+        {
+          "id": "comp-022",
+          "name": "Larissa Freitas",
+          "team": "Gracie Barra",
+          "weight": 59.4,
+          "dateBirth": "2004-04-23",
+          "belt": "GREEN",
+          "coach": "Professor Roberto",
+          "registrationDate": "2026-02-05T17:55:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-050",
+          "name": "Sandra Carvalho",
+          "team": "De La Riva",
+          "weight": 54.2,
+          "dateBirth": "2000-05-21",
+          "belt": "GREEN",
+          "coach": "Professor Daniel",
+          "registrationDate": "2026-03-05T08:35:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-091",
+          "name": "Eliana Castro",
+          "team": "Alliance",
+          "weight": 61.6,
+          "dateBirth": "2001-12-01",
+          "belt": "GREEN",
+          "coach": "Mestre Carlos",
+          "registrationDate": "2026-04-11T15:40:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-010",
+          "name": "Carla Souza",
+          "team": "De La Riva",
+          "weight": 55.5,
+          "dateBirth": "2001-10-30",
+          "belt": "GREEN",
+          "coach": "Professor Daniel",
+          "registrationDate": "2026-01-24T09:40:00.000Z",
+          "isActive": true
+        }
       ],
       "matches": [
         {
-          "id": "59e93eee-9d58-4fa7-a702-a9d9021004bc",
-          "fighter1": "comp-064",
-          "fighter2": "comp-093",
+          "id": "7fbcf49f-2083-4d5e-a53d-b2b73d5ddaa9",
+          "fighter1": "comp-022",
+          "fighter2": "comp-050",
           "score1": {
+            "competitorId": "comp-022",
+            "name": "Larissa Freitas",
+            "weight": 59.4,
+            "coach": "Professor Roberto",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
+            "competitorId": "comp-050",
+            "name": "Sandra Carvalho",
+            "weight": 54.2,
+            "coach": "Professor Daniel",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -115,16 +205,24 @@
           "finished": false
         },
         {
-          "id": "7101bb05-25d0-41be-9062-62b91dc0798e",
-          "fighter1": "comp-014",
-          "fighter2": "comp-044",
+          "id": "2b13e31f-8f0e-4e56-a9ac-780839bc1102",
+          "fighter1": "comp-091",
+          "fighter2": "comp-010",
           "score1": {
+            "competitorId": "comp-091",
+            "name": "Eliana Castro",
+            "weight": 61.6,
+            "coach": "Mestre Carlos",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
+            "competitorId": "comp-010",
+            "name": "Carla Souza",
+            "weight": 55.5,
+            "coach": "Professor Daniel",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -138,12 +236,12 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-12T00:27:19.129Z",
+      "createdAt": "2026-04-12T01:57:46.494Z",
       "metadata": {
         "totalCompetitors": 4,
         "weightRange": {
-          "min": 49.5,
-          "max": 54.4
+          "min": 54.2,
+          "max": 61.6
         },
         "hasBye": false
       }

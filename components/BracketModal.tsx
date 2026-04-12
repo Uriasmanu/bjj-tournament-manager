@@ -1,38 +1,49 @@
 import React from "react";
 import { Trophy, X, Medal } from "lucide-react";
-import { Belt, beltLabels, Bracket as GlobalBracket } from "@/types";
-
-/* ================= TYPES ================= */
+import { Belt, beltLabels, Bracket } from "@/types";
 
 interface BracketModalProps {
-  bracket: GlobalBracket | null;
+  bracket: Bracket | null;
   onClose: () => void;
 }
-
-/* ================= COMPONENT ================= */
 
 export function BracketModal({ bracket, onClose }: BracketModalProps) {
   if (!bracket) return null;
 
-  // Garante que sempre teremos 16 slots para manter o layout da grade
-  const competitors = Array.from({ length: 16 }, (_, i) => ({
-    name: bracket.competitors?.[i]?.name || "",
-    team: bracket.competitors?.[i]?.team || "",
+  // Mapeia os 16 slots — slots sem competidor ficam vazios
+  const slots = Array.from({ length: 16 }, (_, i) => ({
+    name: bracket.competitors[i]?.name || "",
+    team: bracket.competitors[i]?.team || "",
   }));
 
-  const AthleteBox = ({ index }: { index: number }) => (
-    <div className="flex flex-col border-2 border-gray-200 bg-white w-44 h-14 shadow-sm rounded-md overflow-hidden">
-      <div className="text-[11px] font-bold px-2 h-1/2 border-b border-gray-50 flex items-center uppercase truncate">
-        {competitors[index].name}
+  const AthleteBox = ({ index }: { index: number }) => {
+    const { name, team } = slots[index];
+    const isEmpty = !name;
+
+    return (
+      <div
+        className={`flex flex-col border-2 bg-white w-44 h-14 shadow-sm rounded-md overflow-hidden ${
+          isEmpty ? "border-gray-100" : "border-gray-200"
+        }`}
+      >
+        <div
+          className={`text-[11px] font-bold px-2 h-1/2 border-b border-gray-50 flex items-center uppercase truncate ${
+            isEmpty ? "text-gray-300" : "text-gray-800"
+          }`}
+        >
+          {name || "—"}
+        </div>
+        <div className="text-[9px] px-2 h-1/2 flex items-center text-gray-400 uppercase italic truncate">
+          {team}
+        </div>
       </div>
-      <div className="text-[9px] px-2 h-1/2 flex items-center text-gray-400 uppercase italic truncate">
-        {competitors[index].team}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const ProgressBox = ({ value, width = "w-40" }: { value?: string; width?: string }) => (
-    <div className={`border-2 border-gray-200 bg-gray-50/50 ${width} h-10 rounded flex items-center justify-center shadow-inner`}>
+    <div
+      className={`border-2 border-gray-200 bg-gray-50/50 ${width} h-10 rounded flex items-center justify-center shadow-inner`}
+    >
       <span className="text-[10px] font-bold text-gray-600 uppercase truncate px-2">
         {value || ""}
       </span>
@@ -43,7 +54,6 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-2 md:p-6 text-slate-900">
       <div className="relative w-full max-w-[98vw] h-[95vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b bg-slate-50">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
@@ -65,11 +75,10 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
           </button>
         </div>
 
-        {/* Área da Chave */}
         <div className="flex-1 overflow-auto p-8 bg-[#f8fafc]">
           <div className="inline-flex items-center min-w-max gap-4 h-full relative">
 
-            {/* LADO ESQUERDO */}
+            {/* Lado esquerdo */}
             <div className="flex items-center">
               <div className="flex flex-col gap-6">
                 {[0, 2, 4, 6].map((i) => (
@@ -97,7 +106,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </div>
             </div>
 
-            {/* CENTRO (FINAL) */}
+            {/* Centro */}
             <div className="flex flex-col items-center gap-10 px-12">
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-2 font-black bg-amber-100 text-amber-700 px-8 py-3 rounded-xl border-2 border-amber-200 shadow-md">
@@ -110,9 +119,10 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                 </div>
               </div>
 
-              {/* Pódio */}
               <div className="w-full bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
-                <h4 className="text-center font-black text-sm mb-4 tracking-widest text-slate-400">PÓDIO OFICIAL</h4>
+                <h4 className="text-center font-black text-sm mb-4 tracking-widest text-slate-400">
+                  PÓDIO OFICIAL
+                </h4>
                 <div className="space-y-3">
                   {[
                     { label: "1º", color: "text-amber-500", key: "first" },
@@ -131,7 +141,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
               </div>
             </div>
 
-            {/* LADO DIREITO */}
+            {/* Lado direito */}
             <div className="flex flex-row-reverse items-center">
               <div className="flex flex-col gap-6">
                 {[8, 10, 12, 14].map((i) => (
@@ -162,11 +172,8 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-4 bg-slate-50 border-t flex justify-end text-[10px] text-slate-400 font-medium">
-          <div className="uppercase tracking-widest">
-            Modo de Visualização
-          </div>
+          <div className="uppercase tracking-widest">Modo de Visualização</div>
         </div>
       </div>
     </div>
