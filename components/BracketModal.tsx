@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ChevronRight, Info, Trophy } from "lucide-react";
+import { X, Trophy, Info, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Bracket, Match, Belt, beltLabels } from "@/types";
 
-// Utilitário de cores para as faixas (BJJ Standard)
+// Configurações de cores das faixas (BJJ)
 const BELT_STYLES: Record<string, string> = {
     WHITE: "bg-gray-100 text-gray-900 border-gray-300",
     GRAY: "bg-gray-500 text-white border-gray-600",
@@ -28,7 +28,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
 
     if (!bracket) return null;
 
-    // Agrupa as lutas por rodada para o desenho horizontal
+    // Agrupa lutas por rodada
     const getMatchesByRound = () => {
         const rounds: Record<number, Match[]> = {};
         bracket.matches.forEach(match => {
@@ -45,23 +45,23 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
     const maxRound = Math.max(...sortedRounds, 0);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="relative bg-[#f8f9fa] rounded-2xl shadow-2xl max-w-7xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-white/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="relative bg-[#f4f4f5] rounded-2xl shadow-2xl max-w-[95vw] w-full max-h-[92vh] flex flex-col overflow-hidden border border-white/10">
                 
-                {/* HEADER FIXO */}
-                <header className="bg-gray-900 text-white p-5 shrink-0 border-b border-yellow-500/30">
+                {/* HEADER */}
+                <header className="bg-gray-900 text-white p-5 shrink-0 border-b-2 border-yellow-500">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                            <h2 className="text-xl font-black italic uppercase tracking-tight flex items-center gap-2">
+                            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-2">
                                 <Trophy className="text-yellow-500" size={20} />
                                 {bracket.title}
                             </h2>
                             <div className="flex items-center gap-3">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase border ${BELT_STYLES[bracket.belt] || BELT_STYLES.WHITE}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${BELT_STYLES[bracket.belt] || BELT_STYLES.WHITE}`}>
                                     {beltLabels[bracket.belt as Belt] || bracket.belt}
                                 </span>
-                                <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
-                                    {bracket.metadata?.totalCompetitors} Atletas • {bracket.metadata?.weightRange.min}kg - {bracket.metadata?.weightRange.max}kg
+                                <span className="text-[11px] text-gray-400 font-bold uppercase">
+                                    {bracket.metadata?.totalCompetitors} Atletas • Categoria {bracket.metadata?.weightRange.max}kg
                                 </span>
                             </div>
                         </div>
@@ -71,32 +71,32 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                     </div>
                 </header>
 
-                {/* CONTEÚDO SCROLLÁVEL VERTICAL */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden">
-                    
-                    {/* CHAVE SCROLLÁVEL HORIZONTAL */}
-                    <div className="p-6 md:p-10 overflow-x-auto custom-scrollbar bg-white/50">
-                        <div className="flex gap-10 min-w-max items-start">
-                            {sortedRounds.map((round) => (
-                                <div key={round} className="flex flex-col gap-6 w-[260px]">
-                                    {/* Título da Rodada */}
-                                    <div className="text-center">
-                                        <h3 className="font-black text-gray-400 text-xs uppercase tracking-widest mb-2">
-                                            {round === maxRound ? "Disputa Final" : `Rodada ${round}`}
+                {/* AREA DAS CHAVES */}
+                <div className="flex-1 overflow-auto bg-[dotted-grid] bg-white">
+                    <div className="p-12 min-w-max">
+                        <div className="flex gap-0 items-stretch">
+                            {sortedRounds.map((round, roundIdx) => (
+                                <div key={round} className="flex flex-col w-[300px] relative">
+                                    
+                                    {/* Nome da Fase */}
+                                    <div className="text-center mb-12">
+                                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
+                                            {round === maxRound ? "Final" : round === maxRound - 1 ? "Semi-Final" : `Rodada ${round}`}
                                         </h3>
-                                        <div className="h-1 bg-yellow-500 w-8 mx-auto rounded-full"></div>
                                     </div>
 
-                                    {/* Lista de Lutas da Rodada */}
-                                    <div className="flex flex-col gap-6">
-                                        {rounds[round].map((match) => (
-                                            <div key={match.id} className="relative">
+                                    {/* Container de Lutas da Rodada */}
+                                    <div className="flex flex-col justify-around flex-1">
+                                        {rounds[round].map((match, matchIdx) => (
+                                            <div key={match.id} className="relative py-10 flex items-center pr-10">
+                                                
+                                                {/* Card da Luta */}
                                                 <div 
                                                     onClick={() => setSelectedMatch(match)}
                                                     className={`
-                                                        bg-white border-2 rounded-xl p-3 cursor-pointer transition-all duration-200 shadow-sm
-                                                        ${match.finished ? 'border-green-500/40 bg-green-50/10' : 'border-gray-200 hover:border-yellow-500'}
-                                                        ${selectedMatch?.id === match.id ? 'ring-2 ring-yellow-500 border-yellow-500 shadow-lg' : ''}
+                                                        w-full z-10 bg-white border-2 rounded-lg shadow-sm cursor-pointer transition-all
+                                                        ${match.finished ? 'border-gray-200' : 'border-gray-300 hover:border-yellow-500'}
+                                                        ${selectedMatch?.id === match.id ? 'ring-2 ring-yellow-500 border-yellow-500 scale-[1.02] shadow-lg' : ''}
                                                     `}
                                                 >
                                                     <AthleteLine 
@@ -104,13 +104,7 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                                                         points={match.score1?.points} 
                                                         isWinner={match.winnerId === match.fighter1 && match.finished} 
                                                     />
-                                                    
-                                                    <div className="flex items-center gap-2 my-2 opacity-30">
-                                                        <div className="h-[1px] bg-gray-400 flex-1"></div>
-                                                        <span className="text-[9px] font-bold">VS</span>
-                                                        <div className="h-[1px] bg-gray-400 flex-1"></div>
-                                                    </div>
-
+                                                    <div className="h-[1px] bg-gray-100 mx-3" />
                                                     <AthleteLine 
                                                         name={getCompetitorName(match.fighter2)} 
                                                         points={match.score2?.points} 
@@ -118,10 +112,20 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                                                     />
                                                 </div>
 
-                                                {/* Seta de conexão */}
+                                                {/* CONECTORES (LINHAS) */}
                                                 {round < maxRound && (
-                                                    <div className="absolute top-1/2 -right-7 -translate-y-1/2 text-gray-300">
-                                                        <ChevronRight size={20} strokeWidth={3} />
+                                                    <div className="absolute right-0 w-10 h-full flex items-center">
+                                                        {/* Linha Horizontal saindo do card */}
+                                                        <div className="w-full h-0.5 bg-gray-300" />
+                                                        
+                                                        {/* Linha Vertical (Braço) */}
+                                                        <div className={`
+                                                            absolute right-0 w-0.5 bg-gray-300
+                                                            ${matchIdx % 2 === 0 
+                                                                ? 'h-1/2 top-1/2' // Metade inferior
+                                                                : 'h-1/2 bottom-1/2' // Metade superior
+                                                            }
+                                                        `} />
                                                     </div>
                                                 )}
                                             </div>
@@ -131,15 +135,21 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                             ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* DETALHES DA LUTA (Abaixo da chave) */}
-                    {selectedMatch && (
-                        <div className="m-6 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm animate-in slide-in-from-bottom-4">
-                            <h4 className="flex items-center gap-2 text-sm font-black uppercase text-gray-500 mb-6">
-                                <Info size={16} className="text-yellow-600" />
-                                Resultado Detalhado
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* DETALHES DA LUTA SELECIONADA */}
+                {selectedMatch && (
+                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 animate-in slide-in-from-bottom-5">
+                        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-5">
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest flex items-center gap-1">
+                                    <Info size={12} /> Detalhes do Confronto
+                                </span>
+                                <button onClick={() => setSelectedMatch(null)} className="text-gray-400 hover:text-gray-600">
+                                    <X size={16} />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <AthleteScoreDetail 
                                     name={getCompetitorName(selectedMatch.fighter1)} 
                                     score={selectedMatch.score1} 
@@ -154,13 +164,12 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
                                 />
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
-                {/* FOOTER FIXO */}
                 <footer className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end shrink-0">
-                    <Button onClick={onClose} variant="default" className="bg-gray-900 hover:bg-black text-white px-8 font-bold">
-                        Fechar Chave
+                    <Button onClick={onClose} className="bg-gray-900 hover:bg-black text-white px-8 font-bold text-xs uppercase">
+                        Fechar Visualização
                     </Button>
                 </footer>
             </div>
@@ -168,12 +177,13 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
     );
 }
 
-// Sub-componentes para clareza
 function AthleteLine({ name, points, isWinner }: { name: string, points?: number, isWinner: boolean }) {
     return (
-        <div className={`flex items-center justify-between ${isWinner ? 'text-green-700 font-bold' : 'text-gray-600'}`}>
-            <span className="text-sm truncate pr-2">{name}</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded font-mono ${isWinner ? 'bg-green-100' : 'bg-gray-100 text-gray-400'}`}>
+        <div className={`flex items-center justify-between p-3 ${isWinner ? 'bg-green-50/50' : ''}`}>
+            <span className={`text-xs truncate max-w-[180px] ${isWinner ? 'font-black text-gray-900' : 'text-gray-500'}`}>
+                {name}
+            </span>
+            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isWinner ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
                 {points ?? 0}
             </span>
         </div>
@@ -181,31 +191,23 @@ function AthleteLine({ name, points, isWinner }: { name: string, points?: number
 }
 
 function AthleteScoreDetail({ name, score, isWinner, side }: any) {
-    const winnerStyles = isWinner ? "border-yellow-500 bg-yellow-50/30" : "border-gray-100 bg-white";
     const sideColor = side === 'left' ? "bg-green-600" : "bg-blue-600";
-
     return (
-        <div className={`relative p-5 rounded-xl border-2 transition-all ${winnerStyles}`}>
-            {isWinner && (
-                <div className="absolute -top-3 left-4 bg-yellow-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase shadow-sm">
-                    Vencedor
+        <div className={`p-4 rounded-lg border-2 ${isWinner ? 'border-yellow-500 bg-yellow-50/20' : 'border-gray-100'}`}>
+            <div className={`w-full h-1 rounded-full mb-3 ${sideColor}`} />
+            <div className="text-sm font-bold text-gray-900 mb-3 truncate">{name}</div>
+            <div className="grid grid-cols-3 gap-1">
+                <div className="text-center">
+                    <p className="text-[8px] text-gray-400 font-bold uppercase">Pts</p>
+                    <p className="text-sm font-black">{score?.points || 0}</p>
                 </div>
-            )}
-            <div className={`w-1 h-8 rounded-full mb-3 ${sideColor}`} />
-            <div className="text-lg font-black text-gray-900 truncate mb-4">{name}</div>
-            
-            <div className="grid grid-cols-3 gap-2">
-                <div className="bg-gray-50 p-2 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase">Pontos</p>
-                    <p className="text-xl font-black text-gray-800">{score?.points || 0}</p>
+                <div className="text-center">
+                    <p className="text-[8px] text-gray-400 font-bold uppercase">Vant</p>
+                    <p className="text-sm font-black">{score?.advantages || 0}</p>
                 </div>
-                <div className="bg-gray-50 p-2 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase">Vant.</p>
-                    <p className="text-xl font-black text-gray-800">{score?.advantages || 0}</p>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-lg text-center">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase">Penal.</p>
-                    <p className="text-xl font-black text-red-500">{score?.penalties || 0}</p>
+                <div className="text-center">
+                    <p className="text-[8px] text-gray-400 font-bold uppercase text-red-400">Pen</p>
+                    <p className="text-sm font-black text-red-500">{score?.penalties || 0}</p>
                 </div>
             </div>
         </div>
