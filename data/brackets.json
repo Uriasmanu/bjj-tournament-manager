@@ -127,6 +127,134 @@
         },
         "hasBye": true
       }
+    },
+    {
+      "id": "fe25502b-6448-4356-a14a-11bbdf37f1fe",
+      "title": "chave 2",
+      "belt": "WHITE",
+      "competitors": [
+        {
+          "id": "comp-088",
+          "name": "Ricardo Souza",
+          "team": "Fight Sports",
+          "weight": 74.6,
+          "dateBirth": "2002-04-06",
+          "belt": "WHITE",
+          "coach": "Professor Marcos",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-04-11T13:25:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-068",
+          "name": "Cristiane Lima",
+          "team": "Fight Sports",
+          "weight": 64.2,
+          "dateBirth": "2002-06-08",
+          "belt": "WHITE",
+          "coach": "Professor Marcos",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-23T10:05:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-026",
+          "name": "Aline Castro",
+          "team": "Cicero Costha",
+          "weight": 56.6,
+          "dateBirth": "2001-09-16",
+          "belt": "WHITE",
+          "coach": "Professor Leandro",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-02-09T16:50:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "c8eac6c7-9d19-484f-9005-091767c33abb",
+          "fighter1": "comp-088",
+          "fighter2": "comp-068",
+          "score1": {
+            "competitorId": "comp-088",
+            "name": "Ricardo Souza",
+            "weight": 74.6,
+            "coach": "Professor Marcos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-068",
+            "name": "Cristiane Lima",
+            "weight": 64.2,
+            "coach": "Professor Marcos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "c4630803-f35f-4d04-85ec-771dfb7ee56b",
+          "fighter1": "comp-026",
+          "fighter2": null,
+          "score1": {
+            "competitorId": "comp-026",
+            "name": "Aline Castro",
+            "weight": 56.6,
+            "coach": "Professor Leandro",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": null,
+          "dependsOn": {
+            "matchId": "c8eac6c7-9d19-484f-9005-091767c33abb",
+            "type": "LOSER"
+          },
+          "winnerId": null,
+          "round": 2,
+          "finished": false
+        },
+        {
+          "id": "58d34be5-c994-4995-a4c3-6c5785dd6d22",
+          "fighter1": null,
+          "fighter2": null,
+          "score1": null,
+          "score2": null,
+          "dependsOn": [
+            {
+              "matchId": "c8eac6c7-9d19-484f-9005-091767c33abb",
+              "type": "WINNER"
+            },
+            {
+              "matchId": "c4630803-f35f-4d04-85ec-771dfb7ee56b",
+              "type": "WINNER"
+            }
+          ],
+          "winnerId": null,
+          "round": 3,
+          "finished": false
+        }
+      ],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-12T02:32:50.034Z",
+      "metadata": {
+        "totalCompetitors": 3,
+        "weightRange": {
+          "min": 56.6,
+          "max": 74.6
+        },
+        "hasBye": true
+      }
     }
   ]
 }

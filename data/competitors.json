@@ -308,7 +308,7 @@
       "dateBirth": "2001-09-16",
       "belt": "WHITE",
       "coach": "Professor Leandro",
-      "alreadyInBracket": false,
+      "alreadyInBracket": true,
       "registrationDate": "2026-02-09T16:50:00.000Z",
       "isActive": true
     },
@@ -812,7 +812,7 @@
       "dateBirth": "2002-06-08",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": false,
+      "alreadyInBracket": true,
       "registrationDate": "2026-03-23T10:05:00.000Z",
       "isActive": true
     },
@@ -1052,7 +1052,7 @@
       "dateBirth": "2002-04-06",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": false,
+      "alreadyInBracket": true,
       "registrationDate": "2026-04-11T13:25:00.000Z",
       "isActive": true
     },
