@@ -1,22 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Trophy, Info, ChevronRight } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Bracket, Match, Belt, beltLabels } from "@/types";
-
-// Configurações de cores das faixas (BJJ)
-const BELT_STYLES: Record<string, string> = {
-    WHITE: "bg-gray-100 text-gray-900 border-gray-300",
-    GRAY: "bg-gray-500 text-white border-gray-600",
-    YELLOW: "bg-yellow-400 text-gray-900 border-yellow-600",
-    ORANGE: "bg-orange-500 text-white border-orange-700",
-    GREEN: "bg-green-600 text-white border-green-800",
-    BLUE: "bg-blue-600 text-white border-blue-800",
-    PURPLE: "bg-purple-600 text-white border-purple-800",
-    BROWN: "bg-amber-800 text-white border-amber-900",
-    BLACK: "bg-gray-900 text-white border-gray-700",
-};
 
 interface BracketModalProps {
     bracket: Bracket | null;
@@ -28,9 +15,8 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
 
     if (!bracket) return null;
 
-    // Agrupa lutas por rodada
     const getMatchesByRound = () => {
-        const rounds: Record<number, Match[]> = {};
+        const rounds: { [key: number]: Match[] } = {};
         bracket.matches.forEach(match => {
             if (!rounds[match.round]) rounds[match.round] = [];
             rounds[match.round].push(match);
@@ -38,178 +24,169 @@ export function BracketModal({ bracket, onClose }: BracketModalProps) {
         return rounds;
     };
 
-    const getCompetitorName = (id: string | null) => id ? id.replace('comp-', 'Atleta ') : "A definir";
-    
+    const getCompetitorName = (id: string | null) => id ? id.replace('comp-', 'Atleta ') : "Aguardando";
     const rounds = getMatchesByRound();
-    const sortedRounds = Object.keys(rounds).map(Number).sort((a, b) => a - b);
-    const maxRound = Math.max(...sortedRounds, 0);
+    const maxRound = Math.max(...bracket.matches.map(m => m.round));
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="relative bg-[#f4f4f5] rounded-2xl shadow-2xl max-w-[95vw] w-full max-h-[92vh] flex flex-col overflow-hidden border border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative bg-gray-50 rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 
-                {/* HEADER */}
-                <header className="bg-gray-900 text-white p-5 shrink-0 border-b-2 border-yellow-500">
+                {/* Header - Fixo */}
+                <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 shrink-0">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-2">
-                                <Trophy className="text-yellow-500" size={20} />
-                                {bracket.title}
-                            </h2>
-                            <div className="flex items-center gap-3">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${BELT_STYLES[bracket.belt] || BELT_STYLES.WHITE}`}>
+                        <div>
+                            <h2 className="text-2xl font-bold">{bracket.title}</h2>
+                            <div className="flex items-center gap-3 mt-2">
+                                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getBeltColor(bracket.belt as Belt)}`}>
                                     {beltLabels[bracket.belt as Belt] || bracket.belt}
                                 </span>
-                                <span className="text-[11px] text-gray-400 font-bold uppercase">
-                                    {bracket.metadata?.totalCompetitors} Atletas • Categoria {bracket.metadata?.weightRange.max}kg
-                                </span>
+                                <span className="text-sm text-gray-300">{bracket.metadata?.totalCompetitors} atletas</span>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-white/10 text-white rounded-full">
+                        <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20">
                             <X size={24} />
                         </Button>
                     </div>
                 </header>
 
-                {/* AREA DAS CHAVES */}
-                <div className="flex-1 overflow-auto bg-[dotted-grid] bg-white">
-                    <div className="p-12 min-w-max">
-                        <div className="flex gap-0 items-stretch">
-                            {sortedRounds.map((round, roundIdx) => (
-                                <div key={round} className="flex flex-col w-[300px] relative">
-                                    
-                                    {/* Nome da Fase */}
-                                    <div className="text-center mb-12">
-                                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
-                                            {round === maxRound ? "Final" : round === maxRound - 1 ? "Semi-Final" : `Rodada ${round}`}
-                                        </h3>
+                {/* Conteúdo Principal - Scrolável Vertical */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                    
+                    {/* Container da Chave - Scrolável Horizontal */}
+                    <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
+                        <div className="flex gap-8 min-w-max px-2">
+                            {Object.entries(rounds)
+                                .sort(([a], [b]) => Number(a) - Number(b))
+                                .map(([round, matches]) => (
+                                    <div key={round} className="flex flex-col gap-4 w-[240px]">
+                                        <div className="text-center">
+                                            <h3 className="font-bold text-gray-900 uppercase">
+                                                {Number(round) === maxRound ? "Final" : `${round}ª Rodada`}
+                                            </h3>
+                                            <div className="h-1 bg-yellow-500 w-8 mx-auto mt-1 rounded-full"></div>
+                                        </div>
+                                        
+                                        <div className="flex flex-col gap-6 justify-around h-full py-4">
+                                            {matches.map((match) => (
+                                                <MatchItem 
+                                                    key={match.id}
+                                                    match={match}
+                                                    isFinal={Number(round) === maxRound}
+                                                    isSelected={selectedMatch?.id === match.id}
+                                                    onSelect={() => setSelectedMatch(match)}
+                                                    getName={getCompetitorName}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
-
-                                    {/* Container de Lutas da Rodada */}
-                                    <div className="flex flex-col justify-around flex-1">
-                                        {rounds[round].map((match, matchIdx) => (
-                                            <div key={match.id} className="relative py-10 flex items-center pr-10">
-                                                
-                                                {/* Card da Luta */}
-                                                <div 
-                                                    onClick={() => setSelectedMatch(match)}
-                                                    className={`
-                                                        w-full z-10 bg-white border-2 rounded-lg shadow-sm cursor-pointer transition-all
-                                                        ${match.finished ? 'border-gray-200' : 'border-gray-300 hover:border-yellow-500'}
-                                                        ${selectedMatch?.id === match.id ? 'ring-2 ring-yellow-500 border-yellow-500 scale-[1.02] shadow-lg' : ''}
-                                                    `}
-                                                >
-                                                    <AthleteLine 
-                                                        name={getCompetitorName(match.fighter1)} 
-                                                        points={match.score1?.points} 
-                                                        isWinner={match.winnerId === match.fighter1 && match.finished} 
-                                                    />
-                                                    <div className="h-[1px] bg-gray-100 mx-3" />
-                                                    <AthleteLine 
-                                                        name={getCompetitorName(match.fighter2)} 
-                                                        points={match.score2?.points} 
-                                                        isWinner={match.winnerId === match.fighter2 && match.finished} 
-                                                    />
-                                                </div>
-
-                                                {/* CONECTORES (LINHAS) */}
-                                                {round < maxRound && (
-                                                    <div className="absolute right-0 w-10 h-full flex items-center">
-                                                        {/* Linha Horizontal saindo do card */}
-                                                        <div className="w-full h-0.5 bg-gray-300" />
-                                                        
-                                                        {/* Linha Vertical (Braço) */}
-                                                        <div className={`
-                                                            absolute right-0 w-0.5 bg-gray-300
-                                                            ${matchIdx % 2 === 0 
-                                                                ? 'h-1/2 top-1/2' // Metade inferior
-                                                                : 'h-1/2 bottom-1/2' // Metade superior
-                                                            }
-                                                        `} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </div>
+
+                    {/* Detalhes da Luta - Aparece ao selecionar */}
+                    {selectedMatch && (
+                        <MatchDetails 
+                            match={selectedMatch} 
+                            getName={getCompetitorName} 
+                        />
+                    )}
                 </div>
 
-                {/* DETALHES DA LUTA SELECIONADA */}
-                {selectedMatch && (
-                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 animate-in slide-in-from-bottom-5">
-                        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-5">
-                            <div className="flex justify-between items-center mb-4">
-                                <span className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest flex items-center gap-1">
-                                    <Info size={12} /> Detalhes do Confronto
-                                </span>
-                                <button onClick={() => setSelectedMatch(null)} className="text-gray-400 hover:text-gray-600">
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <AthleteScoreDetail 
-                                    name={getCompetitorName(selectedMatch.fighter1)} 
-                                    score={selectedMatch.score1} 
-                                    isWinner={selectedMatch.winnerId === selectedMatch.fighter1}
-                                    side="left"
-                                />
-                                <AthleteScoreDetail 
-                                    name={getCompetitorName(selectedMatch.fighter2)} 
-                                    score={selectedMatch.score2} 
-                                    isWinner={selectedMatch.winnerId === selectedMatch.fighter2}
-                                    side="right"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <footer className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end shrink-0">
-                    <Button onClick={onClose} className="bg-gray-900 hover:bg-black text-white px-8 font-bold text-xs uppercase">
-                        Fechar Visualização
-                    </Button>
+                {/* Footer - Fixo */}
+                <footer className="bg-gray-100 p-4 shrink-0 flex justify-end border-t border-gray-200">
+                    <Button variant="outline" onClick={onClose}>Fechar</Button>
                 </footer>
             </div>
         </div>
     );
 }
 
-function AthleteLine({ name, points, isWinner }: { name: string, points?: number, isWinner: boolean }) {
+// Sub-componente para o Card da Luta
+function MatchItem({ match, isFinal, isSelected, onSelect, getName }: any) {
     return (
-        <div className={`flex items-center justify-between p-3 ${isWinner ? 'bg-green-50/50' : ''}`}>
-            <span className={`text-xs truncate max-w-[180px] ${isWinner ? 'font-black text-gray-900' : 'text-gray-500'}`}>
-                {name}
-            </span>
-            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isWinner ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                {points ?? 0}
-            </span>
+        <div className="relative group">
+            <div 
+                className={`
+                    bg-white border-2 rounded-lg p-3 cursor-pointer transition-all shadow-sm
+                    ${match.finished ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-yellow-500'}
+                    ${isSelected ? 'ring-2 ring-yellow-500 border-yellow-500 shadow-md scale-[1.02]' : ''}
+                `}
+                onClick={onSelect}
+            >
+                <AthleteRow name={getName(match.fighter1)} score={match.score1} isWinner={match.winnerId === match.fighter1} />
+                <div className="text-center text-[10px] text-gray-400 font-bold my-1">VS</div>
+                <AthleteRow name={getName(match.fighter2)} score={match.score2} isWinner={match.winnerId === match.fighter2} />
+            </div>
+
+            {!isFinal && (
+                <div className="absolute top-1/2 -right-6 -translate-y-1/2 text-gray-300">
+                    <ChevronRight size={20} />
+                </div>
+            )}
         </div>
     );
 }
 
-function AthleteScoreDetail({ name, score, isWinner, side }: any) {
-    const sideColor = side === 'left' ? "bg-green-600" : "bg-blue-600";
+function AthleteRow({ name, score, isWinner }: any) {
     return (
-        <div className={`p-4 rounded-lg border-2 ${isWinner ? 'border-yellow-500 bg-yellow-50/20' : 'border-gray-100'}`}>
-            <div className={`w-full h-1 rounded-full mb-3 ${sideColor}`} />
-            <div className="text-sm font-bold text-gray-900 mb-3 truncate">{name}</div>
-            <div className="grid grid-cols-3 gap-1">
-                <div className="text-center">
-                    <p className="text-[8px] text-gray-400 font-bold uppercase">Pts</p>
-                    <p className="text-sm font-black">{score?.points || 0}</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-[8px] text-gray-400 font-bold uppercase">Vant</p>
-                    <p className="text-sm font-black">{score?.advantages || 0}</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-[8px] text-gray-400 font-bold uppercase text-red-400">Pen</p>
-                    <p className="text-sm font-black text-red-500">{score?.penalties || 0}</p>
-                </div>
+        <div className={`flex items-center justify-between p-1.5 rounded ${isWinner ? 'bg-green-100 font-bold text-green-800' : 'text-gray-700'}`}>
+            <span className="text-sm truncate mr-2">{name}</span>
+            {score && <span className="text-xs">{score.points}</span>}
+        </div>
+    );
+}
+
+function MatchDetails({ match, getName }: any) {
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm animate-in slide-in-from-bottom-4 duration-300">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-2 h-6 bg-yellow-500 rounded-full"></span>
+                Detalhes do Combate
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+                {[
+                    { athlete: match.fighter1, score: match.score1, label: "Atleta 1", color: "border-green-200 bg-green-50/30" },
+                    { athlete: match.fighter2, score: match.score2, label: "Atleta 2", color: "border-blue-200 bg-blue-50/30" }
+                ].map((item, idx) => (
+                    <div key={idx} className={`p-4 rounded-lg border ${item.color}`}>
+                        <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{item.label}</p>
+                        <p className="text-gray-900 font-bold text-lg">{getName(item.athlete)}</p>
+                        {item.score && (
+                            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                    <p className="text-xs text-gray-500">Pts</p>
+                                    <p className="font-bold text-gray-900">{item.score.points}</p>
+                                </div>
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                    <p className="text-xs text-gray-500">Vant</p>
+                                    <p className="font-bold text-gray-900">{item.score.advantages}</p>
+                                </div>
+                                <div className="bg-white p-2 rounded shadow-sm">
+                                    <p className="text-xs text-gray-500">Pen</p>
+                                    <p className="font-bold text-red-600">{item.score.penalties}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );
+}
+
+// Utility mantida para cores
+function getBeltColor(belt: Belt) {
+    const colors: Record<string, string> = {
+        WHITE: "bg-gray-100 text-gray-900 border-gray-300",
+        GRAY: "bg-gray-500 text-white border-gray-600",
+        YELLOW: "bg-yellow-100 text-yellow-900 border-yellow-300",
+        ORANGE: "bg-orange-100 text-orange-900 border-orange-300",
+        GREEN: "bg-green-100 text-green-900 border-green-300",
+        BLUE: "bg-blue-100 text-blue-900 border-blue-300",
+        PURPLE: "bg-purple-100 text-purple-900 border-purple-300",
+        BROWN: "bg-amber-100 text-amber-900 border-amber-300",
+        BLACK: "bg-gray-800 text-white border-gray-700",
+    };
+    return colors[belt] || colors.WHITE;
 }

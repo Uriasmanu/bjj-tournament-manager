@@ -1,28 +1,26 @@
 {
   "brackets": [
     {
-      "id": "c7f64db6-5d33-4476-8f4b-87ee3b06465f",
+      "id": "6eb4eeb2-5772-4c94-8423-9177ae4f4df6",
       "title": "chave",
       "belt": "WHITE",
       "competitors": [
-        "comp-098",
         "comp-018",
-        "comp-052"
+        "comp-052",
+        "comp-098"
       ],
       "matches": [
         {
-          "id": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
-          "fighter1": "comp-098",
-          "fighter2": "comp-018",
+          "id": "011c9541-ec53-4510-bdeb-69b12ef348f9",
+          "fighter1": "comp-018",
+          "fighter2": "comp-052",
           "score1": {
-            "competitorId": "comp-098",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
-            "competitorId": "comp-018",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -33,11 +31,10 @@
           "finished": false
         },
         {
-          "id": "fff76633-304e-425f-ace9-1d63b0fa62cf",
-          "fighter1": "comp-052",
+          "id": "5bb63f92-062b-4b96-92f8-44f22a289802",
+          "fighter1": "comp-098",
           "fighter2": null,
           "score1": {
-            "competitorId": "comp-052",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -45,7 +42,7 @@
           },
           "score2": null,
           "dependsOn": {
-            "matchId": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
+            "matchId": "011c9541-ec53-4510-bdeb-69b12ef348f9",
             "type": "LOSER"
           },
           "winnerId": null,
@@ -53,18 +50,18 @@
           "finished": false
         },
         {
-          "id": "23bab3d8-57e1-48a4-a38f-7ab64f7aa656",
+          "id": "da50ba15-eff7-4a10-a7bd-8bd2b3c1ca71",
           "fighter1": null,
           "fighter2": null,
           "score1": null,
           "score2": null,
           "dependsOn": [
             {
-              "matchId": "664ccb1e-b325-4e2a-b1ec-2c549656f9d0",
+              "matchId": "011c9541-ec53-4510-bdeb-69b12ef348f9",
               "type": "WINNER"
             },
             {
-              "matchId": "fff76633-304e-425f-ace9-1d63b0fa62cf",
+              "matchId": "5bb63f92-062b-4b96-92f8-44f22a289802",
               "type": "WINNER"
             }
           ],
@@ -76,7 +73,7 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-11T23:09:43.897Z",
+      "createdAt": "2026-04-12T00:27:05.808Z",
       "metadata": {
         "totalCompetitors": 3,
         "weightRange": {
@@ -87,29 +84,27 @@
       }
     },
     {
-      "id": "fa5db410-a44f-4c91-badc-106fc8dc8918",
+      "id": "b0f27249-9c66-4903-b6c7-533694c42ea2",
       "title": "chave 2",
-      "belt": "BLUE",
+      "belt": "YELLOW",
       "competitors": [
-        "comp-046",
-        "comp-029",
-        "comp-020",
-        "comp-058"
+        "comp-064",
+        "comp-093",
+        "comp-014",
+        "comp-044"
       ],
       "matches": [
         {
-          "id": "2c9fe905-2c41-4a34-af42-576d14d3ddf1",
-          "fighter1": "comp-046",
-          "fighter2": "comp-029",
+          "id": "59e93eee-9d58-4fa7-a702-a9d9021004bc",
+          "fighter1": "comp-064",
+          "fighter2": "comp-093",
           "score1": {
-            "competitorId": "comp-046",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
-            "competitorId": "comp-029",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -120,18 +115,16 @@
           "finished": false
         },
         {
-          "id": "c6d08443-f502-42f5-a0af-ab854d7d0852",
-          "fighter1": "comp-020",
-          "fighter2": "comp-058",
+          "id": "7101bb05-25d0-41be-9062-62b91dc0798e",
+          "fighter1": "comp-014",
+          "fighter2": "comp-044",
           "score1": {
-            "competitorId": "comp-020",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
             "submission": false
           },
           "score2": {
-            "competitorId": "comp-058",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -145,12 +138,12 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-11T23:51:22.022Z",
+      "createdAt": "2026-04-12T00:27:19.129Z",
       "metadata": {
         "totalCompetitors": 4,
         "weightRange": {
-          "min": 53.1,
-          "max": 72.4
+          "min": 49.5,
+          "max": 54.4
         },
         "hasBye": false
       }

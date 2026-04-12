@@ -4,9 +4,12 @@ import { readBrackets, writeBrackets, readCompetitors } from '@/lib/storage';
 import { Bracket, BracketStatus, Match } from '@/types';
 
 
-function createEmptyScore(competitorId: string) {
+function createEmptyScore(competitor: { id: string; name: string; weight: number; coach: string | null }) {
     return {
-        competitorId: competitorId,
+        competitorId: competitor.id,
+        name: competitor.name,
+        weight: competitor.weight,
+        coach: competitor.coach,
         points: 0,
         advantages: 0,
         penalties: 0,
