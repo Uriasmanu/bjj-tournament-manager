@@ -167,7 +167,7 @@ function MatchDetails({ match }: any) {
                 ].map((item, idx) => (
                     <div key={idx} className={`p-4 rounded-lg border ${item.color}`}>
                         <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{item.label}</p>
-                        <div className="text-lg mb-2">
+                        <div className="text-lg mb-2 text-gray-900">
                             <AthleteDisplay id={item.athlete} />
                         </div>
                         {item.score && (
