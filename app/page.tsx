@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [isExporting, setIsExporting] = useState(false)
   const [competitorsCount, setCompetitorsCount] = useState(0)
   const [refereeCount, setRefereeCount] = useState(0)
+  const [bracketsCount, setBracketsCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   const fetchCompetitorsCount = async () => {
@@ -31,7 +32,7 @@ export default function Dashboard() {
     }
   }
 
-    const fetchRefereesCount = async () => {
+  const fetchRefereesCount = async () => {
     try {
       const response = await fetch('/api/referees')
       const data = await response.json()
@@ -44,9 +45,23 @@ export default function Dashboard() {
     }
   }
 
+  const fetchBracketsCount = async () => {
+    try {
+      const response = await fetch('/api/brackets')
+      const data = await response.json()
+
+      setBracketsCount(data.length)
+    } catch {
+      console.error('Erro ao buscar chaves')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchCompetitorsCount()
     fetchRefereesCount()
+    fetchBracketsCount()
   }, [])
 
   const handleExport = async () => {
@@ -158,7 +173,11 @@ export default function Dashboard() {
               title="Chaves"
               description="Configure chaves por faixa, peso e idade."
               icon={Brackets}
-              badge="12 chaves"
+              badge={
+                loading
+                  ? 'Carregando...'
+                  : `${bracketsCount} ativos`
+              }
             />
 
             <MenuCard
