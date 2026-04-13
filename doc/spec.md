@@ -590,16 +590,21 @@ function calculateAge(dateBirth: string): number {
 | Campo         | Tipo                                   | Observacao                                       |
 | ------------- | -------------------------------------- | ------------------------------------------------ |
 | `id`          | UUID                                   | Gerado automaticamente                           |
+| `title`       | string                                 | Título definido pelo sistema na criação         |
 | `belt`        | enum Belt                              | Faixa dos competidores                           |
-| `title`       | string                                 | Titulo definido pelo usuario na criacao          |
-| `weightMin`   | number                                 | Peso minimo em kg (calculado automaticamente)    |
-| `weightMax`   | number                                 | Peso maximo em kg (calculado automaticamente)    |
-| `label`       | string                                 | Nome da categoria (ex: "Azul - Leve")            |
-| `competitors` | Competitor[]                           | Competidores selecionados manualmente             |
-| `matches`     | Match[]                                | Lutas geradas pelo bracket                       |
+| `competitors` | Competitor[]                           | Competidores completos selecionados para a chave |
+| `matches`     | Match[]                                | Lutas geradas e vinculadas ao bracket            |
 | `status`      | enum: PENDING / IN_PROGRESS / FINISHED | Status da chave                                  |
-| `refereeId`   | UUID ou null                           | Arbitro responsavel pela chave                   |
-| `areaId`      | UUID ou null                           | Area preferencial para esta chave                |
+| `refereeId`   | UUID ou null                           | Árbitro responsável pela chave                   |
+| `areaId`      | UUID ou null                           | Área preferencial para esta chave                |
+| `createdAt`   | string (ISO datetime)                  | Timestamp da criação                             |
+| `metadata`    | object                                 | Dados calculados da chave                        |
+
+**Campos de `metadata`:**
+- `totalCompetitors`: number — total de competidores na chave
+- `weightRange`: object — `{ min: number; max: number }`
+- `hasBye`: boolean — indica se a chave teve bye automático
+- campos adicionais como `winners`, `podium` e `placements` são opcionais e usados para classificação final
 
 **Regras de Selecao:**
 
@@ -643,38 +648,62 @@ O sistema deve exportar os dados no seguinte formato JSON:
   "brackets": [
     {
       "id": "uuid",
+      "title": "Chave A - Azul - 74kg - 79kg",
       "belt": "BLUE",
-      "title": "Azul - Leve",
-      "weightMin": 70,
-      "weightMax": 76,
-      "label": "Azul - Leve",
       "status": "PENDING",
       "refereeId": "uuid ou null",
       "areaId": "uuid ou null",
+      "createdAt": "2025-08-01T10:00:00.000Z",
+      "metadata": {
+        "totalCompetitors": 2,
+        "weightRange": {
+          "min": 74,
+          "max": 79
+        },
+        "hasBye": false
+      },
       "competitors": [
         {
           "id": "uuid",
           "name": "Joao Silva",
-          "team": "Equipe X",
-          "weight": 72.5,
-          "age": 25,
+          "team": "Alliance",
+          "weight": 74.5,
+          "dateBirth": "2005-01-10",
           "belt": "BLUE",
           "coach": "Prof. Carlos",
-          "registrationDate": "2026-04-10T10:00:00.000Z",
+          "alreadyInBracket": true,
+          "registrationDate": "2025-08-01T10:00:00.000Z",
           "isActive": true
         }
       ],
       "matches": [
         {
           "id": "uuid",
-          "round": 1,
-          "position": 1,
-          "competitorA": "uuid",
-          "competitorB": "uuid",
+          "fighter1": "uuid",
+          "fighter2": "uuid",
+          "score1": {
+            "competitorId": "uuid",
+            "name": "Joao Silva",
+            "weight": 74.5,
+            "coach": "Prof. Carlos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "uuid",
+            "name": "Pedro Rocha",
+            "weight": 76.0,
+            "coach": "Prof. Pedro",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
           "winnerId": null,
-          "status": "PENDING",
-          "areaId": null,
-          "scheduledTime": null
+          "round": 1,
+          "finished": false
         }
       ]
     }
@@ -682,7 +711,7 @@ O sistema deve exportar os dados no seguinte formato JSON:
 }
 ```
 
-**Observacao:** O campo `title` e armazenado juntamente com `label` para compatibilidade com a interface de criacao.
+**Observacao:** O campo `title` é o título principal do bracket. O modelo atual usa `metadata.weightRange` em vez de campos `weightMin`/`weightMax` separados.
 
 ### Regras de Exportacao
 
@@ -724,7 +753,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 1. **Prioridade 1 - Busca por ID**  
    Se o campo `id` for fornecido no JSON, o sistema busca uma chave existente com o mesmo ID
 2. **Prioridade 2 - Busca por identificador unico**  
-   Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `title` + `label`
+   Se nao encontrar por ID (ou ID nao fornecido), busca por `belt` + `title`
 
 #### Acoes resultantes:
 
@@ -734,17 +763,16 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 #### O que pode ser atualizado:
 
 - `title` - permite renomear chave
-- `label` - permite renomear categoria
 - `status` - atualiza status da chave
 - `refereeId` - altera arbitro responsavel
 - `areaId` - altera area preferencial
 - `competitors` - atualiza lista de competidores
 - `matches` - atualiza estrutura de lutas
+- `metadata` - atualiza dados calculados da chave
 
 #### Campos opcionais no JSON:
 
 - `id` - se nao informado → gera novo UUID
-- `title` - se nao informado → usa `label`
 - `competitors` - se nao informado → array vazio
 - `matches` - se nao informado → array vazio
 - `refereeId` - se nao informado → null
@@ -757,8 +785,7 @@ O sistema implementa **logica de upsert** (update + insert) com a seguinte prior
 | Campo       | Validacao                                                                       |
 | ----------- | ------------------------------------------------------------------------------- |
 | `belt`      | Obrigatorio, deve ser um valor valido do enum Belt                              |
-| `title`     | Obrigatorio quando importando sem `label`, nao pode estar vazio                 |
-| `label`     | Obrigatorio quando importando sem `title`, nao pode estar vazio                 |
+| `competitors` | Deve ser um array de Competitor ou estar vazio                              |
 | `brackets`  | Deve existir e ser um array (formato objeto) OU o body deve ser um array direto |
 
 **Exemplo de erro de validacao:**
@@ -849,7 +876,7 @@ Ao importar matches:
 
 #### Prevencao de conflitos
 
-- Chaves com mesmo `belt` + `title` + `label` sao consideradas duplicatas
+- Chaves com mesmo `belt` + `title` sao consideradas duplicatas
 - Use o `id` para garantir atualizacao correta em casos de alteracao de identificador
 
 ---
@@ -859,7 +886,7 @@ Ao importar matches:
 - Importacao e exportacao sao **simetricas** - o export pode ser reimportado
 - O sistema mantem **integridade referencial** com competidores, arbitros e areas
 - **Upsert** permite atualizacao em massa de chaves existentes
-- Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+title+label** (fallback)
+- Chaves sao identificadas por **ID (prioridade)** ou **combinacao belt+title** (fallback)
 - A importacao preserva o estado das lutas (PENDING, IN_PROGRESS, COMPLETED)
 - Logs detalhados ajudam a identificar cada alteracao realizada
 
@@ -946,29 +973,32 @@ Ao importar matches:
 
 **Dados da Luta (Match):**
 
-| Campo         | Tipo                                   | Observação                  |
-| ------------- | -------------------------------------- | --------------------------- |
-| `id`          | UUID                                   | Gerado automaticamente      |
-| `bracketId`   | UUID                                   | Chave a que pertence        |
-| `competitorA` | Competitor                             | Lutador do lado A           |
-| `competitorB` | Competitor                             | Lutador do lado B           |
-| `areaId`      | UUID ou null                           | Área onde ocorre            |
-| `status`      | enum: PENDING / IN_PROGRESS / FINISHED |                             |
-| `scoreA`      | ScoreData                              | Pontuação do competidor A   |
-| `scoreB`      | ScoreData                              | Pontuação do competidor B   |
-| `duration`    | number (segundos)                      | Tempo total da luta         |
-| `elapsedTime` | number (segundos)                      | Tempo decorrido             |
-| `winner`      | UUID ou null                           | ID do vencedor              |
-| `isMarried`   | boolean                                | Indica se é uma luta casada |
-| `refereeId`   | UUID                                   | Árbitro que arbitrou a luta |
+| Campo         | Tipo                                         | Observação                                              |
+| ------------- | -------------------------------------------- | ------------------------------------------------------- |
+| `id`          | UUID                                         | Gerado automaticamente                                   |
+| `fighter1`    | string \| null                              | ID do competidor 1                                       |
+| `fighter2`    | string \| null                              | ID do competidor 2 ou null em bye                        |
+| `score1`      | MatchScore \| null                          | Pontuação do competidor 1                                |
+| `score2`      | MatchScore \| null                          | Pontuação do competidor 2                                |
+| `winnerId`    | string \| null                              | ID do competidor vencedor                                |
+| `round`       | number                                       | Número da etapa/round da chave                           |
+| `finished`    | boolean                                      | Indica se a luta foi finalizada                          |
+| `dependsOn`   | object \| object[]                          | Referência a uma ou mais lutas anteriores (opcional)     |
 
-**ScoreData:**
+> Observação: o objeto `Match` é armazenado dentro de `Bracket.matches`, portanto não possui `bracketId` no próprio objeto.
+
+**MatchScore:**
 
 ```json
 {
+  "competitorId": "uuid",
+  "name": "Joao Silva",
+  "weight": 74.5,
+  "coach": "Prof. Carlos",
   "points": 0,
   "advantages": 0,
-  "penalties": 0
+  "penalties": 0,
+  "submission": false
 }
 ```
 
@@ -1093,62 +1123,103 @@ data/
   "brackets": [
     {
       "id": "uuid",
+      "title": "Chave A - Azul - 74kg - 79kg",
       "belt": "BLUE",
-      "weightMin": 70,
-      "weightMax": 79,
-      "label": "Azul - Leve",
-      "competitors": ["competitorId1", "competitorId2"],
-      "matches": ["matchId1", "matchId2"],
+      "competitors": [
+        {
+          "id": "uuid",
+          "name": "Joao Silva",
+          "team": "Alliance",
+          "weight": 74.5,
+          "dateBirth": "2005-01-10",
+          "belt": "BLUE",
+          "coach": "Prof. Carlos",
+          "alreadyInBracket": true,
+          "registrationDate": "2025-08-01T10:00:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "uuid",
+          "fighter1": "uuid",
+          "fighter2": "uuid",
+          "score1": {
+            "competitorId": "uuid",
+            "name": "Joao Silva",
+            "weight": 74.5,
+            "coach": "Prof. Carlos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "uuid",
+            "name": "Pedro Rocha",
+            "weight": 73,
+            "coach": "Prof. Pedro",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        }
+      ],
       "status": "PENDING",
       "refereeId": "refereeId1",
       "areaId": null,
-      "createdAt": "2025-08-01T10:00:00Z"
+      "createdAt": "2025-08-01T10:00:00.000Z",
+      "metadata": {
+        "totalCompetitors": 2,
+        "weightRange": {
+          "min": 74,
+          "max": 79
+        },
+        "hasBye": false
+      }
     }
   ]
 }
 ```
 
-#### `data/matches.json` — Lutas
+#### `Bracket.matches` — Lutas
+
+As lutas são persistidas diretamente dentro do campo `matches` de cada objeto `Bracket` no arquivo `data/brackets.json`.
 
 ```json
 {
-  "matches": [
-    {
-      "id": "uuid",
-      "bracketId": "uuid",
-      "competitorA": {
-        "competitorId": "uuid",
-        "name": "João Silva",
-        "team": "Alliance",
-        "belt": "BLUE",
-        "weight": 74.5
-      },
-      "competitorB": {
-        "competitorId": "uuid",
-        "name": "Pedro Rocha",
-        "team": "Checkmat",
-        "belt": "BLUE",
-        "weight": 73.0
-      },
-      "areaId": "areaId1",
-      "status": "FINISHED",
-      "scoreA": {
-        "points": 6,
-        "advantages": 1,
-        "penalties": 0
-      },
-      "scoreB": {
-        "points": 2,
-        "advantages": 0,
-        "penalties": 1
-      },
-      "duration": 300,
-      "elapsedTime": 298,
-      "winner": "competitorId1",
-      "isMarried": false,
-      "refereeId": "refereeId1",
-      "finishedAt": "2025-08-10T10:42:00Z"
-    }
+  "id": "uuid",
+  "fighter1": "uuid",
+  "fighter2": "uuid",
+  "score1": {
+    "competitorId": "uuid",
+    "name": "Joao Silva",
+    "weight": 74.5,
+    "coach": "Prof. Carlos",
+    "points": 0,
+    "advantages": 0,
+    "penalties": 0,
+    "submission": false
+  },
+  "score2": {
+    "competitorId": "uuid",
+    "name": "Pedro Rocha",
+    "weight": 73,
+    "coach": "Prof. Pedro",
+    "points": 0,
+    "advantages": 0,
+    "penalties": 0,
+    "submission": false
+  },
+  "winnerId": null,
+  "round": 1,
+  "finished": false,
+  "dependsOn": [
+    { "matchId": "uuid", "type": "WINNER" }
   ]
 }
 ```
@@ -1224,10 +1295,12 @@ data/
   "brackets": [
     {
       "bracketId": "uuid",
-      "label": "Azul - Leve",
+      "title": "Azul - Leve",
       "belt": "BLUE",
-      "weightMin": 70,
-      "weightMax": 79,
+      "weightRange": {
+        "min": 70,
+        "max": 79
+      },
       "status": "FINISHED",
       "refereeName": "Carlos Eduardo",
       "placements": [...],
@@ -1264,7 +1337,7 @@ data/
 | `DELETE` | `/api/competitors/[id]`       | Soft delete competidor            |
 | `GET`    | `/api/brackets`               | Lista chaves                      |
 | `POST`   | `/api/brackets`               | Cria chave                        |
-| `POST`   | `/api/brackets/[id]/generate` | Gera bracket                      |
+| `DELETE` | `/api/brackets?id=...`       | Exclui chave                      |
 | `GET`    | `/api/areas`                  | Lista áreas                       |
 | `POST`   | `/api/areas`                  | Cria área                         |
 | `POST`   | `/api/areas/[id]/schedule`    | Programa luta na área             |
