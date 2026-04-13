@@ -139,11 +139,11 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // salva bracket
+    
     bracketsData.brackets.push(newBracket);
     await writeBrackets(bracketsData);
 
-    // 🔥 atualiza competidores
+    
     competitorsData.competitors = competitorsData.competitors.map((c) =>
       competitorIds.includes(c.id)
         ? { ...c, alreadyInBracket: true }
@@ -171,6 +171,54 @@ export async function GET() {
     console.error('Erro ao buscar chaves:', error);
     return NextResponse.json(
       { error: 'Erro interno ao buscar chaves' },
+      { status: 500 }
+    );
+  }
+}
+
+
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const bracketId = searchParams.get('id');
+
+    if (!bracketId) {
+      return NextResponse.json({ error: 'ID da chave é obrigatório' }, { status: 400 });
+    }
+
+    const bracketsData = await readBrackets();
+    const competitorsData = await readCompetitors();
+
+    
+    const bracketToDelete = bracketsData.brackets.find(b => b.id === bracketId);
+    
+    if (!bracketToDelete) {
+      return NextResponse.json({ error: 'Chave não encontrada' }, { status: 404 });
+    }
+
+    
+    const competitorIdsInBracket = bracketToDelete.competitors.map(c => c.id);
+
+    
+    bracketsData.brackets = bracketsData.brackets.filter(b => b.id !== bracketId);
+    await writeBrackets(bracketsData);
+
+    
+    competitorsData.competitors = competitorsData.competitors.map((c) =>
+      competitorIdsInBracket.includes(c.id)
+        ? { ...c, alreadyInBracket: false }
+        : c
+    );
+
+    await writeCompetitors(competitorsData);
+
+    return NextResponse.json({ success: true }, { status: 200 });
+
+  } catch (error) {
+    console.error('Erro ao deletar chave:', error);
+    return NextResponse.json(
+      { error: 'Erro interno ao deletar chave' },
       { status: 500 }
     );
   }

@@ -3193,22 +3193,10 @@
       }
     },
     {
-      "id": "67fa1ddd-221e-4cd9-967e-1fa9211c25fe",
+      "id": "4ec7b1e1-41f8-4d7a-a571-3c97676766ca",
       "title": "Chave C - Preta - 89.6kg - 95.4kg",
       "belt": "BLACK",
       "competitors": [
-        {
-          "id": "comp-067",
-          "name": "Felipe Nogueira",
-          "team": "GF Team",
-          "weight": 95.4,
-          "dateBirth": "1985-11-20",
-          "belt": "BLACK",
-          "coach": "Mestre João",
-          "alreadyInBracket": false,
-          "registrationDate": "2026-03-22T15:40:00.000Z",
-          "isActive": true
-        },
         {
           "id": "comp-037",
           "name": "Wellington Rocha",
@@ -3234,6 +3222,18 @@
           "isActive": true
         },
         {
+          "id": "comp-067",
+          "name": "Felipe Nogueira",
+          "team": "GF Team",
+          "weight": 95.4,
+          "dateBirth": "1985-11-20",
+          "belt": "BLACK",
+          "coach": "Mestre João",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-22T15:40:00.000Z",
+          "isActive": true
+        },
+        {
           "id": "comp-057",
           "name": "Daniel Batista",
           "team": "GF Team",
@@ -3248,13 +3248,13 @@
       ],
       "matches": [
         {
-          "id": "7acf1328-4cab-41a2-b94b-1aa180189c26",
-          "fighter1": "comp-067",
-          "fighter2": "comp-037",
+          "id": "7f7f6bb6-19fe-46bd-aee2-6f9900a9b0bd",
+          "fighter1": "comp-037",
+          "fighter2": "comp-090",
           "score1": {
-            "competitorId": "comp-067",
-            "name": "Felipe Nogueira",
-            "weight": 95.4,
+            "competitorId": "comp-037",
+            "name": "Wellington Rocha",
+            "weight": 93.1,
             "coach": "Mestre João",
             "points": 0,
             "advantages": 0,
@@ -3262,10 +3262,10 @@
             "submission": false
           },
           "score2": {
-            "competitorId": "comp-037",
-            "name": "Wellington Rocha",
-            "weight": 93.1,
-            "coach": "Mestre João",
+            "competitorId": "comp-090",
+            "name": "Wagner Silva",
+            "weight": 91.2,
+            "coach": "Professor Daniel",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -3276,14 +3276,14 @@
           "finished": false
         },
         {
-          "id": "d2c81b20-89a0-4587-b927-93b91e90c853",
-          "fighter1": "comp-090",
+          "id": "5c8ae6fa-1521-41e1-9542-1266dad3891f",
+          "fighter1": "comp-067",
           "fighter2": "comp-057",
           "score1": {
-            "competitorId": "comp-090",
-            "name": "Wagner Silva",
-            "weight": 91.2,
-            "coach": "Professor Daniel",
+            "competitorId": "comp-067",
+            "name": "Felipe Nogueira",
+            "weight": 95.4,
+            "coach": "Mestre João",
             "points": 0,
             "advantages": 0,
             "penalties": 0,
@@ -3307,7 +3307,7 @@
       "status": "PENDING",
       "refereeId": null,
       "areaId": null,
-      "createdAt": "2026-04-13T19:58:28.817Z",
+      "createdAt": "2026-04-13T20:10:27.590Z",
       "metadata": {
         "totalCompetitors": 4,
         "weightRange": {

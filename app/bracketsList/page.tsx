@@ -2,13 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Trophy, ListChecks, Loader2, AlertTriangle, Calendar, Weight, Users, Eye } from "lucide-react";
+import { ArrowLeft, Trophy, ListChecks, Loader2, AlertTriangle, Calendar, Weight, Users, Eye, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Belt, beltLabels, Bracket, Match } from "@/types";
 import { BracketModal } from "@/components/BracketModal";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function getBeltColor(belt: Belt) {
     switch (belt) {
@@ -31,24 +41,50 @@ export default function BracketsListPage() {
     const [error, setError] = useState("");
     const [selectedBracket, setSelectedBracket] = useState<Bracket | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+    const fetchBrackets = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch('/api/brackets');
+            if (!res.ok) throw new Error("Erro ao buscar chaves");
+            const data = await res.json();
+            setBrackets(data);
+        } catch (err) {
+            console.error(err);
+            setError("Não foi possível carregar as chaves.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        async function fetchBrackets() {
-            try {
-                setLoading(true);
-                const res = await fetch('/api/brackets');
-                if (!res.ok) throw new Error("Erro ao buscar chaves");
-                const data = await res.json();
-                setBrackets(data);
-            } catch (err) {
-                console.error(err);
-                setError("Não foi possível carregar as chaves.");
-            } finally {
-                setLoading(false);
-            }
-        }
         fetchBrackets();
     }, []);
+
+    const handleDelete = async (id: string) => {
+        setDeletingId(id);
+        try {
+            const response = await fetch(`/api/brackets?id=${id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao deletar chave');
+            }
+
+            await fetchBrackets();
+        } catch (err: any) {
+            console.error('Erro ao deletar:', err);
+            setError(err.message || 'Não foi possível deletar a chave');
+        } finally {
+            setDeletingId(null);
+            setConfirmDelete(null);
+        }
+    };
 
     const handleViewBracket = (bracket: Bracket) => {
         setSelectedBracket(bracket);
@@ -57,8 +93,7 @@ export default function BracketsListPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-            
-            
+
             <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 shadow-lg border-b border-gray-700">
                 <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
                     <div>
@@ -97,7 +132,6 @@ export default function BracketsListPage() {
                 </div>
             </header>
 
-            
             <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-8 flex flex-col gap-6">
 
                 {loading ? (
@@ -184,7 +218,7 @@ export default function BracketsListPage() {
                                             </div>
                                         </div>
 
-                                        <div className="md:self-center">
+                                        <div className="flex gap-2 md:self-center">
                                             <Button
                                                 size="default"
                                                 variant="outline"
@@ -206,8 +240,36 @@ export default function BracketsListPage() {
                                                 "
                                             >
                                                 <Eye size={16} className="transition-transform group-hover:scale-110" />
-                                                <span>Visualizar Chave</span>
-                                                <span className="hidden md:inline"> Completa</span>
+                                                <span>Visualizar</span>
+                                            </Button>
+
+                                            <Button
+                                                size="default"
+                                                variant="outline"
+                                                onClick={() => setConfirmDelete(bracket.id)}
+                                                disabled={deletingId === bracket.id}
+                                                className="
+                                                    !bg-transparent
+                                                    border-red-500 
+                                                    text-red-600 
+                                                    hover:!bg-red-600 
+                                                    hover:text-white 
+                                                    hover:border-red-700
+                                                    active:scale-[0.98]
+                                                    font-bold 
+                                                    gap-2 
+                                                    transition-all 
+                                                    duration-200 
+                                                    shadow-sm
+                                                    cursor-pointer
+                                                "
+                                            >
+                                                {deletingId === bracket.id ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <Trash2 size={16} />
+                                                )}
+                                                <span>Excluir</span>
                                             </Button>
                                         </div>
                                     </div>
@@ -228,14 +290,44 @@ export default function BracketsListPage() {
             </main>
 
             {isModalOpen && (
-                <BracketModal 
-                    bracket={selectedBracket} 
+                <BracketModal
+                    bracket={selectedBracket}
                     onClose={() => {
                         setIsModalOpen(false);
                         setSelectedBracket(null);
                     }}
                 />
             )}
+
+            <AlertDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
+                <AlertDialogContent className="bg-white border border-gray-200 rounded-lg shadow-xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-gray-900">Confirmar exclusão</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
+                            <div className="space-y-2">
+                                <p>
+                                    Tem certeza que deseja excluir esta chave?
+                                </p>
+                                <p className="text-amber-600 flex items-center gap-2">
+                                    <AlertTriangle size={16} />
+                                    Os competidores serão liberados e poderão ser usados em novas chaves.
+                                </p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                        <AlertDialogCancel className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300">
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => confirmDelete && handleDelete(confirmDelete)}
+                            className="bg-red-600 hover:bg-red-700 text-white border-none"
+                        >
+                            Sim, excluir
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
