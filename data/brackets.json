@@ -1189,6 +1189,382 @@
         },
         "hasBye": false
       }
+    },
+    {
+      "id": "7ba41819-a324-4176-80af-b4facf47a6eb",
+      "title": "Chave E - Azul - 55.7kg - 74.3kg",
+      "belt": "BLUE",
+      "competitors": [
+        {
+          "id": "comp-066",
+          "name": "Simone Araújo",
+          "team": "Cicero Costha",
+          "weight": 58.3,
+          "dateBirth": "1996-04-07",
+          "belt": "BLUE",
+          "coach": "Professor Leandro",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-21T11:15:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-049",
+          "name": "Cláudio Monteiro",
+          "team": "Soul Fighters",
+          "weight": 73.7,
+          "dateBirth": "1995-11-15",
+          "belt": "BLUE",
+          "coach": "Mestre Fabio",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-04T14:10:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-061",
+          "name": "Igor Fernandes",
+          "team": "Alliance",
+          "weight": 74.3,
+          "dateBirth": "1995-05-17",
+          "belt": "BLUE",
+          "coach": "Mestre Carlos",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-16T10:10:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-070",
+          "name": "Tatiana Rocha",
+          "team": "De La Riva",
+          "weight": 55.7,
+          "dateBirth": "1994-12-18",
+          "belt": "BLUE",
+          "coach": "Professor Daniel",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-25T08:55:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "8a9ed980-95da-4dc8-8768-04621ce43b5d",
+          "fighter1": "comp-066",
+          "fighter2": "comp-049",
+          "score1": {
+            "competitorId": "comp-066",
+            "name": "Simone Araújo",
+            "weight": 58.3,
+            "coach": "Professor Leandro",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-049",
+            "name": "Cláudio Monteiro",
+            "weight": 73.7,
+            "coach": "Mestre Fabio",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "a216ebe0-da17-4e58-939f-e71861691680",
+          "fighter1": "comp-061",
+          "fighter2": "comp-070",
+          "score1": {
+            "competitorId": "comp-061",
+            "name": "Igor Fernandes",
+            "weight": 74.3,
+            "coach": "Mestre Carlos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-070",
+            "name": "Tatiana Rocha",
+            "weight": 55.7,
+            "coach": "Professor Daniel",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        }
+      ],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-13T19:51:24.448Z",
+      "metadata": {
+        "totalCompetitors": 4,
+        "weightRange": {
+          "min": 55.7,
+          "max": 74.3
+        },
+        "hasBye": false
+      }
+    },
+    {
+      "id": "08278ce7-8462-48a0-97ae-197ffae62698",
+      "title": "Chave E - Azul - 55.7kg - 74.3kg",
+      "belt": "BLUE",
+      "competitors": [
+        {
+          "id": "comp-070",
+          "name": "Tatiana Rocha",
+          "team": "De La Riva",
+          "weight": 55.7,
+          "dateBirth": "1994-12-18",
+          "belt": "BLUE",
+          "coach": "Professor Daniel",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-25T08:55:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-066",
+          "name": "Simone Araújo",
+          "team": "Cicero Costha",
+          "weight": 58.3,
+          "dateBirth": "1996-04-07",
+          "belt": "BLUE",
+          "coach": "Professor Leandro",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-21T11:15:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-049",
+          "name": "Cláudio Monteiro",
+          "team": "Soul Fighters",
+          "weight": 73.7,
+          "dateBirth": "1995-11-15",
+          "belt": "BLUE",
+          "coach": "Mestre Fabio",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-04T14:10:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-061",
+          "name": "Igor Fernandes",
+          "team": "Alliance",
+          "weight": 74.3,
+          "dateBirth": "1995-05-17",
+          "belt": "BLUE",
+          "coach": "Mestre Carlos",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-03-16T10:10:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "950e159d-d67d-4edc-9870-772d5492cfd9",
+          "fighter1": "comp-070",
+          "fighter2": "comp-066",
+          "score1": {
+            "competitorId": "comp-070",
+            "name": "Tatiana Rocha",
+            "weight": 55.7,
+            "coach": "Professor Daniel",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-066",
+            "name": "Simone Araújo",
+            "weight": 58.3,
+            "coach": "Professor Leandro",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "645bb42e-3f41-4945-8589-920e97258eef",
+          "fighter1": "comp-049",
+          "fighter2": "comp-061",
+          "score1": {
+            "competitorId": "comp-049",
+            "name": "Cláudio Monteiro",
+            "weight": 73.7,
+            "coach": "Mestre Fabio",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-061",
+            "name": "Igor Fernandes",
+            "weight": 74.3,
+            "coach": "Mestre Carlos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        }
+      ],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-13T19:51:30.301Z",
+      "metadata": {
+        "totalCompetitors": 4,
+        "weightRange": {
+          "min": 55.7,
+          "max": 74.3
+        },
+        "hasBye": false
+      }
+    },
+    {
+      "id": "6a62325b-0353-4e6f-b278-3162045b168f",
+      "title": "Chave G - Azul - 62.5kg - 74.9kg",
+      "belt": "BLUE",
+      "competitors": [
+        {
+          "id": "comp-077",
+          "name": "Cláudia Oliveira",
+          "team": "GF Team",
+          "weight": 62.5,
+          "dateBirth": "1995-02-11",
+          "belt": "BLUE",
+          "coach": "Mestre João",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-04-01T16:50:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-081",
+          "name": "Fernando Silva",
+          "team": "Alliance",
+          "weight": 69.5,
+          "dateBirth": "1994-11-09",
+          "belt": "BLUE",
+          "coach": "Mestre Carlos",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-04-05T14:30:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-009",
+          "name": "Bruno Rocha",
+          "team": "Soul Fighters",
+          "weight": 71.2,
+          "dateBirth": "1994-04-14",
+          "belt": "BLUE",
+          "coach": "Mestre Fabio",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-01-23T15:30:00.000Z",
+          "isActive": true
+        },
+        {
+          "id": "comp-025",
+          "name": "Leandro Sousa",
+          "team": "Nova União",
+          "weight": 74.9,
+          "dateBirth": "1994-03-31",
+          "belt": "BLUE",
+          "coach": "Mestre Wendel",
+          "alreadyInBracket": false,
+          "registrationDate": "2026-02-08T14:30:00.000Z",
+          "isActive": true
+        }
+      ],
+      "matches": [
+        {
+          "id": "45b6348b-615d-4dfe-9c4c-2f14b380723d",
+          "fighter1": "comp-077",
+          "fighter2": "comp-081",
+          "score1": {
+            "competitorId": "comp-077",
+            "name": "Cláudia Oliveira",
+            "weight": 62.5,
+            "coach": "Mestre João",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-081",
+            "name": "Fernando Silva",
+            "weight": 69.5,
+            "coach": "Mestre Carlos",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        },
+        {
+          "id": "3db2c734-057a-4550-8a4b-2a8554563289",
+          "fighter1": "comp-009",
+          "fighter2": "comp-025",
+          "score1": {
+            "competitorId": "comp-009",
+            "name": "Bruno Rocha",
+            "weight": 71.2,
+            "coach": "Mestre Fabio",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "score2": {
+            "competitorId": "comp-025",
+            "name": "Leandro Sousa",
+            "weight": 74.9,
+            "coach": "Mestre Wendel",
+            "points": 0,
+            "advantages": 0,
+            "penalties": 0,
+            "submission": false
+          },
+          "winnerId": null,
+          "round": 1,
+          "finished": false
+        }
+      ],
+      "status": "PENDING",
+      "refereeId": null,
+      "areaId": null,
+      "createdAt": "2026-04-13T19:52:09.472Z",
+      "metadata": {
+        "totalCompetitors": 4,
+        "weightRange": {
+          "min": 62.5,
+          "max": 74.9
+        },
+        "hasBye": false
+      }
+
     }
   ]
 }

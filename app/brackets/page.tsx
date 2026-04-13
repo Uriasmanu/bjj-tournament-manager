@@ -291,7 +291,7 @@ export default function GerarChavesPage() {
                     </Card>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 text-gray-800">
                     <Select
                         onValueChange={(value) => {
                             setBelt(value);
