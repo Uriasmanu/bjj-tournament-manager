@@ -212,7 +212,7 @@
       "dateBirth": "2003-08-11",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-02-01T13:45:00.000Z",
       "isActive": true
     },
@@ -308,7 +308,7 @@
       "dateBirth": "2001-09-16",
       "belt": "WHITE",
       "coach": "Professor Leandro",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-02-09T16:50:00.000Z",
       "isActive": true
     },
@@ -620,7 +620,7 @@
       "dateBirth": "2004-08-30",
       "belt": "WHITE",
       "coach": "Professor Roberto",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-03-07T17:25:00.000Z",
       "isActive": true
     },
@@ -812,7 +812,7 @@
       "dateBirth": "2002-06-08",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-03-23T10:05:00.000Z",
       "isActive": true
     },
@@ -1052,7 +1052,7 @@
       "dateBirth": "2002-04-06",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-04-11T13:25:00.000Z",
       "isActive": true
     },
@@ -1172,7 +1172,7 @@
       "dateBirth": "2003-04-17",
       "belt": "WHITE",
       "coach": "Professor Marcos",
-      "alreadyInBracket": true,
+      "alreadyInBracket": false,
       "registrationDate": "2026-04-11T14:35:00.000Z",
       "isActive": true
     },
