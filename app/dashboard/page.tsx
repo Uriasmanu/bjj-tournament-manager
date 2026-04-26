@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Trophy, Users, Swords, MapPin, Shield,
-  Settings, Download, ArrowLeft,
+  Settings, Download, ArrowLeft, Upload,
   Activity, Calendar, Loader2, Brackets
 } from 'lucide-react'
 
@@ -16,6 +16,7 @@ import { StatsCard } from '@/components/StatsCard'
 export default function Dashboard() {
   const router = useRouter()
   const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [competitorsCount, setCompetitorsCount] = useState(0)
   const [refereeCount, setRefereeCount] = useState(0)
   const [bracketsCount, setBracketsCount] = useState(0)
@@ -68,8 +69,38 @@ export default function Dashboard() {
 
   const handleExport = async () => {
     setIsExporting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsExporting(false)
+    try {
+      // Simulando exportação
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      alert('Dados exportados com sucesso!')
+    } catch (error) {
+      console.error('Erro na exportação:', error)
+      alert('Erro ao exportar dados')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleImport = async () => {
+    setIsImporting(true)
+    try {
+      // Simulando importação
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      alert('Dados importados com sucesso!')
+      // Recarregar os dados após importação
+      fetchCompetitorsCount()
+      fetchRefereesCount()
+      fetchBracketsCount()
+    } catch (error) {
+      console.error('Erro na importação:', error)
+      alert('Erro ao importar dados')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleGoHome = () => {
+    router.push('/')
   }
 
   return (
@@ -106,11 +137,23 @@ export default function Dashboard() {
             <div className="flex gap-3 w-full lg:w-auto">
               <Button
                 variant="outline"
-                onClick={() => router.push('/')}
+                onClick={handleGoHome}
                 className="border-slate-200 text-slate-600 hover:bg-slate-50 flex-1 lg:flex-none font-semibold"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleImport}
+                disabled={isImporting}
+                className="border-slate-200 text-slate-600 hover:bg-slate-50 flex-1 lg:flex-none font-semibold"
+              >
+                {isImporting
+                  ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  : <Upload className="mr-2 h-4 w-4 text-green-600" />}
+                Importar
               </Button>
 
               <Button
@@ -125,7 +168,10 @@ export default function Dashboard() {
                 Exportar
               </Button>
 
-              <Button className="bg-slate-950 text-white hover:bg-blue-700 transition-colors gap-2 flex-1 lg:flex-none font-bold">
+              <Button 
+                onClick={() => router.push('/settings')}
+                className="bg-slate-950 text-white hover:bg-blue-700 transition-colors gap-2 flex-1 lg:flex-none font-bold"
+              >
                 <Settings className="h-4 w-4" /> Configurações
               </Button>
             </div>
@@ -134,7 +180,6 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-
 
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -147,12 +192,28 @@ export default function Dashboard() {
               className="bg-white border-slate-200 shadow-sm"
             />
 
-            <StatsCard title="Chaves Ativas" value="12" trend="4 categorias" icon={Swords} />
-            <StatsCard title="Áreas de Luta" value="4" status="todas ativas" icon={MapPin} />
-            <StatsCard title="Lutas Concluídas" value="45/120" progress={45 / 120} icon={Activity} />
+            <StatsCard 
+              title="Chaves Ativas" 
+              value="12" 
+              trend="4 categorias" 
+              icon={Swords} 
+            />
+            
+            <StatsCard 
+              title="Áreas de Luta" 
+              value="4" 
+              status="todas ativas" 
+              icon={MapPin} 
+            />
+            
+            <StatsCard 
+              title="Lutas Concluídas" 
+              value="45/120" 
+              progress={45 / 120} 
+              icon={Activity} 
+            />
           </div>
         </section>
-
 
         <section>
           <div className="flex items-center justify-between mb-8">
