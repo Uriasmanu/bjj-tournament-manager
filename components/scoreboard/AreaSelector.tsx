@@ -9,8 +9,6 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, selectedAreaId, onAreaChange, loading }: AreaSelectorProps) {
-  const activeAreas = areas.filter(area => area.currentMatchId);
-
   // Ensure selectedAreaId is never an empty string
   const safeSelectedValue = selectedAreaId && selectedAreaId !== '' ? selectedAreaId : undefined;
 
@@ -29,18 +27,18 @@ export function AreaSelector({ areas, selectedAreaId, onAreaChange, loading }: A
         disabled={loading}
       >
         <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
-          <SelectValue placeholder="Selecione uma área ativa" />
+          <SelectValue placeholder="Selecione uma área" />
         </SelectTrigger>
         <SelectContent className="bg-gray-800 border-gray-600">
-          {activeAreas.length === 0 ? (
+          {areas.length === 0 ? (
             // FIX: Use a non-empty string value or don't render a select item
             <div className="px-2 py-1.5 text-sm text-gray-400 text-center">
-              Nenhuma área com luta ativa
+              Nenhuma área cadastrada
             </div>
           ) : (
-            activeAreas.map(area => (
+            areas.map(area => (
               <SelectItem key={area.id} value={area.id}>
-                {area.name} ({area.bracketCount} lutas)
+                {area.name} {area.currentMatchId ? `(${area.bracketCount} lutas)` : '(sem luta ativa)'}
               </SelectItem>
             ))
           )}

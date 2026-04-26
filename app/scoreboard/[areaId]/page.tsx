@@ -83,13 +83,13 @@ export default function AreaScoreboardPage() {
     );
   }
 
-  if (!match || !area) {
+  if (!area) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <Card className="bg-gray-800 border-gray-700 max-w-md">
           <CardContent className="p-6 text-center">
-            <h2 className="text-white text-xl font-bold mb-2">Luta não encontrada</h2>
-            <p className="text-gray-300">Esta área não possui uma luta ativa.</p>
+            <h2 className="text-white text-xl font-bold mb-2">Área não encontrada</h2>
+            <p className="text-gray-300">A área solicitada não existe.</p>
             <Link href="/scoreboard">
               <Button className="mt-4">Voltar</Button>
             </Link>
@@ -98,6 +98,8 @@ export default function AreaScoreboardPage() {
       </div>
     );
   }
+
+  const hasActiveMatch = !!match;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
@@ -124,16 +126,29 @@ export default function AreaScoreboardPage() {
 
       {/* Placar Principal */}
       <div className="mb-6">
-        <ScorePanel
-          match={match}
-          fighters={fighters}
-          areaName={area.name}
-          refereeName={referee?.name || ''}
-        />
+        {hasActiveMatch ? (
+          <ScorePanel
+            match={match}
+            fighters={fighters}
+            areaName={area.name}
+            refereeName={referee?.name || ''}
+          />
+        ) : (
+          <Card className="bg-gray-800 border-gray-700">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-2xl font-bold text-bjj-gold mb-4">{area.name}</h2>
+              <p className="text-gray-300 text-lg">Nenhuma luta ativa nesta área</p>
+              <p className="text-gray-400 text-sm mt-2">
+                Agende uma luta para começar a usar o placar
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Controles */}
-      <div className="max-w-6xl mx-auto space-y-6">
+      {hasActiveMatch && (
+        <div className="max-w-6xl mx-auto space-y-6">
         {/* Controles de Pontuação */}
         <Card className="bg-gray-800 border-gray-700">
           <CardContent className="p-6">
@@ -235,14 +250,17 @@ export default function AreaScoreboardPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Modal de Finalização */}
-      <FinishMatchModal
-        isOpen={showFinishModal}
-        onClose={() => setShowFinishModal(false)}
-        onFinish={finishMatch}
-        fighters={fighters}
-      />
+      {hasActiveMatch && (
+        <FinishMatchModal
+          isOpen={showFinishModal}
+          onClose={() => setShowFinishModal(false)}
+          onFinish={finishMatch}
+          fighters={fighters}
+        />
+      )}
     </div>
   );
 }

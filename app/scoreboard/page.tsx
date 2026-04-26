@@ -64,8 +64,6 @@ export default function ScoreboardPage() {
     router.push(`/scoreboard/${areaId}`);
   };
 
-  const hasActiveMatches = areas.some(area => area.currentMatchId);
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-4xl mx-auto">
@@ -78,7 +76,7 @@ export default function ScoreboardPage() {
           <CardContent className="space-y-6">
             <div className="text-center">
               <p className="text-gray-300 mb-4">
-                Selecione uma área com luta ativa para abrir o placar
+                Selecione uma área para abrir o placar
               </p>
               
               {error && (
@@ -101,13 +99,6 @@ export default function ScoreboardPage() {
               />
             </div>
 
-            {!loading && !error && hasActiveMatches === false && (
-              <div className="text-center text-gray-400">
-                <p>Nenhuma área com luta ativa no momento.</p>
-                <p>Agende lutas nas áreas para começar a usar o placar.</p>
-              </div>
-            )}
-            
             {!loading && !error && areas.length === 0 && (
               <div className="text-center text-gray-400">
                 <p>Nenhuma área cadastrada.</p>
