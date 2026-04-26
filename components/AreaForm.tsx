@@ -82,23 +82,27 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[425px] bg-white border border-gray-200 rounded-lg shadow-xl">
+        <DialogHeader className="bg-gradient-to-r from-bjj-black to-gray-800 text-white p-6 rounded-t-lg -mt-2 -mx-2">
+          <DialogTitle className="text-white">
             {area ? 'Editar Área' : 'Nova Área'}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-6">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome da Área</FormLabel>
+                  <FormLabel className="text-gray-700 font-semibold">Nome da Área</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Área 1" {...field} />
+                    <Input 
+                      placeholder="Ex: Área 1" 
+                      {...field} 
+                      className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,20 +114,20 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
               name="refereeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Árbitro Principal</FormLabel>
+                  <FormLabel className="text-gray-700 font-semibold">Árbitro Principal</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
                     value={field.value || 'none'}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold">
                         <SelectValue placeholder="Selecione um árbitro" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                      <SelectItem value="none" className="text-gray-900 hover:bg-gray-100">Nenhum</SelectItem>
                       {activeReferees.map((referee) => (
-                        <SelectItem key={referee.id} value={referee.id}>
+                        <SelectItem key={referee.id} value={referee.id} className="text-gray-900 hover:bg-gray-100">
                           {referee.name}
                         </SelectItem>
                       ))}
@@ -139,20 +143,20 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
               name="assistantRefereeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Árbitro Assistente (Opcional)</FormLabel>
+                  <FormLabel className="text-gray-700 font-semibold">Árbitro Assistente (Opcional)</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
                     value={field.value || 'none'}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold">
                         <SelectValue placeholder="Selecione um árbitro assistente" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhum</SelectItem>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                      <SelectItem value="none" className="text-gray-900 hover:bg-gray-100">Nenhum</SelectItem>
                       {activeReferees.map((referee) => (
-                        <SelectItem key={referee.id} value={referee.id}>
+                        <SelectItem key={referee.id} value={referee.id} className="text-gray-900 hover:bg-gray-100">
                           {referee.name}
                         </SelectItem>
                       ))}
@@ -164,10 +168,19 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
             />
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="bg-bjj-gold text-bjj-black hover:bg-bjj-gold-dark hover:text-white font-bold"
+              >
                 {loading ? 'Salvando...' : area ? 'Atualizar' : 'Criar'}
               </Button>
             </div>
