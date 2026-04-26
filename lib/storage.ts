@@ -1,5 +1,5 @@
 // src/lib/storage.ts
-import { Bracket, Competitor, Referee } from '@/types';
+import { Area, Bracket, Competitor, Referee } from '@/types';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -13,6 +13,10 @@ export interface CompetitorsData {
 
 export interface RefereesData {
   referees: Referee[];
+}
+
+export interface AreasData {
+  areas: Area[];
 }
 
 export async function ensureDataDir() {
@@ -79,6 +83,27 @@ export async function writeBrackets(data: BracketsData): Promise<void> {
   await ensureDataDir();
   const filePath = path.join(DATA_DIR, 'brackets.json');
   const tempPath = path.join(DATA_DIR, 'brackets.json.tmp');
+
+  await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.rename(tempPath, filePath);
+}
+
+export async function readAreas(): Promise<AreasData> {
+  await ensureDataDir();
+  const filePath = path.join(DATA_DIR, 'areas.json');
+
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return { areas: [] };
+  }
+}
+
+export async function writeAreas(data: AreasData): Promise<void> {
+  await ensureDataDir();
+  const filePath = path.join(DATA_DIR, 'areas.json');
+  const tempPath = path.join(DATA_DIR, 'areas.json.tmp');
 
   await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf-8');
   await fs.rename(tempPath, filePath);

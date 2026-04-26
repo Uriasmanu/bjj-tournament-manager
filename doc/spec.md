@@ -892,18 +892,19 @@ Ao importar matches:
 
 ### 5. Módulo de Áreas de Luta
 
-**Objetivo:** Gerenciar os tatames físicos disponíveis no evento e suas lutas programadas.
+**Objetivo:** Gerenciar os tatames físicos disponíveis no evento, vincular chaves de luta a eles e garantir que cada área tenha um árbitro responsável.
 
 **Dados da Área:**
 
-| Campo                | Tipo             | Observação                               |
-| -------------------- | ---------------- | ---------------------------------------- |
-| `id`                 | UUID             | Gerado automaticamente                   |
-| `name`               | string           | Ex: "Tatame 1", "Área A"                 |
-| `currentMatchId`     | UUID ou null     | Luta atualmente em curso                 |
-| `scheduledMatches`   | ScheduledMatch[] | Fila de lutas programadas para esta área |
-| `refereeId`          | UUID ou null     | Árbitro principal da área                |
-| `assistantRefereeId` | UUID ou null     | Árbitro assistente (opcional)            |
+| Campo                | Tipo             | Observação                                                           |
+| -------------------- | ---------------- | -------------------------------------------------------------------- |
+| `id`                 | UUID             | Gerado automaticamente                                               |
+| `name`               | string           | Ex: "Tatame 1", "Área A"                                         |
+| `currentMatchId`     | UUID ou null     | Luta atualmente em curso                                             |
+| `scheduledMatches`   | ScheduledMatch[] | Fila de lutas programadas para esta área                             |
+| `refereeId`          | UUID ou null     | Árbitro principal da área                                            |
+| `assistantRefereeId` | UUID ou null     | Árbitro assistente (opcional)                                        |
+| `bracketCount`       | number           | Quantidade de chaves/lutas programadas nesta área (derived field)    |
 
 **ScheduledMatch:**
 
@@ -914,22 +915,53 @@ Ao importar matches:
 | `estimatedTime` | string  | Horário estimado (opcional) |
 | `isMarried`     | boolean | Se é uma luta casada        |
 
+**Regras de Negócio e Integridade:**
+
+- **Validação de Início de Luta:** Uma área só pode iniciar uma luta se não houver luta ativa (`currentMatchId` null) e possuir árbitro principal atribuído.
+- **Validação de Exclusão:** Uma área não pode ser excluída se possuir luta ativa ou lutas agendadas na fila.
+- **Controle de Bracket Count:** O campo `bracketCount` é automaticamente atualizado sempre que a fila de lutas (`scheduledMatches`) é modificada.
+- **Validação de Árbitros:** Árbitros atribuídos devem estar ativos no sistema de árbitros.
+- **Controle de Duplicatas:** Não é permitido agendar a mesma luta (`matchId`) múltiplas vezes na mesma área.
+- **Ordem de Fila:** Lutas agendadas são ordenadas por `order` e processadas sequencialmente.
+- **Avanço de Lutas:** Ao avançar para próxima luta, a primeira luta da fila se torna ativa e é removida da fila.
+- **Lutas Casadas:** Podem ser marcadas como `isMarried: true` para identificação especial.
+
+**Funções Utilitárias Implementadas:**
+
+- `canStartMatch(area)`: Valida se área pode iniciar nova luta
+- `canDeleteArea(area)`: Valida se área pode ser excluída
+- `updateBracketCount(area)`: Atualiza contador de chaves baseado na fila
+- `addScheduledMatch(area, matchId, order?, estimatedTime?, isMarried?)`: Adiciona luta à fila
+- `removeScheduledMatch(area, matchId)`: Remove luta da fila
+- `advanceToNextMatch(area)`: Avança para próxima luta da fila
+- `finishCurrentMatch(area)`: Finaliza luta atual e avança para próxima
+- `assignMatchToArea(area, matchId)`: Atribui luta diretamente à área
+- `reorderScheduledMatches(area, matchId, newOrder)`: Reordena lutas na fila
+
 **Regras:**
 
 - Uma área pode ter no máximo uma luta ativa por vez.
+- Cada área deve ter um árbitro principal atribuído antes de iniciar uma luta ativa.
+- O árbitro principal da área deve ser um árbitro ativo cadastrado no módulo de árbitros.
+- O campo `bracketCount` representa a quantidade de chaves/lutas associadas à área e deve ser atualizado sempre que a fila de lutas mudar.
 - Ao atribuir uma luta a uma área, o status da luta muda para `IN_PROGRESS`.
-- Lutas casadas podem ser pré-definidas para uma área específica.
+- Quando uma luta é removida da área, `bracketCount` deve ser decrementado.
+- Lutas casadas podem ser pré-definidas para uma área específica e entram na fila de programação.
+- Uma área não pode ser excluída enquanto existir uma luta ativa nela.
+- Ao excluir uma área, todas as lutas agendadas devem ser realocadas ou removidas previamente.
 
 **Ações:**
 
 - `Criar área`
 - `Editar nome da área`
-- `Atribuir árbitro à área`
+- `Atribuir árbitro principal à área`
+- `Atribuir árbitro assistente à área`
 - `Programar luta na área` (incluindo lutas casadas)
+- `Visualizar quantidade de chaves programadas`
 - `Remover luta programada`
 - `Avançar para próxima luta`
-- `Excluir área` (somente se sem luta ativa)
-- `Listar áreas` com status atual e fila de lutas
+- `Excluir área` (somente se sem luta ativa e sem fila de lutas)
+- `Listar áreas` com status atual, fila de lutas e árbitros vinculados
 - `Exportar programação de áreas`
 - `Importar programação de áreas`
 

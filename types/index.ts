@@ -135,3 +135,34 @@ export interface BracketPlacement {
   competitorId: string;
   position: number;
 }
+
+export interface ScheduledMatch {
+  matchId: string;
+  order: number;
+  estimatedTime?: string;
+  isMarried: boolean;
+}
+
+export interface Area {
+  id: string;
+  name: string;
+  currentMatchId: string | null;
+  scheduledMatches: ScheduledMatch[];
+  refereeId: string | null;
+  assistantRefereeId: string | null;
+  bracketCount: number;
+}
+
+export interface AreaPayload {
+  name: string;
+  refereeId?: string | null;
+  assistantRefereeId?: string | null;
+}
+
+export interface AreaUpdatePayload {
+  name?: string;
+  currentMatchId?: string | null;
+  scheduledMatches?: ScheduledMatch[];
+  refereeId?: string | null;
+  assistantRefereeId?: string | null;
+}
