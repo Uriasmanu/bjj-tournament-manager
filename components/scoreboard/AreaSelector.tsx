@@ -11,11 +11,21 @@ interface AreaSelectorProps {
 export function AreaSelector({ areas, selectedAreaId, onAreaChange, loading }: AreaSelectorProps) {
   const activeAreas = areas.filter(area => area.currentMatchId);
 
+  // Ensure selectedAreaId is never an empty string
+  const safeSelectedValue = selectedAreaId && selectedAreaId !== '' ? selectedAreaId : undefined;
+
+  const handleValueChange = (value: string) => {
+    // Prevent calling onAreaChange with empty string
+    if (value && value !== '') {
+      onAreaChange(value);
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto">
       <Select
-        value={selectedAreaId || ''}
-        onValueChange={onAreaChange}
+        value={safeSelectedValue}
+        onValueChange={handleValueChange}
         disabled={loading}
       >
         <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
@@ -23,9 +33,10 @@ export function AreaSelector({ areas, selectedAreaId, onAreaChange, loading }: A
         </SelectTrigger>
         <SelectContent className="bg-gray-800 border-gray-600">
           {activeAreas.length === 0 ? (
-            <SelectItem value="" disabled>
+            // FIX: Use a non-empty string value or don't render a select item
+            <div className="px-2 py-1.5 text-sm text-gray-400 text-center">
               Nenhuma área com luta ativa
-            </SelectItem>
+            </div>
           ) : (
             activeAreas.map(area => (
               <SelectItem key={area.id} value={area.id}>

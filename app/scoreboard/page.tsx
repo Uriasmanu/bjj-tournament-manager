@@ -9,18 +9,44 @@ import { Area } from '@/types';
 export default function ScoreboardPage() {
   const [areas, setAreas] = useState<Area[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const fetchAreas = async () => {
       try {
+        setError(null);
         const response = await fetch('/api/areas');
-        if (response.ok) {
-          const data = await response.json();
-          setAreas(data);
+        
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Validate and filter areas to prevent empty IDs
+        const validAreas = Array.isArray(data) 
+          ? data.filter((area: Area) => 
+              area && 
+              area.id && 
+              typeof area.id === 'string' && 
+              area.id.trim() !== '' &&
+              area.name &&
+              typeof area.name === 'string' &&
+              area.name.trim() !== ''
+            )
+          : [];
+        
+        console.log('Valid areas loaded:', validAreas.length);
+        setAreas(validAreas);
+        
+        if (validAreas.length === 0 && data.length > 0) {
+          console.warn('Some areas were filtered out due to invalid IDs or names');
         }
       } catch (error) {
         console.error('Erro ao buscar áreas:', error);
+        setError(error instanceof Error ? error.message : 'Falha ao carregar áreas');
+        setAreas([]);
       } finally {
         setLoading(false);
       }
@@ -30,8 +56,15 @@ export default function ScoreboardPage() {
   }, []);
 
   const handleAreaSelect = (areaId: string) => {
+    // Prevent navigation with empty or invalid IDs
+    if (!areaId || areaId.trim() === '') {
+      console.error('Invalid area ID attempted:', areaId);
+      return;
+    }
     router.push(`/scoreboard/${areaId}`);
   };
+
+  const hasActiveMatches = areas.some(area => area.currentMatchId);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
@@ -47,6 +80,19 @@ export default function ScoreboardPage() {
               <p className="text-gray-300 mb-4">
                 Selecione uma área com luta ativa para abrir o placar
               </p>
+              
+              {error && (
+                <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200">
+                  <p>Erro ao carregar áreas: {error}</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-2 text-sm underline hover:text-red-100"
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
+              )}
+              
               <AreaSelector
                 areas={areas}
                 selectedAreaId={null}
@@ -55,10 +101,17 @@ export default function ScoreboardPage() {
               />
             </div>
 
-            {areas.filter(a => a.currentMatchId).length === 0 && !loading && (
+            {!loading && !error && hasActiveMatches === false && (
               <div className="text-center text-gray-400">
                 <p>Nenhuma área com luta ativa no momento.</p>
                 <p>Agende lutas nas áreas para começar a usar o placar.</p>
+              </div>
+            )}
+            
+            {!loading && !error && areas.length === 0 && (
+              <div className="text-center text-gray-400">
+                <p>Nenhuma área cadastrada.</p>
+                <p>Cadastre áreas para começar a usar o placar.</p>
               </div>
             )}
           </CardContent>
