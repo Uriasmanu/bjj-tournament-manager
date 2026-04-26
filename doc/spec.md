@@ -1388,25 +1388,71 @@ As lutas são persistidas diretamente dentro do campo `matches` de cada objeto `
 
 ## Navegação e Telas
 
-| Rota                     | Tela                                                            |
-| ------------------------ | --------------------------------------------------------------- |
-| `/`                      | Dashboard — resumo do torneio (TELA INICIAL com todos os menus) |
-| `/tournament/setup`      | Configuração inicial do torneio                                 |
-| `/competitors`           | Lista e cadastro de competidores                                |
-| `/competitors/import`    | Importação de competidores                                      |
-| `/brackets`              | Lista de chaves + criação                                       |
-| `/brackets/[id]`         | Visualização do bracket (árvore)                                |
-| `/brackets/[id]/referee` | Atribuição de árbitro à chave                                   |
-| `/areas`                 | Gerenciamento de áreas                                          |
-| `/areas/[id]/schedule`   | Programação de lutas na área                                    |
-| `/scoreboard`            | Seletor de área + placar ativo                                  |
-| `/scoreboard/[areaId]`   | Placar em tela cheia                                            |
-| `/referees`              | Cadastro e gestão de árbitros                                   |
-| `/married-matches`       | Gerenciamento de lutas casadas                                  |
-| `/schedule`              | Visão geral da programação                                      |
-| `/results`               | Resultados finais — relatório completo                          |
-| `/results/export`        | Exportação de dados                                             |
-| `/import`                | Importação e consolidação de dados                              |
+| Rota                     | Tela                                                                     |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `/`                      | Menu Principal — escolher entre "Organizar Torneio" e "Placar"           |
+| `/dashboard`             | Dashboard — resumo do torneio e menus de organização (sem placar)        |
+| `/tournament/setup`      | Configuração inicial do torneio                                          |
+| `/competitors`           | Lista e cadastro de competidores                                         |
+| `/competitors/import`    | Importação de competidores                                               |
+| `/brackets`              | Lista de chaves + criação                                                |
+| `/brackets/[id]`         | Visualização do bracket (árvore)                                         |
+| `/brackets/[id]/referee` | Atribuição de árbitro à chave                                            |
+| `/areas`                 | Gerenciamento de áreas                                                   |
+| `/areas/[id]/schedule`   | Programação de lutas na área                                             |
+| `/scoreboard`            | Seletor de área + placar ativo                                           |
+| `/scoreboard/[areaId]`   | Placar em tela cheia                                                     |
+| `/referees`              | Cadastro e gestão de árbitros                                            |
+| `/married-matches`       | Gerenciamento de lutas casadas                                           |
+| `/schedule`              | Visão geral da programação                                               |
+| `/results`               | Resultados finais — relatório completo                                   |
+| `/results/export`        | Exportação de dados                                                      |
+| `/import`                | Importação e consolidação de dados                                       |
+
+---
+
+### Descrição das Telas Principais
+
+#### 1. Tela Inicial (`/`) — Menu Principal
+
+**Objetivo:** Permitir escolha entre as duas funcionalidades principais do sistema.
+
+**Layout:**
+- Header com logotipo "BJJ TOURNAMENT"
+- Dois cards grandes e responsivos (lado a lado em desktop, empilhados em mobile):
+  - **Card 1 — Organizar Torneio:** Ícone `Settings` (azul), descrição "Gerencie competidores, crie chaves, configure áreas de luta e organize todo o torneio", botão "Acessar Dashboard" (navegação para `/dashboard`)
+  - **Card 2 — Placar Eletrônico:** Ícone `Clock` (ouro), descrição "Controle em tempo real das lutas ativas, pontuação BJJ e cronômetro para projeção em TV", botão "Abrir Placar" (navegação para `/scoreboard`)
+
+**Design:**
+- Background escuro (gray-900)
+- Cards com fundo gray-800, borda gray-700
+- Hover com efeito de sombra dourada (hover:shadow-lg hover:shadow-bjj-gold/20)
+- Botões destacados com cores diferenciadas
+
+**Critério de aceite:** A tela inicial exibe os dois menus de forma clara e permite navegação entre os dois módulos principais.
+
+---
+
+#### 2. Tela Dashboard (`/dashboard`) — Organização de Torneio
+
+**Objetivo:** Centralizar todas as funcionalidades de organização do torneio, sem a opção de placar.
+
+**Layout:**
+- Header com logotipo, status do torneio (Ativo), data
+- Seção de estatísticas com 4 cards: Atletas, Chaves Ativas, Áreas de Luta, Lutas Concluídas
+- Seção "Módulos de Organização" com cards de menu para:
+  - Competidores (com badge de quantidade)
+  - Chaves (com badge de quantidade)
+  - Áreas de Luta
+  - Árbitros (com badge de quantidade)
+  - Resultados
+  - **Não inclui o card de Placar Eletrônico**
+
+**Design:**
+- Mantém o design existente (fundo light, cards brancos)
+- Gradiente preto-cinza nos headers de cards
+
+**Critério de aceite:** O dashboard exibe todos os menus de organização sem a opção de placar. Botão de voltar na página leva para `/` (menu principal).
 
 ---
 
@@ -1519,40 +1565,49 @@ As lutas são persistidas diretamente dentro do campo `matches` de cada objeto `
 
 ---
 
-### FASE 2 — Tela Inicial (Dashboard com Todos os Menus)
+### FASE 2 — Menu Principal e Dashboard
 
-**Objetivo:** Criar a tela inicial contemplando todos os menus que serão implementados futuramente.
+**Objetivo:** Criar a tela inicial com opção de escolher entre "Organizar Torneio" e "Placar", e o dashboard de organização.
 
 #### Tarefas
 
-**2.1 — Componentes do Dashboard**
+**2.1 — Menu Principal (`/`)**
 
-- [ ] Criar `src/components/dashboard/MenuCard.tsx` — card com ícone Lucide, título, descrição e link
-- [ ] Criar `src/components/dashboard/StatsCard.tsx` — card com estatísticas (total competidores, chaves, etc.)
+- [ ] Criar `src/app/page.tsx` — menu com duas opções principais:
+  - Card "Organizar Torneio" com ícone `Settings`, navegando para `/dashboard`
+  - Card "Placar Eletrônico" com ícone `Clock`, navegando para `/scoreboard`
+- [ ] Design responsivo (lado a lado em desktop, empilhado em mobile)
+- [ ] Background escuro com cards destacados
+- [ ] Hover effect com sombra dourada
 
-**2.2 — Página Inicial**
+**2.2 — Dashboard de Organização (`/dashboard`)**
 
-- [ ] `src/app/page.tsx` — Dashboard com:
-  - Cabeçalho com nome do torneio (se configurado)
-  - Grid de cards para cada módulo:
-    - Torneio (configuração)
+- [ ] Criar `src/app/dashboard/page.tsx` com:
+  - Header com nome do torneio, status e data
+  - Grid de estatísticas (competidores, chaves, áreas, lutas concluídas)
+  - Grid de cards de menu para:
     - Competidores
     - Árbitros
     - Chaves (Brackets)
     - Áreas de Luta
     - Lutas Casadas
-    - Placar (Scoreboard)
     - Programação
     - Resultados
     - Exportar/Importar
-  - Cards com estatísticas principais (competidores, chaves ativas, áreas, lutas finalizadas)
+  - **NÃO inclui o card de Placar Eletrônico**
+  - Botão de voltar para menu principal (`/`)
 
-**2.3 — Estados**
+**2.3 — Componentes Reutilizáveis**
 
-- [ ] Estado vazio (nenhum torneio configurado) — exibir botão para criar torneio
+- [ ] Criar `src/components/MenuCard.tsx` — card com ícone Lucide, título, descrição e link
+- [ ] Criar `src/components/StatsCard.tsx` — card com estatísticas
+
+**2.4 — Estados**
+
+- [ ] Estado vazio (nenhum torneio configurado) — exibir mensagem apropriada
 - [ ] Loading skeleton para estatísticas
 
-**Critério de aceite:** Tela inicial exibe todos os menus do sistema, mesmo que as funcionalidades ainda não estejam implementadas. Clicar em um menu navega para a respectiva rota (algumas rotas podem exibir "Em breve").
+**Critério de aceite:** Menu principal exibe dois cards principais. Dashboard exibe todos os menus de organização sem o placar. Navegação entre `/` e `/dashboard` funciona corretamente.
 
 ---
 

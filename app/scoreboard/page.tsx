@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AreaSelector } from '@/components/scoreboard/AreaSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { Area } from '@/types';
 
 export default function ScoreboardPage() {
@@ -67,10 +69,22 @@ export default function ScoreboardPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-bjj-gold">Placar de Lutas</h2>
+          <Button
+            onClick={() => router.push('/')}
+            variant="outline"
+            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
+
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="text-center text-2xl text-bjj-gold">
-              Placar de Lutas
+            <CardTitle className="text-center text-xl text-gray-300">
+              Selecione uma Área
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">

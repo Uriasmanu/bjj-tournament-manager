@@ -1,117 +1,326 @@
-# Roadmap de Desenvolvimento - Módulo de Placar (Scoreboard)
-
-## Objetivo
-Criar as funcionalidades necessárias para que o módulo de Placar funcione conforme a especificação, permitindo controle em tempo real de lutas ativas com pontuação, cronômetro e integração com áreas e árbitros.
+# Roadmap de Implementação - Reorganização do BJJ Tournament Manager
 
 ## Visão Geral
-O roadmap descreve as etapas de implementação para construir suporte completo a:
-- seleção de área para placar
-- exibição de informações da luta (lutadores, árbitro, área)
-- controle de pontuação BJJ (pontos, vantagens, punições)
-- cronômetro programável manualmente
-- finalização de lutas e atualização automática das chaves
-- suporte a undo (desfazer última ação)
-- layout otimizado para projeção em TV
 
-## Fase 1 — Tipos e estrutura de dados
-- Verificar e atualizar tipos `Match` e `MatchScore` em `types/index.ts` se necessário
-- Adicionar tipos auxiliares para o placar:
-  - `ScoreAction` (tipo de ação: addPoints, addAdvantage, addPenalty)
-  - `TimerState` (elapsed, isRunning, duration)
-- Atualizar `data/brackets.json` com estrutura de pontuação se necessário
+Reorganização da aplicação para separar dois fluxos principais:
+1. **Menu Principal** (`/`) - Escolher entre "Organizar Torneio" ou "Placar Eletrônico"
+2. **Dashboard de Organização** (`/dashboard`) - Gerenciar torneio (sem acesso ao placar)
+3. **Módulo de Placar** (`/scoreboard`) - Controle em tempo real das lutas (sem menus de organização)
 
-## Fase 2 — Hook de cronômetro
-- Criar `hooks/useTimer.ts` com funcionalidades:
-  - `elapsed`: tempo decorrido em segundos
-  - `isRunning`: estado do cronômetro
-  - `duration`: duração total programada
-  - `start()`: iniciar cronômetro
-  - `pause()`: pausar cronômetro
-  - `reset()`: zerar cronômetro
-  - `setDuration(seconds)`: definir duração manualmente
-- Implementar usando `useRef` e `setInterval`
-- Estado apenas em memória (sem persistência entre abas)
+---
 
-## Fase 3 — Hook de placar e estado
-- Criar `hooks/useScoreboard.ts` com gerenciamento de estado:
-  - `match`: luta atual ativa na área
-  - `area`: informações da área (nome, árbitro)
-  - `fighters`: nomes e dados dos lutadores
-  - `addPoints(fighter: 1|2, points: 2|3|4)`: adicionar pontos
-  - `addAdvantage(fighter: 1|2)`: adicionar vantagem
-  - `addPenalty(fighter: 1|2)`: adicionar punição
-  - `undo()`: desfazer última ação
-  - `finishMatch(winnerId: string, reason: 'points'|'submission')`: finalizar luta
-  - Histórico de ações (stack) para suporte a undo
-- Integração com APIs de áreas e chaves para buscar dados
-- Validação de regras BJJ de pontuação
+## Fases de Implementação
 
-## Fase 4 — Componentes do placar
-- Criar componentes auxiliares:
-  - `ScorePanel`: painel principal com pontuações lado a lado
-  - `ScoreButton`: botões para adicionar pontos/vantagens/punições
-  - `TimerDisplay`: display do cronômetro com fonte mono
-  - `TimerControls`: controles play/pause/reset
-  - `AreaSelector`: seletor de área ativa
-  - `FighterCard`: cartão com nome, pontos, vantagens, punições
-  - `UndoButton`: botão para desfazer ação
-  - `FinishMatchModal`: modal para finalizar luta com opções
-- Design otimizado para TV/projeção (cores contrastantes, fonte grande)
-- Usar shadcn/ui com customizações visuais
+### FASE 1 — Menu Principal e Reorganização de Rotas
 
-## Fase 5 — Páginas do placar
-- Criar `app/scoreboard/page.tsx`:
-  - Seletor de área
-  - Redirecionamento para placar da área selecionada
-- Criar `app/scoreboard/[areaId]/page.tsx`:
-  - Layout fullscreen otimizado para TV
-  - Placar interativo completo
-  - Suporte a query param `?fullscreen=true` para ocultar navbar
-- Responsividade para diferentes tamanhos de tela
+**Objetivo:** Criar a tela inicial com menu de seleção e reorganizar o dashboard.
 
-## Fase 6 — Integração com áreas e árbitros
-- Buscar dados da área ativa (nome, árbitro principal)
-- Exibir nome do árbitro no placar
-- Validar que área tem árbitro antes de iniciar placar
-- Integração com módulo de competidores para nomes dos lutadores
-- Atualização automática do bracket ao finalizar luta
+**Tarefas:**
 
-## Fase 7 — Regras de negócio e validações
-- Implementar regras BJJ:
-  - Pontos: 2, 3, 4 pontos
-  - Vantagens: +1 sem somar pontos
-  - Punições: +1 ponto para o adversário no desempate
-  - Vitória por pontos ou finalização
-- Validações:
-  - Não permitir ações se luta não estiver ativa
-  - Cronômetro para automaticamente ao chegar em 00:00
-  - Undo limitado à última ação
-- Tratamento de erros e estados de loading
+1. **Criar página inicial (`/app/page.tsx`)**
+   - Layout responsivo com dois cards principais
+   - Card 1: "Organizar Torneio" (ícone Settings, cor azul)
+     - Descrição: "Gerencie competidores, crie chaves, configure áreas de luta e organize todo o torneio"
+     - Botão: "Acessar Dashboard" → `/dashboard`
+   - Card 2: "Placar Eletrônico" (ícone Clock, cor ouro)
+     - Descrição: "Controle em tempo real das lutas ativas, pontuação BJJ e cronômetro para projeção em TV"
+     - Botão: "Abrir Placar" → `/scoreboard`
+   - Design: Background escuro (gray-900), cards com hover effect dourado
+   - Responsividade: Lado a lado em desktop, empilhado em mobile
 
-## Fase 8 — Testes e validação do módulo
-- Testes unitários para:
-  - Hook de cronômetro (start, pause, reset)
-  - Hook de placar (addPoints, undo, finishMatch)
-  - Regras de pontuação BJJ
-  - Validações de estado
-- Testes de integração para:
-  - Integração com APIs de áreas e chaves
-  - Persistência de resultados
-- Casos de borda:
-  - Luta sem árbitro
-  - Undo múltiplo
-  - Finalização por tempo vs finalização
+2. **Criar pasta `/app/dashboard`**
+   - Mover conteúdo do atual `/app/page.tsx` para `/app/dashboard/page.tsx`
+   - Manter toda a lógica de organização (competidores, chaves, áreas, árbitros, etc.)
+   - Remover referência ao placar do menu
+   - Adicionar botão "Voltar" que leva para `/` (menu principal)
 
-## Fase 9 — Entrega e documentação
-- Revisar UX e mensagens de erro
-- Otimizar layout para projeção em TV
-- Validar conformidade com spec do módulo 7
-- Documentar uso do placar (controles, atalhos)
-- Testar em diferentes navegadores e dispositivos
-- Manter roadmap alinhado com `doc/spec.md`
+3. **Atualizar componentes do dashboard**
+   - No arquivo dashboard/page.tsx, mudar seção de "Módulos Operacionais" para "Módulos de Organização"
+   - Remover card "Placar Eletrônico" do menu principal do dashboard
+   - Atualizar título de section se necessário
 
-## Localização do arquivo
-- `doc/ROADMAP.md`
+4. **Criar estilos para o Menu Principal**
+   - Componentizar o menu em `components/MainMenu.tsx` (opcional, para reutilização)
+   - Definir breakpoints responsive
+   - Implementar hover effects com Tailwind
 
-## Observação
-Este roadmap foca no placar como módulo independente, mas integrado com áreas, árbitros e chaves. O cronômetro é programável manualmente e os resultados são registrados nas chaves ao finalizar a luta.
+**Critério de Aceite:**
+- Ao acessar `/`, exibir menu com dois cards principais
+- Clicar em "Acessar Dashboard" leva para `/dashboard`
+- Clicar em "Abrir Placar" leva para `/scoreboard`
+- Dashboard não exibe card de placar
+- Dashboard tem botão de voltar para `/`
+- Layout responsivo funciona em mobile
+
+**Tempo Estimado:** 2-3 horas
+
+---
+
+### FASE 2 — Reorganização do Módulo de Placar
+
+**Objetivo:** Criar experiência dedicada ao placar, separada da organização.
+
+**Tarefas:**
+
+1. **Criar estrutura base do placar em `/app/scoreboard`**
+   - `page.tsx` - Seletor de área (primeira tela do placar)
+   - `[areaId]/page.tsx` - Placar interativo (já existe, revisar)
+
+2. **Atualizar `/app/scoreboard/page.tsx`**
+   - Remover referência ao menu de organização
+   - Manter apenas seletor de área
+   - Adicionar descrição clara sobre o módulo
+   - Botão "Voltar" leva para `/` (menu principal)
+
+3. **Atualizar `/app/scoreboard/[areaId]/page.tsx`**
+   - Remover ou ocultar navbar de organização
+   - Manter interface de placar totalmente focada em:
+     - Seletor de área (se necessário trocar)
+     - Placar em tempo real
+     - Controles de pontuação
+     - Cronômetro
+   - Suporte a fullscreen sem elementos de organização
+   - Botão de voltar leva para `/scoreboard` (seletor de área)
+
+4. **Remover Links de Placar do Dashboard**
+   - Garantir que `/dashboard` não tenha referência ao placar
+   - Remover MenuCard ou Link para `/scoreboard`
+
+5. **Atualizar componentes de placar**
+   - Revisar `components/scoreboard/*` para garantir que não dependem de contextos de organização
+   - Confirmar que hooks `useScoreboard` e `useTimer` funcionam independentemente
+
+**Critério de Aceite:**
+- Ao acessar `/scoreboard`, exibir seletor de área
+- Botão "Voltar" no seletor leva para `/` (menu principal)
+- Ao acessar `/scoreboard/[areaId]`, exibir placar sem elementos de organização
+- Fullscreen funciona corretamente
+- Nenhum link ou menu da organização está visível no placar
+
+**Tempo Estimado:** 2-3 horas
+
+---
+
+### FASE 3 — Validação de Fluxos de Navegação
+
+**Objetivo:** Garantir que os dois fluxos (organização e placar) funcionam independentemente.
+
+**Tarefas:**
+
+1. **Testar fluxo de organização**
+   - `/` → clique "Organizar Torneio" → `/dashboard`
+   - Dentro do dashboard, todos os links de organização funcionam
+   - Dashboard não exibe elementos do placar
+   - Botão "Voltar" retorna para `/`
+
+2. **Testar fluxo de placar**
+   - `/` → clique "Placar" → `/scoreboard`
+   - Seletor de área funciona
+   - Clicar em uma área → `/scoreboard/[areaId]`
+   - Placar funciona completamente
+   - Botão "Voltar" retorna para `/scoreboard`
+   - De `/scoreboard` clicar "Voltar" retorna para `/`
+
+3. **Testar responsividade**
+   - Menu principal em mobile (cards empilhados)
+   - Dashboard em mobile (layouts se ajustam)
+   - Placar em mobile (cronômetro legível)
+
+4. **Testar transições e estados**
+   - Loading states durante navegação
+   - Erro ao acessar rota inválida (ex: `/dashboard` sem torneio)
+   - Erro ao acessar placar sem áreas
+
+**Critério de Aceite:**
+- Todos os fluxos funcionam conforme esperado
+- Sem loops infinitos de navegação
+- Sem elementos misturados entre seções
+- Responsividade mantida em todas as telas
+
+**Tempo Estimado:** 1-2 horas
+
+---
+
+### FASE 4 — Ajustes de UI/UX
+
+**Objetivo:** Refinar a experiência visual e garantir consistência.
+
+**Tarefas:**
+
+1. **Menu Principal**
+   - Revisar espaçamento dos cards
+   - Validar cores (Settings = azul, Clock = ouro)
+   - Ajustar tamanho de fontes para legibilidade
+   - Adicionar ícones Lucide corretos
+   - Testar hover effects
+
+2. **Dashboard**
+   - Confirmar que "Módulos de Organização" está bem nomeado
+   - Verificar que cards não incluem placar
+   - Revisar botão "Voltar" estilo e posicionamento
+   - Testar header e stats cards
+
+3. **Placar**
+   - Revisar layout de seletor de área
+   - Confirmar que interface de placar é intuitiva
+   - Validar fullscreen em diferentes resoluções
+   - Testar controles de pontuação
+
+4. **Transições e Animações**
+   - Adicionar smooth transitions entre pages
+   - Revisar loading skeletons
+   - Testar fade-ins/fade-outs
+
+**Critério de Aceite:**
+- Interface visualmente consistente
+- Ícones corretos em todos os cards
+- Cores seguem spec (azul para organização, ouro para placar)
+- Fonte legível em todos os tamanhos
+- Nenhum elemento "cortado" ou mal posicionado
+
+**Tempo Estimado:** 1-2 horas
+
+---
+
+### FASE 5 — Documentação e Testes
+
+**Objetivo:** Documentar a nova estrutura e realizar testes finais.
+
+**Tarefas:**
+
+1. **Atualizar Documentação**
+   - Descrever novo fluxo no README
+   - Documentar rotas principais
+   - Explicar separação entre organização e placar
+
+2. **Testes Manuais**
+   - Testar todos os fluxos em diferentes navegadores
+   - Testar em dispositivos móveis (simulador)
+   - Verificar performance
+   - Verificar loading e erros
+
+3. **Testes de Regressão**
+   - Verificar que funcionalidades de organização ainda funcionam
+   - Verificar que placar continua funcionando
+   - Verificar imports/exports
+
+4. **Feedback Visual**
+   - Adicionar toast/notificações onde apropriado
+   - Melhorar mensagens de erro
+   - Validar campos antes de submissão
+
+**Critério de Aceite:**
+- Documentação atualizada
+- Todos os testes passam
+- Sem erros no console
+- Performance aceitável (carregamento < 2s)
+
+**Tempo Estimado:** 2-3 horas
+
+---
+
+## Estrutura de Arquivos Resultante
+
+```
+app/
+├── page.tsx                  # Menu Principal (novo)
+├── dashboard/
+│   └── page.tsx              # Dashboard de Organização (movido de app/page.tsx)
+├── scoreboard/
+│   ├── page.tsx              # Seletor de Área
+│   └── [areaId]/
+│       └── page.tsx          # Placar Interativo
+├── competitors/              # Mantém estrutura existente
+├── brackets/                 # Mantém estrutura existente
+├── areas/                    # Mantém estrutura existente
+├── referees/                 # Mantém estrutura existente
+├── results/                  # Mantém estrutura existente
+└── ...outros módulos...
+
+components/
+├── MainMenu.tsx              # Novo - Menu Principal (opcional)
+├── MenuCard.tsx              # Reutilizado
+├── StatsCard.tsx             # Reutilizado
+├── scoreboard/               # Já existe
+│   ├── ScorePanel.tsx
+│   ├── FighterCard.tsx
+│   ├── TimerDisplay.tsx
+│   ├── TimerControls.tsx
+│   ├── ScoreButton.tsx
+│   ├── AreaSelector.tsx
+│   ├── UndoButton.tsx
+│   └── FinishMatchModal.tsx
+└── ...outros componentes...
+```
+
+---
+
+## Checklist de Implementação
+
+- [ ] **FASE 1**
+  - [ ] Criar página inicial (`/app/page.tsx`)
+  - [ ] Mover dashboard para `/app/dashboard/page.tsx`
+  - [ ] Remover card de placar do dashboard
+  - [ ] Adicionar botão "Voltar" no dashboard
+  - [ ] Testar navegação
+
+- [ ] **FASE 2**
+  - [ ] Revisar `/app/scoreboard/page.tsx`
+  - [ ] Revisar `/app/scoreboard/[areaId]/page.tsx`
+  - [ ] Remover links de organização do placar
+  - [ ] Adicionar botão "Voltar" no seletor de área
+  - [ ] Validar componentes de placar
+
+- [ ] **FASE 3**
+  - [ ] Testar fluxo de organização completo
+  - [ ] Testar fluxo de placar completo
+  - [ ] Testar responsividade
+  - [ ] Testar transições
+
+- [ ] **FASE 4**
+  - [ ] Revisar UI do menu principal
+  - [ ] Revisar UI do dashboard
+  - [ ] Revisar UI do placar
+  - [ ] Refinar cores e ícones
+
+- [ ] **FASE 5**
+  - [ ] Atualizar documentação
+  - [ ] Executar testes manuais
+  - [ ] Testes de regressão
+  - [ ] Validar feedback visual
+
+---
+
+## Tempo Total Estimado
+
+- Fase 1: 2-3 horas
+- Fase 2: 2-3 horas
+- Fase 3: 1-2 horas
+- Fase 4: 1-2 horas
+- Fase 5: 2-3 horas
+
+**Total: 8-13 horas**
+
+---
+
+## Notas Importantes
+
+1. **Sem Breaking Changes**: A reorganização não altera funcionalidades existentes, apenas reorganiza as rotas e fluxos de navegação.
+
+2. **Independência dos Módulos**: Organização e Placar funcionam completamente independentes, sem compartilharem estado ou contexto.
+
+3. **Preservação de Dados**: Todos os dados continuam sendo persistidos normalmente via JSON.
+
+4. **Retrocompatibilidade**: Links antigos podem redirecionar (ex: `/` redireciona para `/dashboard` se necessário).
+
+5. **Escalabilidade**: A nova estrutura facilita futuras expansões (ex: adicionar novo módulo de relatórios).
+
+---
+
+## Próximos Passos Após Implementação
+
+1. Adicionar autenticação (se necessário)
+2. Implementar histórico de torneios múltiplos
+3. Adicionar temas (claro/escuro)
+4. Otimizar performance com React.memo e lazy loading
+5. Adicionar mais testes unitários e de integração
