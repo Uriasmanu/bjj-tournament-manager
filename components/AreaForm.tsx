@@ -98,9 +98,9 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
                 <FormItem>
                   <FormLabel className="text-gray-700 font-semibold">Nome da Área</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Ex: Área 1" 
-                      {...field} 
+                    <Input
+                      placeholder="Ex: Área 1"
+                      {...field}
                       className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold"
                     />
                   </FormControl>
@@ -125,38 +125,18 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                      <SelectItem value="none" className="text-gray-900 hover:bg-gray-100">Nenhum</SelectItem>
+                      <SelectItem
+                        value="none"
+                        className="text-gray-900 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
+                      >
+                        Nenhum
+                      </SelectItem>
                       {activeReferees.map((referee) => (
-                        <SelectItem key={referee.id} value={referee.id} className="text-gray-900 hover:bg-gray-100">
-                          {referee.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="assistantRefereeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">Árbitro Assistente (Opcional)</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
-                    value={field.value || 'none'}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold">
-                        <SelectValue placeholder="Selecione um árbitro assistente" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                      <SelectItem value="none" className="text-gray-900 hover:bg-gray-100">Nenhum</SelectItem>
-                      {activeReferees.map((referee) => (
-                        <SelectItem key={referee.id} value={referee.id} className="text-gray-900 hover:bg-gray-100">
+                        <SelectItem
+                          key={referee.id}
+                          value={referee.id}
+                          className="text-gray-900 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
+                        >
                           {referee.name}
                         </SelectItem>
                       ))}
@@ -168,16 +148,16 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
             />
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onClose}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 className="bg-bjj-gold text-bjj-black hover:bg-bjj-gold-dark hover:text-white font-bold"
               >
