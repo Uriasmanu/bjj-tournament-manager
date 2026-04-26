@@ -28,12 +28,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAreas } from '@/hooks/useAreas';
-import { Area } from '@/types';
+import { Area, Referee } from '@/types';
 
 const areaFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   refereeId: z.string().nullable(),
-  assistantRefereeId: z.string().nullable(),
 });
 
 type AreaFormData = z.infer<typeof areaFormSchema>;
@@ -43,22 +42,39 @@ interface AreaFormProps {
   onClose: () => void;
 }
 
-const mockReferees = [
-  { id: 'ref1', name: 'João Silva', isActive: true },
-  { id: 'ref2', name: 'Maria Santos', isActive: true },
-  { id: 'ref3', name: 'Pedro Costa', isActive: false },
-];
-
 export function AreaForm({ area, onClose }: AreaFormProps) {
   const { createArea, updateArea } = useAreas();
   const [loading, setLoading] = useState(false);
+  const [referees, setReferees] = useState<Referee[]>([]);
+  const [loadingReferees, setLoadingReferees] = useState(true);
+
+  // Buscar árbitros ativos da API
+  useEffect(() => {
+    const fetchReferees = async () => {
+      try {
+        const response = await fetch('/api/referees');
+        if (!response.ok) {
+          throw new Error('Erro ao carregar árbitros');
+        }
+        const data = await response.json();
+        // Filtrar apenas árbitros ativos
+        const activeReferees = data.filter((referee: Referee) => referee.isActive);
+        setReferees(activeReferees);
+      } catch (error) {
+        console.error('Erro ao buscar árbitros:', error);
+      } finally {
+        setLoadingReferees(false);
+      }
+    };
+
+    fetchReferees();
+  }, []);
 
   const form = useForm<AreaFormData>({
     resolver: zodResolver(areaFormSchema),
     defaultValues: {
       name: area?.name || '',
       refereeId: area?.refereeId || null,
-      assistantRefereeId: area?.assistantRefereeId || null,
     },
   });
 
@@ -77,8 +93,6 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
       setLoading(false);
     }
   };
-
-  const activeReferees = mockReferees.filter(ref => ref.isActive);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -114,14 +128,17 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
               name="refereeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">Árbitro Principal</FormLabel>
+                  <FormLabel className="text-gray-700 font-semibold">Árbitro</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
                     value={field.value || 'none'}
+                    disabled={loadingReferees}
                   >
                     <FormControl>
                       <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-bjj-gold focus:border-bjj-gold">
-                        <SelectValue placeholder="Selecione um árbitro" />
+                        <SelectValue placeholder={
+                          loadingReferees ? "Carregando árbitros..." : "Selecione um árbitro"
+                        } />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white border border-gray-200 shadow-lg">
@@ -131,13 +148,13 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
                       >
                         Nenhum
                       </SelectItem>
-                      {activeReferees.map((referee) => (
+                      {referees.map((referee) => (
                         <SelectItem
                           key={referee.id}
                           value={referee.id}
                           className="text-gray-900 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900"
                         >
-                          {referee.name}
+                          {referee.name} ({referee.beltReferee})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -158,7 +175,7 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || loadingReferees}
                 className="bg-bjj-gold text-bjj-black hover:bg-bjj-gold-dark hover:text-white font-bold"
               >
                 {loading ? 'Salvando...' : area ? 'Atualizar' : 'Criar'}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAreas } from '@/hooks/useAreas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,13 +19,15 @@ import {
   Clock,
   Trophy,
   AlertTriangle,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from 'lucide-react';
 import { AreaForm } from '@/components/AreaForm';
 import { AreaCard } from '@/components/AreaCard';
-import type { Area } from '@/types'; // Adjust import path as needed
+import type { Area } from '@/types';
 
 export default function AreasPage() {
+  const router = useRouter();
   const { areas, loading, error, deleteArea, refresh } = useAreas();
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | null>(null);
@@ -68,13 +71,17 @@ export default function AreasPage() {
     const success = await deleteArea(areaId);
     if (success) {
       setDeletingAreaId(null);
-      refresh(); // Recarrega os dados
+      refresh();
     }
   };
 
   const handleFormClose = () => {
     setShowForm(false);
     setEditingArea(null);
+  };
+
+  const handleGoBack = () => {
+    router.push('/');
   };
 
   if (error) {
@@ -103,6 +110,16 @@ export default function AreasPage() {
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-4">
+              {/* Botão Voltar */}
+              <Button
+                onClick={handleGoBack}
+                variant="ghost"
+                className="text-white hover:bg-white/10 hover:text-white p-2"
+                title="Voltar para página inicial"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </Button>
+
               <div className="p-3 bg-bjj-gold rounded-lg shadow-lg">
                 <MapPin className="w-8 h-8 text-bjj-black" />
               </div>
