@@ -1,159 +1,117 @@
-# Roadmap de Desenvolvimento
+# Roadmap de Desenvolvimento - Módulo de Placar (Scoreboard)
 
 ## Objetivo
-Criar as funcionalidades necessárias para que o módulo `5. Módulo de Áreas de Luta` funcione conforme a especificação.
+Criar as funcionalidades necessárias para que o módulo de Placar funcione conforme a especificação, permitindo controle em tempo real de lutas ativas com pontuação, cronômetro e integração com áreas e árbitros.
 
 ## Visão Geral
 O roadmap descreve as etapas de implementação para construir suporte completo a:
-- cadastro de áreas de luta
-- edição e exclusão de áreas
-- vinculação de chaves/lutas às áreas
-- manutenção de `bracketCount`
-- atribuição de árbitros às áreas
-- programação de lutas e fila de area
-- validação de regras de negócio
+- seleção de área para placar
+- exibição de informações da luta (lutadores, árbitro, área)
+- controle de pontuação BJJ (pontos, vantagens, punições)
+- cronômetro programável manualmente
+- finalização de lutas e atualização automática das chaves
+- suporte a undo (desfazer última ação)
+- layout otimizado para projeção em TV
 
 ## Fase 1 — Tipos e estrutura de dados
-- Definir tipo `Area` em `src/types/index.ts`
-- Definir tipo `ScheduledMatch`
-- Adicionar campos obrigatórios:
-  - `id`
-  - `name`
-  - `currentMatchId`
-  - `scheduledMatches`
-  - `refereeId`
-  - `assistantRefereeId`
-  - `bracketCount`
-- Atualizar `data/areas.json` com estrutura inicial
+- Verificar e atualizar tipos `Match` e `MatchScore` em `types/index.ts` se necessário
+- Adicionar tipos auxiliares para o placar:
+  - `ScoreAction` (tipo de ação: addPoints, addAdvantage, addPenalty)
+  - `TimerState` (elapsed, isRunning, duration)
+- Atualizar `data/brackets.json` com estrutura de pontuação se necessário
 
-## Fase 2 — Persistência e API
-- Implementar leitura e escrita de `data/areas.json`
-- Criar APIs:
-  - `GET /api/areas`
-  - `POST /api/areas`
-  - `PUT /api/areas/[id]`
-  - `DELETE /api/areas/[id]`
-  - `POST /api/areas/[id]/schedule`
-  - `POST /api/areas/[id]/assign-referee`
-- Validar dados de entrada no servidor:
-  - `name` obrigatório
-  - `refereeId` somente árbitro ativo
-  - não excluir área com luta ativa
+## Fase 2 — Hook de cronômetro
+- Criar `hooks/useTimer.ts` com funcionalidades:
+  - `elapsed`: tempo decorrido em segundos
+  - `isRunning`: estado do cronômetro
+  - `duration`: duração total programada
+  - `start()`: iniciar cronômetro
+  - `pause()`: pausar cronômetro
+  - `reset()`: zerar cronômetro
+  - `setDuration(seconds)`: definir duração manualmente
+- Implementar usando `useRef` e `setInterval`
+- Estado apenas em memória (sem persistência entre abas)
 
-## Fase 3 — Regras de negócio e integridade ✅
-- Criar `lib/areaUtils.ts` com funções utilitárias:
-  - `canStartMatch()`: valida se área pode iniciar luta
-  - `canDeleteArea()`: valida se área pode ser excluída
-  - `updateBracketCount()`: mantém bracketCount sincronizado
-  - `addScheduledMatch()`: adiciona luta à fila com validações
-  - `removeScheduledMatch()`: remove luta da fila
-  - `advanceToNextMatch()`: avança para próxima luta da fila
-  - `finishCurrentMatch()`: finaliza luta atual e avança
-  - `assignMatchToArea()`: atribui luta diretamente à área
-  - `reorderScheduledMatches()`: reordena fila de lutas
-- Integrar validações nas APIs existentes:
-  - Validação de árbitros ativos em criação/edição
-  - Prevenção de exclusão com luta ativa
-  - Controle de duplicatas em agendamento
-  - Atualização automática de bracketCount
+## Fase 3 — Hook de placar e estado
+- Criar `hooks/useScoreboard.ts` com gerenciamento de estado:
+  - `match`: luta atual ativa na área
+  - `area`: informações da área (nome, árbitro)
+  - `fighters`: nomes e dados dos lutadores
+  - `addPoints(fighter: 1|2, points: 2|3|4)`: adicionar pontos
+  - `addAdvantage(fighter: 1|2)`: adicionar vantagem
+  - `addPenalty(fighter: 1|2)`: adicionar punição
+  - `undo()`: desfazer última ação
+  - `finishMatch(winnerId: string, reason: 'points'|'submission')`: finalizar luta
+  - Histórico de ações (stack) para suporte a undo
+- Integração com APIs de áreas e chaves para buscar dados
+- Validação de regras BJJ de pontuação
 
-## Fase 4 — Hook de cliente e estado ✅
-- Criar `hooks/useAreas.ts` com gerenciamento de estado:
-  - `getAreas()`: busca áreas com filtro opcional
-  - `createArea()`: cria nova área com validação
-  - `updateArea()`: atualiza área existente
-  - `deleteArea()`: exclui área com validações
-  - `scheduleMatch()`: agenda luta na área
-  - `assignReferee()`: atribui árbitros à área
-  - `advanceMatch()`: avança para próxima luta
-  - Tratamento de erros e estados de loading
-- Criar API `POST /api/areas/[id]/advance` para avanço de lutas
-
-## Fase 5 — UI de gerenciamento de áreas ✅
-- Criar `app/areas/page.tsx` - página principal das áreas
+## Fase 4 — Componentes do placar
 - Criar componentes auxiliares:
-  - `AreaCard`: exibe informações da área com status visual
-  - `AreaForm`: formulário modal para criar/editar áreas
-  - `AreaScheduleSummary`: resumo da agenda de lutas
-- Implementar validações na UI:
-  - Alerta visual quando árbitro não atribuído
-  - Desabilitação de exclusão com luta ativa
-  - Feedback visual de lutas ativas (ring verde)
-- Criar componente `ui/form.tsx` para formulários consistentes
-  - `updateArea`
-  - `deleteArea`
-  - `scheduleMatch`
-  - `assignReferee`
-  - `advanceMatch`
-- Sincronizar com módulos de árbitros e chaves
-- Manter refetch pós operação e feedback de erro
+  - `ScorePanel`: painel principal com pontuações lado a lado
+  - `ScoreButton`: botões para adicionar pontos/vantagens/punições
+  - `TimerDisplay`: display do cronômetro com fonte mono
+  - `TimerControls`: controles play/pause/reset
+  - `AreaSelector`: seletor de área ativa
+  - `FighterCard`: cartão com nome, pontos, vantagens, punições
+  - `UndoButton`: botão para desfazer ação
+  - `FinishMatchModal`: modal para finalizar luta com opções
+- Design otimizado para TV/projeção (cores contrastantes, fonte grande)
+- Usar shadcn/ui com customizações visuais
 
-## Fase 5 — UI de gerenciamento de áreas
-- Criar `src/app/areas/page.tsx`
-- Exibir lista de áreas com:
-  - nome
-  - árbitro principal
-  - árbitro assistente
-  - fila de lutas
-  - `bracketCount`
-- Botões:
-  - criar área
-  - editar área
-  - excluir área
-  - abrir agenda da área
-- Criar componentes auxiliares:
-  - `AreaForm`
-  - `AreaCard`
-  - `AreaScheduleSummary`
-- Validar na UI:
-  - impedimento de exclusão com luta ativa
-  - alerta quando não há árbitro
+## Fase 5 — Páginas do placar
+- Criar `app/scoreboard/page.tsx`:
+  - Seletor de área
+  - Redirecionamento para placar da área selecionada
+- Criar `app/scoreboard/[areaId]/page.tsx`:
+  - Layout fullscreen otimizado para TV
+  - Placar interativo completo
+  - Suporte a query param `?fullscreen=true` para ocultar navbar
+- Responsividade para diferentes tamanhos de tela
 
-## Fase 6 — Agendamento de lutas e vínculo com chaves
-- Criar `src/app/areas/[id]/schedule/page.tsx`
-- Exibir fila de `scheduledMatches`
-- Incluir controles:
-  - agendar nova luta
-  - remover luta agendada
-  - avançar para próxima luta
-- Garantir que o agendamento:
-  - usa lutas existentes do módulo de chaves
-  - não duplica `matchId`
-  - respeita status da chave
-- Atualizar `bracketCount` automaticamente
+## Fase 6 — Integração com áreas e árbitros
+- Buscar dados da área ativa (nome, árbitro principal)
+- Exibir nome do árbitro no placar
+- Validar que área tem árbitro antes de iniciar placar
+- Integração com módulo de competidores para nomes dos lutadores
+- Atualização automática do bracket ao finalizar luta
 
-## Fase 7 — Atribuição de árbitros por área
-- Implementar seleção de árbitro principal ativo
-- Permitir árbitro assistente opcional
-- Exibir árbitros na listagem de áreas
-- Validar regra:
-  - área ativa precisa de árbitro principal
-  - alerta visual quando faltam árbitros
+## Fase 7 — Regras de negócio e validações
+- Implementar regras BJJ:
+  - Pontos: 2, 3, 4 pontos
+  - Vantagens: +1 sem somar pontos
+  - Punições: +1 ponto para o adversário no desempate
+  - Vitória por pontos ou finalização
+- Validações:
+  - Não permitir ações se luta não estiver ativa
+  - Cronômetro para automaticamente ao chegar em 00:00
+  - Undo limitado à última ação
+- Tratamento de erros e estados de loading
 
 ## Fase 8 — Testes e validação do módulo
 - Testes unitários para:
-  - criação/edição/exclusão de área
-  - cálculo de `bracketCount`
-  - bloqueio de exclusão com luta ativa
-  - validação de árbitro ativo
-- Testes de integração para API de áreas
+  - Hook de cronômetro (start, pause, reset)
+  - Hook de placar (addPoints, undo, finishMatch)
+  - Regras de pontuação BJJ
+  - Validações de estado
+- Testes de integração para:
+  - Integração com APIs de áreas e chaves
+  - Persistência de resultados
 - Casos de borda:
-  - área sem árbitro
-  - área com fila vazia
-  - luta casada movida entre áreas
+  - Luta sem árbitro
+  - Undo múltiplo
+  - Finalização por tempo vs finalização
 
 ## Fase 9 — Entrega e documentação
 - Revisar UX e mensagens de erro
-- Cobrir estados vazios:
-  - sem áreas cadastradas
-  - sem lutas agendadas
-- Validar conformidade com a spec do módulo 5
-- Manter o roadmap alinhado com `doc/spec.md`
+- Otimizar layout para projeção em TV
+- Validar conformidade com spec do módulo 7
+- Documentar uso do placar (controles, atalhos)
+- Testar em diferentes navegadores e dispositivos
+- Manter roadmap alinhado com `doc/spec.md`
 
 ## Localização do arquivo
 - `doc/ROADMAP.md`
 
----
-
 ## Observação
-Se quiser, posso também gerar um roadmap mais detalhado apenas para o módulo de Áreas de Luta, com datas estimadas e dependências entre tarefas.
+Este roadmap foca no placar como módulo independente, mas integrado com áreas, árbitros e chaves. O cronômetro é programável manualmente e os resultados são registrados nas chaves ao finalizar a luta.

@@ -166,3 +166,15 @@ export interface AreaUpdatePayload {
   refereeId?: string | null;
   assistantRefereeId?: string | null;
 }
+
+// Tipos auxiliares para o placar
+export type ScoreAction =
+  | { type: 'ADD_POINTS'; fighter: 1 | 2; points: 2 | 3 | 4 }
+  | { type: 'ADD_ADVANTAGE'; fighter: 1 | 2 }
+  | { type: 'ADD_PENALTY'; fighter: 1 | 2 };
+
+export interface TimerState {
+  elapsed: number;
+  isRunning: boolean;
+  duration: number;
+}
