@@ -146,7 +146,7 @@ Criar novo componente `ConfigLuta.tsx` com campos para ambos os atletas:
 
 ## Fase 3: Finalizar Luta e Exportar JSON
 
-**Objetivo:** Ao clicar em "Finalizar", gerar arquivo JSON com todo o resultado da luta.
+**Objetivo:** Ao clicar em "Finalizar", salva no arquivo JSON da chave de luta, atualizando a area e o arbitro.
 
 ### Tarefas
 

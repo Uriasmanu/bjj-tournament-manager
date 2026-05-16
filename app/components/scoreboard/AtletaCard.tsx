@@ -1,6 +1,7 @@
 import { ScoreButton } from "./ScoreButton"
 import { VantagemPunicao } from "./VantagemPunicao"
 import { TotalScore } from "./TotalScore"
+import { BadgeFaixa } from "./BadgeFaixa"
 
 export type AtletaState = {
   montada: number
@@ -10,15 +11,20 @@ export type AtletaState = {
   punicao: number
 }
 
-interface AtletaCardProps {
+export type LutadorInfo = {
   nome: string
+  faixa: string
   equipe: string
+}
+
+interface AtletaCardProps {
+  lutador: LutadorInfo
   estado: AtletaState
   onScoreChange: (categoria: keyof AtletaState, valor: number) => void
   isLight?: boolean
 }
 
-export function AtletaCard({ nome, equipe, estado, onScoreChange, isLight = false }: AtletaCardProps) {
+export function AtletaCard({ lutador, estado, onScoreChange, isLight = false }: AtletaCardProps) {
   const total = estado.montada + estado.passagem + estado.queda
   const bgColor = isLight ? "bg-white" : "bg-blue-700"
   const textColor = isLight ? "text-black" : "text-white"
@@ -29,10 +35,16 @@ export function AtletaCard({ nome, equipe, estado, onScoreChange, isLight = fals
       <div className="flex justify-between items-center h-full w-full">
         <div className="flex flex-col justify-center max-w-[65%]">
           <div className="text-5xl font-black uppercase tracking-tight mb-1 truncate">
-            {nome}
+            {lutador.nome}
           </div>
+          
+          {/* Badge de Faixa */}
+          <div className="mb-2">
+            <BadgeFaixa faixa={lutador.faixa} />
+          </div>
+          
           <div className={`text-xl font-bold uppercase tracking-wider mb-4 ${teamColor}`}>
-            {equipe}
+            {lutador.equipe}
           </div>
 
           <div className="flex items-center gap-4">
