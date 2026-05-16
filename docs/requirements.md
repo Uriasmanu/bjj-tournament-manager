@@ -1,6 +1,6 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 2.0
+**Versão:** 3.0
 **Data:** 2026-05-16
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
@@ -12,31 +12,69 @@
 |-------|-------|
 | Nome do Projeto | BJJ Tournament Manager |
 | Tipo | Aplicação Web (SPA) |
-| Resumo | Sistema de gerenciamento de competições de Jiu-Jitsu Brasileiro com duas interfaces: painel administrativo para árbitros e placar em tempo real para exibição pública |
+| Resumo | Sistema de gerenciamento de competições de Jiu-Jitsu Brasileiro com gestão de chaves de luta, painel administrativo para árbitros e placar em tempo real para exibição pública |
 | Público-alvo | Árbitros, organizadores, atletas e espectadores de competições de Jiu-Jitsu |
 
 ---
 
-## 2. Armazenamento de Dados
+## 2. Armazenamento de Dados (JSON)
 
-O sistema utiliza **JSON** como formato principal para importação de dados.
+O sistema utiliza **JSON** como formato principal para armazenamento e persistência de dados das competições.
 
-### Estruturas de Dados (JSON)
+### Estrutura de Arquivos
 
-**Arquivo de Chave de Luta:**
+**Pasta `data/`:**
+```
+data/
+├── area-1.json       # Dados da Área 1
+├── area-2.json      # Dados da Área 2
+└── ...
+```
+
+**Estrutura do JSON por Área:**
 ```json
 {
-  "categoria": "Branca Infantil",
-  "luta": {
-    "atleta1": {
-      "nome": "João Silva",
-      "equipe": "Team Brasil"
-    },
-    "atleta2": {
-      "nome": "Maria Santos",
-      "equipe": "Team São Paulo"
+  "area": "Área 1",
+  "criadoEm": "2026-05-16T10:00:00Z",
+  "chaves": [
+    {
+      "id": 1,
+      "categoria": "Branca Infantil",
+      "lutas": [
+        {
+          "id": 1,
+          "round": 1,
+          "atleta1": {
+            "nome": "João Silva",
+            "faixa": "Branca",
+            "equipe": "Team Brasil"
+          },
+          "atleta2": {
+            "nome": "Maria Santos",
+            "faixa": "Branca",
+            "equipe": "Team São Paulo"
+          },
+          "resultado": {
+            "pontosAtleta1": 4,
+            "pontosAtleta2": 2,
+            "vantagensAtleta1": 1,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 1,
+            "tempoDecorrido": 180,
+            "finalizacao": false,
+            "desclassificacao": null,
+            "vencedor": "atleta1",
+            "status": "concluida"
+          },
+          "arbitro": "João Arbito",
+          "dataLuta": "2026-05-16T14:30:00Z"
+        }
+      ],
+      "vencedor": "João Silva",
+      "status": "concluida"
     }
-  }
+  ]
 }
 ```
 
@@ -64,50 +102,79 @@ O sistema utiliza **JSON** como formato principal para importação de dados.
 | Branco | `#FFFFFF` | Cards, áreas de conteúdo, texto em fundos escuros |
 | Dourado | `#D4AF37` | Destaques especiais, títulos, elementos premium |
 
-### Aplicação
-
-- **Azul Anil**: Interface principal, botões, ícones ativados
-- **Preto**: Fundos escuros, navegação
-- **Branco**: Conteúdo, cards, elementos claros
-- **Dourado**: Títulos importantes, indicações de vitória
-
 ---
 
 ## 5. Estrutura de Pastas
 
 ```
 app/
-├── page.tsx                      # Tela inicial (seleção)
-├── layout.tsx                    # Layout raiz
-├── globals.css                   # Estilos globais
-├── admin/                        # Painel administrativo
-│   ├── page.tsx                  # Dashboard admin
-│   ├── layout.tsx                # Layout admin
-│   └── matches/                  # Controle de lutas
-│       └── page.tsx              # Página de pontuação
-├── scoreboard/                   # Interface de placar
-│   ├── setup/                    # Pré-placar (importação)
-│   │   └── page.tsx              # Configuração de luta
-│   ├── page.tsx                  # Placar principal
-│   └── layout.tsx                # Layout scoreboard
+├── page.tsx                  # Tela inicial (seleção)
+├── layout.tsx                # Layout raiz
+├── globals.css               # Estilos globais
+├── admin/                    # Painel administrativo
+│   ├── page.tsx             # Dashboard admin
+│   ├── layout.tsx           # Layout admin
+│   └── matches/             # Controle de lutas
+│       └── page.tsx         # Página de pontuação
+├── scoreboard/              # Interface de placar
+│   ├── setup/               # Pré-placar (importação de chaves)
+│   │   └── page.tsx         # Configuração de luta
+│   ├── page.tsx             # Placar principal
+│   └── layout.tsx           # Layout scoreboard
 └── components/
-    ├── Timer.tsx                 # Componente de cronômetro
-    └── scoreboard/              # Componentes do placar
-        ├── AtletaCard.tsx        # Card do atleta
-        ├── ScoreButton.tsx      # Botão de pontuação
-        ├── VantagemPunicao.tsx  # Contador V/P
-        ├── TotalScore.tsx       # Pontuação total
-        └── ScoreHeader.tsx      # Header área/árbitro
+    ├── Timer.tsx            # Componente de cronômetro
+    └── scoreboard/          # Componentes do placar
+
+data/                        # Dados persistidos (JSON)
+└── [area-nome].json         # Arquivos de área
 
 docs/
-├── requirements.md              # Este documento
-├── roadmap.md                   # Plano de implementação
-└── user-stories.md             # Histórias detalhadas
+├── requirements.md          # Este documento
+└── roadmap.md               # Plano de implementação
 ```
 
 ---
 
-## 6. Histórias de Usuário
+## 6. Fluxo do Sistema
+
+### 6.1 Início do Torneio
+
+1. **Definir Área**: Organizador define o nome da área (ex: "Área 1") - **não editável depois**
+2. **Importar Chaves**: Organizador importa arquivos JSON com as chaves de luta
+3. **Carregar na Área**: JSONs são salvos em `data/area-[nome].json`
+
+### 6.2 Durante o Torneio
+
+1. **Selecionar Chave**: Árbitro seleciona uma chave da lista
+2. **Editar Árbitro**: Pode editar o nome do árbitro para a luta
+3. **Iniciar Luta**: Redireciona para `/scoreboard` com dados da luta
+
+### 6.3 Durante a Luta
+
+1. **Registrar Pontos**: Árbitros registram montada (4), passagem (3), queda (2)
+2. **Vantagens/Punições**: Contador de vantagens e penalidades
+3. **Cronômetro**: Contagem regressiva com controle
+4. **Finalização**: Botão discreto para marcar finalização (submissão/knockout)
+5. **Desclassificação**: Botão discreto para desclassificar atleta
+
+### 6.4 Finalização da Luta
+
+1. Clicar em "Finalizar Luta"
+2. Sistema determina vencedor:
+   - Se finalização → atleta que finalizou vence
+   - Se desclassificação → outro atleta vence
+   - Se nenhum → quem tiver mais pontos + vantagens vence
+3. JSON da área é atualizado com resultado
+4. Download do JSON individual da luta
+
+### 6.5 Conclusão da Chave
+
+- Todas as lutas processadas
+- Exportar JSON da área com todos os resultados
+
+---
+
+## 7. Histórias de Usuário
 
 ### HU-001: Tela de Seleção de Entrada
 
@@ -119,33 +186,24 @@ docs/
 - [x] Dois botões grandes e claramente identificáveis
 - [x] Botão "Administração" redireciona para `/admin`
 - [x] Botão "Placar" redireciona para `/scoreboard/setup`
-- [x] Interface responsiva (mobile-first)
-- [x] Ícones representativos (settings para admin, timer para placar)
-- [x] Design profissional para ambiente de competição
 
 ---
 
-### HU-002: Tela de Pré-Placar (Configuração)
+### HU-002: Tela de Pré-Placar (Setup de Área)
 
 **Como** organizador/árbitro,
-**Eu quero** carregar os dados da luta via JSON e configurar a área e árbitro,
-**Para** que o placar exiba as informações corretas.
+**Eu quero** configurar a área de luta e importar as chaves de luta,
+**Para** que o sistema esteja preparado para o torneo.
 
 **Critérios de Aceitação:**
-- [x] Botão para importar arquivo JSON da chave de luta
-- [x] Campo para registrar número/nome da área de luta
-- [x] Campo para registrar nome do árbitro responsável
-- [x] Exibição de preview dos dados importados
-- [x] Validação de JSON com mensagem de erro clara
-- [x] Botão "Iniciar Placar" redireciona para `/scoreboard` com dados na URL
-- [x] Botão "Criar Luta Manual" para configuração rápida
-
-**Fluxo:**
-1. Usuário acessa `/scoreboard/setup`
-2. Importa arquivo JSON da chave de luta (ou cria manualmente)
-3. Preenche área e nome do árbitro
-4. Clica em "Iniciar Placar"
-5. Sistema redireciona para `/scoreboard` com dados via URL params
+- [ ] Campo para definir nome da área (apenas uma vez, no início)
+- [ ] Botão para importar múltiplos arquivos JSON de chaves de luta
+- [ ] Lista de chaves importadas comvisualização
+- [ ] Cada chave mostra: categoria, número de lutas, status
+- [ ] Botão para editar nome do árbitro em cada luta
+- [ ] Botão "Iniciar Luta" para cada par de atletas
+- [ ] Botão para exportar JSON da área (ao final de todas as lutas)
+- [ ] Ao exportar, gerar JSON completo com todos os resultados
 
 ---
 
@@ -156,13 +214,12 @@ docs/
 **Para** que a luta tenha duração definida e controlada.
 
 **Critérios de Aceitação:**
-- [x] **Tempos predefinidos**: Select com opções de 2, 5, 6 e 10 minutos
-- [x] **Configuração manual**: Campos de minutos e segundos para definir tempo customizado
-- [x] Inicia em contagem regressiva automática
+- [x] Tempos predefinidos: Select com opções de 2, 5, 6 e 10 minutos
+- [x] Configuração manual: Campos de minutos e segundos
+- [x] Contagem regressiva automática
 - [x] Controles: Iniciar/Parar, Reiniciar
-- [x] **Alerta visual**: Cronômetro fica vermelho nos últimos 10 segundos
-- [x] Display grande e visível (centralizado na tela)
-- [x] **Reset integrado**: Botão "Reiniciar" zera cronômetro E todos os pontos/punições
+- [x] Alerta visual nos últimos 10 segundos (vermelho)
+- [x] Reiniciar zera todos os pontos também
 
 ---
 
@@ -173,17 +230,15 @@ docs/
 **Para** que o placar reflita corretamente o andamento da luta.
 
 **Critérios de Aceitação:**
-- [x] **Categorias de pontuação detalhadas**:
-  - Montada / Pegada nas Costas = **4 pontos**
-  - Passagem de Guarda = **3 pontos**
-  - Queda, Raspagem, Joelho na barriga = **2 pontos**
-- [x] **Botões de incremento/decremento** para cada categoria
-- [x] Valores começam em **0** e atualizam individualmente
-- [x] **Pontuação total** calculada automaticamente (montada + passagem + queda)
-- [x] Contador de **vantagens** (+1/-1) com botão próprio
-- [x] Contador de **penalidades/punições** (-1/+1) com botão próprio
-- [x] **Punições sempre vermelhas** (bg-red-600) para ambos atletas
-- [x] Exibição: nome do atleta, equipe
+- [x] Montada / Pegada nas Costas = **4 pontos**
+- [x] Passagem de Guarda = **3 pontos**
+- [x] Queda, Raspagem, Joelho na barriga = **2 pontos**
+- [x] Botões +/para cada categoria
+- [x] Valores começam em 0 e atualizam individualmente
+- [x] Pontuação total calculada automaticamente
+- [x] Contador de **vantagens** (+1/-1)
+- [x] Contador de **penalidades** (-1/+1)
+- [x] Exibição: nome do atleta, equipe, faixa
 
 ---
 
@@ -194,86 +249,92 @@ docs/
 **Para** acompanhar o andamento da luta durante a competição.
 
 **Critérios de Aceitação:**
-- [x] Layout otimizado para telão/projetor (tela cheia, alto contraste)
-- [x] **Atleta 1 (Azul)**: exibido na metade superior da tela
-- [x] **Atleta 2 (Branco)**: exibido na metade inferior da tela
-- [x] Header fixo no topo com área de luta e nome do árbitro
-- [x] Cronômetro flutuante centralizado verticalmente
-- [x] Nomes dos lutadores em fonte grande e preta
-- [x] Equipes exibidas abaixo dos nomes
-- [x] Pontuação individual de cada categoria
-- [x] Pontuação total grande e visível
-- [x] Contadores de vantagens e punições
-- [x] Botão "Reiniciar" zera todo o estado (pontos, tempo, vantagens, punições)
+- [x] Layout otimizado para telão/projetor
+- [x] Atleta 1 (Azul) na metade superior
+- [x] Atleta 2 (Branco) na metade inferior
+- [x] Header com área de luta e nome do árbitro
+- [x] Cronômetro flutuante centralizado
+- [x] Nomes, equipes e faixas dos lutadores
+- [x] Pontuação individual e total
+- [x] Vantagens e punições
+- [x] Botão "Voltar" no header
+- [x] Botão "Editar Lutadores" (modal)
+- [x] Botão "Finalizar Luta" com confirmação
 
 ---
 
-## 7. Estrutura do Placar (Detalhada)
+### HU-006: Finalização e Desclassificação
 
-### Layout Visual
+**Como** árbitro,
+**Eu quero** marcar se houve finalização ou desclassificação,
+**Para** que o sistema determine corretamente o vencedor.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ÁREA 1                                    Árbitro: João   │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ ATLETA 1 (AZUL)                                      │   │
-│  │ Equipe: Team Brasil                                  │   │
-│  │                                                      │   │
-│  │ [Montada 4pts] [Passagem 3pts] [Queda 2pts] [V|P]  │   │
-│  │    +4 -4        +3 -3         +2 -2        +/-  +/- │   │
-│  │                                                      │   │
-│  │                              TOTAL: 00               │   │
-│  └─────────────────────────────────────────────────────┘   │
-│              ┌────────────────────────┐                    │
-│              │       05:00            │                    │
-│              │  [Iniciar] [Reiniciar] │                    │
-│              │  [Select] [Manual]     │                    │
-│              └────────────────────────┘                    │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ ATLETA 2 (BRANCO)                                   │   │
-│  │ Equipe: Team São Paulo                             │   │
-│  │                                                      │   │
-│  │ [Montada 4pts] [Passagem 3pts] [Queda 2pts] [V|P]  │   │
-│  │    +4 -4        +3 -3         +2 -2        +/-  +/- │   │
-│  │                                                      │   │
-│  │                              TOTAL: 00               │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Componentes do Placar
-
-| Componente | Descrição |
-|------------|-----------|
-| ScoreHeader | Exibe área e árbitro no topo |
-| AtletaCard | Container doatleta com nome, equipe e pontuação |
-| ScoreButton | Botões +/-, label e valor atual da categoria |
-| VantagemPunicao | Contadores de vantagem (amarelo) e punição (vermelho) |
-| TotalScore | Exibição da pontuação total |
-| ScoreboardTimer | Cronômetro com controles e configurações |
+**Critérios de Aceitação:**
+- [ ] Botão discreto de **Finalização** no placar (para cada atleta)
+- [ ] Ao clicar em Finalização do lado do atleta → marcar como campeão por finalização
+- [ ] Botão discreto de **Desclassificação** no placar (para cada atleta)
+- [ ] Ao clicar em Desclassificação → outro atleta vence automaticamente
+- [ ] Lógica de determinação do vencedor:
+  1. Se finalização → vence quem finalizou
+  2. Se desclassificação → vence o outro
+  3. Se nenhum → vence quem tiver mais pontos + vantagens
 
 ---
 
-## 8. Requisitos Não Funcionais
+### HU-007: Persistência de Dados
 
-### 8.1 Performance
+**Como** organizador,
+**Eu quero** que os dados sejam salvos automaticamente,
+**Para** que não perca informações em caso de refresh ou erro.
 
-- Tempo de carregamento inicial < 3 segundos
-- Atualização instantânea da pontuação (state local)
+**Critérios de Aceitação:**
+- [ ] Ao clicar em "Finalizar Luta", atualizar JSON da área com:
+  - Pontuações finais
+  - Tempo decorrido
+  - Nome do árbitro
+  - Status (concluida)
+  - Vencedor determinado
+  - Se houve finalização ou desclassificação
+- [ ] Dados salvos em `data/area-[nome].json`
+- [ ] Ao exportar, gerar JSON completo de todas as chaves e resultados
 
-### 8.2 Usabilidade
+---
 
-- Interface otimizada para telão (fonte grande, alto contraste)
-- Layout responsivo para diferentes tamanhos de tela
-- Feedback visual claro nas interações
-- Botões com tamanho adequado para toque
+## 8. Estrutura do JSON de Resultado (por luta)
 
-### 8.3 Manutenibilidade
-
-- Componentes React reutilizáveis
-- Código modular e bem estruturado
-- Tipos TypeScript definidos
+```json
+{
+  "id": 1,
+  "categoria": "Branca Infantil",
+  "round": 1,
+  "atleta1": {
+    "nome": "João Silva",
+    "faixa": "Branca",
+    "equipe": "Team Brasil"
+  },
+  "atleta2": {
+    "nome": "Maria Santos",
+    "faixa": "Branca",
+    "equipe": "Team São Paulo"
+  },
+  "resultado": {
+    "pontosAtleta1": 4,
+    "pontosAtleta2": 2,
+    "vantagensAtleta1": 1,
+    "vantagensAtleta2": 0,
+    "penalidadesAtleta1": 0,
+    "penalidadesAtleta2": 1,
+    "tempoDecorrido": 180,
+    "finalizacao": true,
+    "desclassificacao": null,
+    "vencedor": "atleta1",
+    "tipoVitoria": "finalizacao",
+    "status": "concluida"
+  },
+  "arbitro": "João Arbito",
+  "dataLuta": "2026-05-16T14:30:00Z"
+}
+```
 
 ---
 
@@ -281,16 +342,14 @@ docs/
 
 | Termo | Definição |
 |-------|-----------|
-| Chave de Luta | JSON contendo a estrutura de confrontos de uma categoria |
-| Área de Luta | Local físico onde ocorre a luta (ex: "Área 1", "Quadra A") |
-| Montada | Posição de controle nas costas do oponente (4 pontos) |
-| Passagem de Guarda | Técnica de passar a guarda do oponente (3 pontos) |
-| Queda/Raspagem | Técnicas de chão básicas (2 pontos) |
-| Vantagem | Ponto menor dado por proximidade de pontuação |
-| Punição | Penalidade por infração (fuga, falta de competição) |
-| Reset | Botão que zera todo o estado da luta |
+| Chave de Luta | Conjunto de confrontos de uma categoria |
+| Área de Luta | Local físico onde ocorre a luta (definido no início) |
+| Finalização | Vitória por submissão ou knockout (prioridade máxima) |
+| Desclassificação | Eliminação por infração (outro atleta vence) |
+| Pontos + Vantagens | Critério de desempate após finalização |
+| Exportar Área | Gerar JSON completo com todos os resultados |
 
 ---
 
 *Documento atualizado em: 2026-05-16*
-*Versão: 2.0*
+*Versão: 3.0*
