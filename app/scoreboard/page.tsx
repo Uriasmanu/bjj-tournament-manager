@@ -1,9 +1,8 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { MapPin, User } from "lucide-react"
-import { ScoreboardTimer } from "@/app/components/Timer"
+import { MapPin, User, Play, Pause, RotateCcw, Edit2, Check, X } from "lucide-react"
 
 interface AtletaState {
   montada: number
@@ -11,6 +10,169 @@ interface AtletaState {
   queda: number
   vantagem: number
   punicao: number
+}
+
+// Componente Timer melhorado
+function ScoreboardTimer() {
+  const [time, setTime] = useState(300) // 5 minutos em segundos
+  const [isRunning, setIsRunning] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState("05:00")
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => {
+          if (prevTime <= 1) {
+            setIsRunning(false)
+            return 0
+          }
+          return prevTime - 1
+        })
+      }, 1000)
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [isRunning])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
+
+  const parseTime = (timeString: string) => {
+    const parts = timeString.split(":")
+    if (parts.length === 2) {
+      const mins = parseInt(parts[0]) || 0
+      const secs = parseInt(parts[1]) || 0
+      return Math.min(Math.max(mins * 60 + secs, 0), 3600) // Max 1 hora
+    }
+    return 300
+  }
+
+  const handleStartPause = () => {
+    setIsRunning(!isRunning)
+  }
+
+  const handleReset = () => {
+    setIsRunning(false)
+    setTime(300)
+    setEditValue("05:00")
+  }
+
+  const handleEdit = () => {
+    setEditValue(formatTime(time))
+    setIsEditing(true)
+  }
+
+  const handleSaveEdit = () => {
+    const newTime = parseTime(editValue)
+    setTime(newTime)
+    setIsEditing(false)
+    setIsRunning(false)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditValue(formatTime(time))
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+    if (/^[\d:]*$/.test(value) && value.length <= 5) {
+      setEditValue(value)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSaveEdit()
+    } else if (e.key === "Escape") {
+      handleCancelEdit()
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-between p-6 bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-2xl border-2 border-[#D4AF37] w-[460px] h-[320px]">
+      {/* Display do Timer */}
+      <div className="relative group w-full flex justify-center items-center flex-1">
+        {isEditing ? (
+          <div className="flex flex-col items-center gap-2 w-full">
+            <input
+              type="text"
+              value={editValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              className="text-[8rem] font-mono font-black bg-gray-800 text-[#D4AF37] text-center px-8 py-6 rounded-lg border-2 border-[#D4AF37] focus:outline-none focus:border-yellow-500 w-full leading-none"
+              autoFocus
+              placeholder="MM:SS"
+            />
+            <div className="flex gap-2 absolute -bottom-2">
+              <button
+                onClick={handleSaveEdit}
+                className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+              >
+                <Check className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div 
+              className="text-[8rem] font-mono font-black text-[#D4AF37] bg-gray-800 px-8 py-6 rounded-lg shadow-inner select-all cursor-pointer hover:bg-gray-700 transition-colors w-full text-center leading-none border-2 border-transparent"
+              onClick={handleEdit}
+              title="Clique para editar"
+            >
+              {formatTime(time)}
+            </div>
+            <button
+              onClick={handleEdit}
+              className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Editar tempo"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Botões de controle - somem quando isEditing for true */}
+      {!isEditing && (
+        <div className="flex gap-4 mt-2 h-[52px] items-center">
+          <button
+            onClick={handleStartPause}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105 ${
+              isRunning
+                ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+          >
+            {isRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+            {isRunning ? "Pausar" : "Iniciar"}
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-lg transition-all transform hover:scale-105"
+          >
+            <RotateCcw className="w-6 h-6" />
+            Reset
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function ScoreboardContent() {
@@ -190,11 +352,9 @@ function ScoreboardContent() {
         </div>
       </div>
 
-      {/* CRONÔMETRO - centro */}
-      <div className="absolute right-[40%] top-1/2 -translate-y-1/2 z-10 mr-4 flex flex-col items-center">
-        <div className="bg-black border-4 border-gray-600 p-4 rounded-lg flex flex-col items-center shadow-2xl">
-          <ScoreboardTimer />
-        </div>
+      {/* CRONÔMETRO - centralizado e maior */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        <ScoreboardTimer />
       </div>
 
       {/* ATLETA INFERIOR (BRANCO) */}
