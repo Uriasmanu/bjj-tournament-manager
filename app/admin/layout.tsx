@@ -41,7 +41,7 @@ export default function AdminLayout({
   )
 }
 
-function NavItem({ icon: Icon, label, href }: { icon: React.ComponentType; label: string; href: string }) {
+function NavItem({ icon: Icon, label, href }: { icon: React.ComponentType<{ className?: string }>; label: string; href: string }) {
   return (
     <Link href={href} className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#4338CA] rounded-lg transition-colors">
       <Icon className="w-5 h-5" />

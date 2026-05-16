@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-4">
       <div className="text-center mb-16">
-        <h1 className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-2">🏆 BJJ Tournament</h1>
+        <h1 className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-2">BJJ Tournament</h1>
         <p className="text-gray-400 text-lg">Sistema de Gerenciamento de Competições</p>
       </div>
 

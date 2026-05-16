@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Timer } from "@/app/components/Timer"
-import { Plus, Minus, Undo2, Trophy } from "lucide-react"
+import { ScoreboardTimer } from "@/app/components/Timer"
+import { Undo2, Trophy } from "lucide-react"
 
 interface Lutador {
   nome: string
@@ -191,7 +191,7 @@ export default function MatchesPage() {
 
         {/* Cronômetro */}
         <div className="flex flex-col items-center justify-center bg-gray-900 rounded-lg p-6 border border-gray-700">
-          <Timer />
+          <ScoreboardTimer />
         </div>
 
         {/* Atleta 2 */}

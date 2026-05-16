@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Users, Layers, Zap, BarChart3, Plus } from "lucide-react"
+import { Users, Layers, Zap, BarChart3 } from "lucide-react"
 
 export default function AdminDashboard() {
   return (
@@ -68,7 +68,7 @@ function QuickActionCard({
   href,
   count,
 }: {
-  icon: React.ComponentType
+  icon: React.ComponentType<{ className?: string }>
   title: string
   description: string
   href: string

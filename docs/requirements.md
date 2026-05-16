@@ -17,7 +17,38 @@
 
 ---
 
-## 2. Stack Tecnológico
+## 2. Armazenamento de Dados
+
+O sistema utiliza **JSON** como formato principal para armazenamento e persistência de dados.
+
+### Estruturas de Dados (JSON)
+
+**Arquivo de Chave de Luta:**
+```json
+{
+  "categoria": "Branca Infantil",
+  "luta": {
+    "atleta1": {
+      "nome": "João Silva",
+      "equipe": "Team Brasil"
+    },
+    "atleta2": {
+      "nome": "Maria Santos",
+      "equipe": "Team São Paulo"
+    }
+  }
+}
+```
+
+**Dados salvos pelo sistema:**
+- Lutas e confrontos
+- Pontuações e histórico
+- Configurações de competição
+- Registro de área e árbitro
+
+---
+
+## 3. Stack Tecnológico
 
 | Componente | Tecnologia | Versão |
 |------------|------------|--------|
@@ -30,7 +61,7 @@
 
 ---
 
-## 3. Paleta de Cores
+## 4. Paleta de Cores
 
 | Cor | Hexadecimal | Uso |
 |-----|-------------|-----|
@@ -48,7 +79,7 @@
 
 ---
 
-## 4. Estrutura de Pastas
+## 5. Estrutura de Pastas
 
 ```
 app/
@@ -75,7 +106,7 @@ docs/
 
 ---
 
-## 5. Histórias de Usuário
+## 6. Histórias de Usuário
 
 ### HU-001: Tela de Seleção de Entrada
 
@@ -112,23 +143,24 @@ docs/
 ### HU-002: Tela de Pré-Placar (Configuração)
 
 **Como** organizador/árbitro,
-**Eu quero** configurar os dados da luta antes de iniciar o placar,
-**Para** que o público veja as informações corretas durante a apresentação.
+**Eu quero** carregar os dados da luta via JSON e configurar a área e árbitro,
+**Para** que o placar exiba as informações corretas e os dados sejam salvos no sistema.
 
 **Critérios de Aceitação:**
-- [ ] Botão para importar arquivo JSON da chave de luta
+- [ ] Botão para importar arquivo JSON da chave de luta (dados salvos no sistema)
 - [ ] Campo para registrar número/nome da área de luta
 - [ ] Campo para registrar nome do árbitro responsável
 - [ ] Exibição de preview dos dados importados
 - [ ] Validação de JSON com mensagem de erro clara
-- [ ] Botão "Iniciar Placar" redireciona para `/scoreboard`
+- [ ] Botão "Iniciar Placar" redireciona para `/scoreboard` com dados carregados
 
 **Fluxo:**
 1. Usuário acessa `/scoreboard/setup`
 2. Importa arquivo JSON da chave de luta
-3. Preenche área e nome do árbitro
-4. Clica em "Iniciar Placar"
-5. Sistema redireciona para `/scoreboard`
+3. Sistema carrega e exibe preview dos dados
+4. Preenche área e nome do árbitro
+5. Clica em "Iniciar Placar"
+6. Sistema redireciona para `/scoreboard` com dados persistidos
 
 ---
 
@@ -183,7 +215,7 @@ docs/
 
 ---
 
-## 6. Requisitos Não Funcionais
+## 7. Requisitos Não Funcionais
 
 ### 6.1 Performance
 
@@ -204,7 +236,7 @@ docs/
 
 ---
 
-## 7. Glossário de Termos
+## 8. Glossário de Termos
 
 | Termo | Definição |
 |-------|-----------|
