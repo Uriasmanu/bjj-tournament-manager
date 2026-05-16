@@ -4,11 +4,15 @@ import { useState, useEffect, useRef } from "react"
 
 interface ScoreboardTimerProps {
   onTimeEnd?: () => void
+  onReset?: () => void
 }
 
-export function ScoreboardTimer({ onTimeEnd }: ScoreboardTimerProps) {
+export function ScoreboardTimer({ onTimeEnd, onReset }: ScoreboardTimerProps) {
   const [seconds, setSeconds] = useState(300)
   const [isRunning, setIsRunning] = useState(false)
+  const [showManualInput, setShowManualInput] = useState(false)
+  const [manualMin, setManualMin] = useState(5)
+  const [manualSec, setManualSec] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const isWarning = seconds <= 10 && seconds > 0
@@ -37,9 +41,17 @@ export function ScoreboardTimer({ onTimeEnd }: ScoreboardTimerProps) {
     setIsRunning(!isRunning)
   }
 
-  const resetTimer = () => {
+  const handleReset = () => {
     setIsRunning(false)
     setSeconds(300)
+    onReset?.()
+  }
+
+  const applyManualTime = () => {
+    const totalSeconds = (manualMin * 60) + manualSec
+    setSeconds(totalSeconds)
+    setIsRunning(false)
+    setShowManualInput(false)
   }
 
   const setTime = (value: number) => {
@@ -71,22 +83,60 @@ export function ScoreboardTimer({ onTimeEnd }: ScoreboardTimerProps) {
           {isRunning ? "Parar" : "Iniciar"}
         </button>
         <button
-          onClick={resetTimer}
+          onClick={handleReset}
           className="bg-red-600 text-white font-bold py-1 px-3 rounded text-sm uppercase"
         >
           Reiniciar
         </button>
       </div>
+
       <select
         onChange={(e) => setTime(Number(e.target.value))}
         className="mt-2 bg-gray-800 text-white text-[10px] w-full p-1 rounded"
-        defaultValue="300"
+        value={seconds}
       >
         <option value="120">2 Minutos</option>
         <option value="300">5 Minutos</option>
         <option value="360">6 Minutos</option>
         <option value="600">10 Minutos</option>
       </select>
+
+      <button
+        onClick={() => setShowManualInput(!showManualInput)}
+        className="mt-1 text-[10px] text-gray-400 hover:text-white underline"
+      >
+        {showManualInput ? "Fechar" : "Definir tempo manualmente"}
+      </button>
+
+      {showManualInput && (
+        <div className="mt-2 flex items-center gap-1 bg-gray-800 p-2 rounded">
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={manualMin}
+            onChange={(e) => setManualMin(Number(e.target.value))}
+            className="w-12 bg-gray-700 text-white text-center text-sm rounded p-1"
+            placeholder="Min"
+          />
+          <span className="text-white">:</span>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={manualSec}
+            onChange={(e) => setManualSec(Number(e.target.value))}
+            className="w-12 bg-gray-700 text-white text-center text-sm rounded p-1"
+            placeholder="Seg"
+          />
+          <button
+            onClick={applyManualTime}
+            className="bg-[#4338CA] text-white text-xs px-2 py-1 rounded ml-1"
+          >
+            OK
+          </button>
+        </div>
+      )}
     </div>
   )
 }
