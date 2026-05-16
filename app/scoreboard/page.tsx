@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState, useRef } from "react"
+import { Suspense, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { MapPin, User } from "lucide-react"
 import { ScoreboardTimer } from "@/app/components/Timer"
@@ -35,32 +35,10 @@ function ScoreboardContent() {
     punicao: 0,
   })
 
-  const audioCtxRef = useRef<AudioContext | null>(null)
-
-  const playBeep = (freq: number, duration: number) => {
-    if (!audioCtxRef.current) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-      audioCtxRef.current = new AudioCtx()
-    }
-    const ctx = audioCtxRef.current
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.type = "sine"
-    osc.frequency.value = freq
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.start()
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration)
-    osc.stop(ctx.currentTime + duration)
-  }
-
   const updateSubScore = (player: 1 | 2, category: keyof AtletaState, value: number) => {
     const setState = player === 1 ? setP1 : setP2
     setState((prev) => {
       const newValue = Math.max(0, prev[category] + value)
-      if (category !== "vantagem" && category !== "punicao") {
-        playBeep(value > 0 ? 800 : 400, 0.1)
-      }
       return { ...prev, [category]: newValue }
     })
   }
