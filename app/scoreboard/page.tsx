@@ -1,8 +1,9 @@
 "use client"
 
-import { Suspense, useState, useEffect, useRef } from "react"
+import { Suspense, useState, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { MapPin, User, Play, Pause, RotateCcw, Edit2, Check, X } from "lucide-react"
+import { MapPin, User } from "lucide-react"
+import { ScoreboardTimer } from "@/app/components/Timer"
 
 interface AtletaState {
   montada: number
@@ -10,169 +11,6 @@ interface AtletaState {
   queda: number
   vantagem: number
   punicao: number
-}
-
-// Componente Timer melhorado
-function ScoreboardTimer() {
-  const [time, setTime] = useState(300) // 5 minutos em segundos
-  const [isRunning, setIsRunning] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState("05:00")
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime) => {
-          if (prevTime <= 1) {
-            setIsRunning(false)
-            return 0
-          }
-          return prevTime - 1
-        })
-      }, 1000)
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-    }
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [isRunning])
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
-
-  const parseTime = (timeString: string) => {
-    const parts = timeString.split(":")
-    if (parts.length === 2) {
-      const mins = parseInt(parts[0]) || 0
-      const secs = parseInt(parts[1]) || 0
-      return Math.min(Math.max(mins * 60 + secs, 0), 3600) // Max 1 hora
-    }
-    return 300
-  }
-
-  const handleStartPause = () => {
-    setIsRunning(!isRunning)
-  }
-
-  const handleReset = () => {
-    setIsRunning(false)
-    setTime(300)
-    setEditValue("05:00")
-  }
-
-  const handleEdit = () => {
-    setEditValue(formatTime(time))
-    setIsEditing(true)
-  }
-
-  const handleSaveEdit = () => {
-    const newTime = parseTime(editValue)
-    setTime(newTime)
-    setIsEditing(false)
-    setIsRunning(false)
-  }
-
-  const handleCancelEdit = () => {
-    setIsEditing(false)
-    setEditValue(formatTime(time))
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value
-    if (/^[\d:]*$/.test(value) && value.length <= 5) {
-      setEditValue(value)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSaveEdit()
-    } else if (e.key === "Escape") {
-      handleCancelEdit()
-    }
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-between p-6 bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-2xl border-2 border-[#D4AF37] w-[460px] h-[320px]">
-      {/* Display do Timer */}
-      <div className="relative group w-full flex justify-center items-center flex-1">
-        {isEditing ? (
-          <div className="flex flex-col items-center gap-2 w-full">
-            <input
-              type="text"
-              value={editValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyPress}
-              className="text-[8rem] font-mono font-black bg-gray-800 text-[#D4AF37] text-center px-8 py-6 rounded-lg border-2 border-[#D4AF37] focus:outline-none focus:border-yellow-500 w-full leading-none"
-              autoFocus
-              placeholder="MM:SS"
-            />
-            <div className="flex gap-2 absolute -bottom-2">
-              <button
-                onClick={handleSaveEdit}
-                className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
-              >
-                <Check className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleCancelEdit}
-                className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div 
-              className="text-[8rem] font-mono font-black text-[#D4AF37] bg-gray-800 px-8 py-6 rounded-lg shadow-inner select-all cursor-pointer hover:bg-gray-700 transition-colors w-full text-center leading-none border-2 border-transparent"
-              onClick={handleEdit}
-              title="Clique para editar"
-            >
-              {formatTime(time)}
-            </div>
-            <button
-              onClick={handleEdit}
-              className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Editar tempo"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Botões de controle - somem quando isEditing for true */}
-      {!isEditing && (
-        <div className="flex gap-4 mt-2 h-[52px] items-center">
-          <button
-            onClick={handleStartPause}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105 ${
-              isRunning
-                ? "bg-yellow-600 hover:bg-yellow-700 text-white"
-                : "bg-green-600 hover:bg-green-700 text-white"
-            }`}
-          >
-            {isRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-            {isRunning ? "Pausar" : "Iniciar"}
-          </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-lg transition-all transform hover:scale-105"
-          >
-            <RotateCcw className="w-6 h-6" />
-            Reset
-          </button>
-        </div>
-      )}
-    </div>
-  )
 }
 
 function ScoreboardContent() {
@@ -197,10 +35,32 @@ function ScoreboardContent() {
     punicao: 0,
   })
 
+  const audioCtxRef = useRef<AudioContext | null>(null)
+
+  const playBeep = (freq: number, duration: number) => {
+    if (!audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      audioCtxRef.current = new AudioCtx()
+    }
+    const ctx = audioCtxRef.current
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = "sine"
+    osc.frequency.value = freq
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration)
+    osc.stop(ctx.currentTime + duration)
+  }
+
   const updateSubScore = (player: 1 | 2, category: keyof AtletaState, value: number) => {
     const setState = player === 1 ? setP1 : setP2
     setState((prev) => {
       const newValue = Math.max(0, prev[category] + value)
+      if (category !== "vantagem" && category !== "punicao") {
+        playBeep(value > 0 ? 800 : 400, 0.1)
+      }
       return { ...prev, [category]: newValue }
     })
   }
@@ -211,37 +71,59 @@ function ScoreboardContent() {
   const formatScore = (n: number) => n.toString().padStart(2, "0")
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden py-8">
+    <div className="flex flex-col h-screen overflow-hidden bg-black relative select-none">
+      
+      {/* HEADER FIXO NO TOPO */}
+      <div className="absolute top-0 left-0 right-0 bg-black/90 border-b border-gray-800 p-3 flex justify-between items-center z-30 px-6">
+        <div className="flex items-center gap-2 text-[#D4AF37]">
+          <MapPin className="w-5 h-5" />
+          <span className="text-xl font-bold tracking-wide">{area}</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-300">
+          <User className="w-5 h-5" />
+          <span className="text-lg font-medium">Árbitro: {arbitro}</span>
+        </div>
+      </div>
+
+      {/* CRONÔMETRO CENTRAL ABSOLUTO */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+        <div className="bg-black border-4 border-gray-700 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center min-w-[220px]">
+          <ScoreboardTimer />
+        </div>
+      </div>
+
       {/* ATLETA SUPERIOR (AZUL) */}
-      <div className="flex-1 bg-blue-700 text-white flex flex-col p-4 border-b-4 border-black">
-        <div className="flex justify-between items-start">
-          <div className="flex-grow">
-            <div className="text-6xl font-black uppercase mb-2">
+      <div className="flex-1 bg-blue-700 text-white flex flex-col pt-16 pb-4 px-8 border-b-2 border-black justify-center">
+        <div className="flex justify-between items-center h-full w-full">
+          
+          {/* Lado Esquerdo: Nome, Equipe e Parciais */}
+          <div className="flex flex-col justify-center max-w-[65%]">
+            <div className="text-5xl font-black uppercase tracking-tight mb-1 truncate">
               {searchParams.get("atleta1") || "Atleta 1"}
             </div>
-            <div className="text-2xl font-bold text-blue-200 uppercase">
+            <div className="text-xl font-bold text-blue-200 uppercase tracking-wider mb-4">
               {searchParams.get("equipe1") || "Equipe A"}
             </div>
 
-            <div className="flex gap-4 mt-4">
+            <div className="flex items-center gap-4">
               {/* Montada / Pegada nas Costas - 4 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight">
-                  Montada / Pegada<br />nas Costas
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-blue-100 mb-1">
+                  Montada / Costas
                 </span>
-                <div className="bg-blue-800 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-blue-800 border border-blue-600 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p1.montada}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(1, "montada", 4)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-white text-blue-700 py-1 rounded font-extrabold hover:bg-blue-50 transition-colors"
                   >
                     +4
                   </button>
                   <button
                     onClick={() => updateSubScore(1, "montada", -4)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-blue-900 text-white py-1 rounded font-extrabold hover:bg-blue-950 border border-blue-600 transition-colors"
                   >
                     -4
                   </button>
@@ -250,22 +132,22 @@ function ScoreboardContent() {
 
               {/* Passagem de Guarda - 3 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight">
-                  Passagem de<br />Guarda
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-blue-100 mb-1">
+                  Passagem Guarda
                 </span>
-                <div className="bg-blue-800 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-blue-800 border border-blue-600 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p1.passagem}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(1, "passagem", 3)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-white text-blue-700 py-1 rounded font-extrabold hover:bg-blue-50 transition-colors"
                   >
                     +3
                   </button>
                   <button
                     onClick={() => updateSubScore(1, "passagem", -3)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-blue-900 text-white py-1 rounded font-extrabold hover:bg-blue-950 border border-blue-600 transition-colors"
                   >
                     -3
                   </button>
@@ -274,22 +156,22 @@ function ScoreboardContent() {
 
               {/* Queda, Raspagem, Joelho na barriga - 2 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight">
-                  Queda, Raspagem,<br />Joelho na barriga
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-blue-100 mb-1">
+                  Queda/Rasp./Joelho
                 </span>
-                <div className="bg-blue-800 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-blue-800 border border-blue-600 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p1.queda}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(1, "queda", 2)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-white text-blue-700 py-1 rounded font-extrabold hover:bg-blue-50 transition-colors"
                   >
                     +2
                   </button>
                   <button
                     onClick={() => updateSubScore(1, "queda", -2)}
-                    className="bg-white text-blue-700 px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-blue-900 text-white py-1 rounded font-extrabold hover:bg-blue-950 border border-blue-600 transition-colors"
                   >
                     -2
                   </button>
@@ -297,41 +179,42 @@ function ScoreboardContent() {
               </div>
 
               {/* Vantagem e Punição */}
-              <div className="flex flex-col gap-2 ml-4">
-                <div className="bg-yellow-400 text-black p-2 flex flex-col items-center rounded border-2 border-black">
-                  <span className="text-xs font-bold uppercase">Vantagem</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-4xl font-black">{p1.vantagem}</span>
-                    <div className="flex flex-col">
+              <div className="flex gap-2 ml-2">
+                <div className="bg-yellow-400 text-black p-2 flex flex-col items-center rounded-lg border-2 border-black min-w-[85px]">
+                  <span className="text-[10px] font-black uppercase tracking-wider mb-1">Vantagem</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl font-black font-mono">{p1.vantagem}</span>
+                    <div className="flex flex-col gap-1">
                       <button
                         onClick={() => updateSubScore(1, "vantagem", 1)}
-                        className="bg-white text-xs px-2 mb-1 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black border border-black/20"
                       >
                         +
                       </button>
                       <button
                         onClick={() => updateSubScore(1, "vantagem", -1)}
-                        className="bg-white text-xs px-2 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black border border-black/20"
                       >
                         -
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="bg-red-600 text-white p-2 flex flex-col items-center rounded border-2 border-white">
-                  <span className="text-xs font-bold uppercase">Punições</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-4xl font-black">{p1.punicao}</span>
-                    <div className="flex flex-col">
+
+                <div className="bg-red-600 text-white p-2 flex flex-col items-center rounded-lg border-2 border-white min-w-[85px]">
+                  <span className="text-[10px] font-black uppercase tracking-wider mb-1">Punição</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl font-black font-mono">{p1.punicao}</span>
+                    <div className="flex flex-col gap-1">
                       <button
                         onClick={() => updateSubScore(1, "punicao", 1)}
-                        className="bg-white text-black text-xs px-2 mb-1 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black"
                       >
                         +
                       </button>
                       <button
                         onClick={() => updateSubScore(1, "punicao", -1)}
-                        className="bg-white text-black text-xs px-2 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black"
                       >
                         -
                       </button>
@@ -342,51 +225,48 @@ function ScoreboardContent() {
             </div>
           </div>
 
-          {/* TOTAL ATLETA 1 */}
-          <div className="flex flex-col items-end pr-8">
-            <span className="text-xl font-bold uppercase">Pontuação Total</span>
-            <span className="text-[12rem] font-black leading-none font-mono">
+          {/* Lado Direito: TOTAL PLACAR */}
+          <div className="flex flex-col items-center justify-center pr-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Pontos</span>
+            <span className="text-[11rem] font-black leading-none font-mono tracking-tighter">
               {formatScore(p1Total)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* CRONÔMETRO - centralizado e maior */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <ScoreboardTimer />
-      </div>
-
       {/* ATLETA INFERIOR (BRANCO) */}
-      <div className="flex-1 bg-white text-black flex flex-col p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-grow">
-            <div className="text-6xl font-black uppercase mb-2">
+      <div className="flex-1 bg-white text-black flex flex-col pt-4 pb-16 px-8 justify-center">
+        <div className="flex justify-between items-center h-full w-full">
+          
+          {/* Lado Esquerdo: Nome, Equipe e Parciais */}
+          <div className="flex flex-col justify-center max-w-[65%]">
+            <div className="text-5xl font-black uppercase tracking-tight mb-1 truncate">
               {searchParams.get("atleta2") || "Atleta 2"}
             </div>
-            <div className="text-2xl font-bold text-gray-600 uppercase">
+            <div className="text-xl font-bold text-gray-500 uppercase tracking-wider mb-4">
               {searchParams.get("equipe2") || "Equipe B"}
             </div>
 
-            <div className="flex gap-4 mt-4">
+            <div className="flex items-center gap-4">
               {/* Montada / Pegada nas Costas - 4 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight text-black">
-                  Montada / Pegada<br />nas Costas
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-gray-600 mb-1">
+                  Montada / Costas
                 </span>
-                <div className="bg-gray-100 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-gray-100 border border-gray-300 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p2.montada}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(2, "montada", 4)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-black text-white py-1 rounded font-extrabold hover:bg-gray-900 transition-colors"
                   >
                     +4
                   </button>
                   <button
                     onClick={() => updateSubScore(2, "montada", -4)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-gray-200 text-black py-1 rounded font-extrabold hover:bg-gray-300 transition-colors"
                   >
                     -4
                   </button>
@@ -395,22 +275,22 @@ function ScoreboardContent() {
 
               {/* Passagem de Guarda - 3 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight text-black">
-                  Passagem de<br />Guarda
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-gray-600 mb-1">
+                  Passagem Guarda
                 </span>
-                <div className="bg-gray-100 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-gray-100 border border-gray-300 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p2.passagem}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(2, "passagem", 3)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-black text-white py-1 rounded font-extrabold hover:bg-gray-900 transition-colors"
                   >
                     +3
                   </button>
                   <button
                     onClick={() => updateSubScore(2, "passagem", -3)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-gray-200 text-black py-1 rounded font-extrabold hover:bg-gray-300 transition-colors"
                   >
                     -3
                   </button>
@@ -419,22 +299,22 @@ function ScoreboardContent() {
 
               {/* Queda, Raspagem, Joelho na barriga - 2 pontos */}
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold h-10 text-center flex items-center leading-tight text-black">
-                  Queda, Raspagem,<br />Joelho na barriga
+                <span className="text-xs font-bold h-8 text-center flex items-center leading-tight text-gray-600 mb-1">
+                  Queda/Rasp./Joelho
                 </span>
-                <div className="bg-gray-100 text-7xl p-4 rounded-sm mb-2 text-center font-black min-w-[100px]">
+                <div className="bg-gray-100 border border-gray-300 text-5xl py-2 px-4 rounded-md mb-2 text-center font-black min-w-[100px]">
                   {p2.queda}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 w-full">
                   <button
                     onClick={() => updateSubScore(2, "queda", 2)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-black text-white py-1 rounded font-extrabold hover:bg-gray-900 transition-colors"
                   >
                     +2
                   </button>
                   <button
                     onClick={() => updateSubScore(2, "queda", -2)}
-                    className="bg-black text-white px-3 py-1 rounded font-bold"
+                    className="flex-1 bg-gray-200 text-black py-1 rounded font-extrabold hover:bg-gray-300 transition-colors"
                   >
                     -2
                   </button>
@@ -442,41 +322,42 @@ function ScoreboardContent() {
               </div>
 
               {/* Vantagem e Punição */}
-              <div className="flex flex-col gap-2 ml-4">
-                <div className="bg-yellow-400 text-black p-2 flex flex-col items-center rounded border-2 border-black">
-                  <span className="text-xs font-bold uppercase">Vantagem</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-4xl font-black">{p2.vantagem}</span>
-                    <div className="flex flex-col">
+              <div className="flex gap-2 ml-2">
+                <div className="bg-yellow-400 text-black p-2 flex flex-col items-center rounded-lg border-2 border-black min-w-[85px]">
+                  <span className="text-[10px] font-black uppercase tracking-wider mb-1">Vantagem</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl font-black font-mono">{p2.vantagem}</span>
+                    <div className="flex flex-col gap-1">
                       <button
                         onClick={() => updateSubScore(2, "vantagem", 1)}
-                        className="bg-black text-white text-xs px-2 mb-1 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black border border-black/20"
                       >
                         +
                       </button>
                       <button
                         onClick={() => updateSubScore(2, "vantagem", -1)}
-                        className="bg-black text-white text-xs px-2 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black border border-black/20"
                       >
                         -
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="bg-red-600 text-white p-2 flex flex-col items-center rounded border-2 border-black">
-                  <span className="text-xs font-bold uppercase">Punições</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-4xl font-black">{p2.punicao}</span>
-                    <div className="flex flex-col">
+
+                <div className="bg-red-600 text-white p-2 flex flex-col items-center rounded-lg border-2 border-black min-w-[85px]">
+                  <span className="text-[10px] font-black uppercase tracking-wider mb-1 text-white">Punição</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl font-black font-mono text-white">{p2.punicao}</span>
+                    <div className="flex flex-col gap-1">
                       <button
                         onClick={() => updateSubScore(2, "punicao", 1)}
-                        className="bg-white text-black text-xs px-2 mb-1 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black"
                       >
                         +
                       </button>
                       <button
                         onClick={() => updateSubScore(2, "punicao", -1)}
-                        className="bg-white text-black text-xs px-2 rounded"
+                        className="bg-white hover:bg-gray-100 text-black px-2 py-0.5 rounded text-xs font-black"
                       >
                         -
                       </button>
@@ -487,27 +368,16 @@ function ScoreboardContent() {
             </div>
           </div>
 
-          {/* TOTAL ATLETA 2 */}
-          <div className="flex flex-col items-end pr-8">
-            <span className="text-xl font-bold uppercase">Pontuação Total</span>
-            <span className="text-[12rem] font-black leading-none font-mono text-black">
+          {/* Lado Direito: TOTAL PLACAR */}
+          <div className="flex flex-col items-center justify-center pr-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Pontos</span>
+            <span className="text-[11rem] font-black leading-none font-mono tracking-tighter text-black">
               {formatScore(p2Total)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Header fixo no topo com área e árbitro */}
-      <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-80 p-2 flex justify-between items-center z-20">
-        <div className="flex items-center gap-2 text-[#D4AF37]">
-          <MapPin className="w-5 h-5" />
-          <span className="text-xl font-bold">{area}</span>
-        </div>
-        <div className="flex items-center gap-2 text-white">
-          <User className="w-5 h-5" />
-          <span className="text-lg">Árbitro: {arbitro}</span>
-        </div>
-      </div>
     </div>
   )
 }
@@ -515,7 +385,7 @@ function ScoreboardContent() {
 function LoadingState() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black">
-      <div className="text-2xl text-[#D4AF37]">Carregando placar...</div>
+      <div className="text-2xl text-[#D4AF37] font-bold tracking-widest animate-pulse">Carregando placar...</div>
     </div>
   )
 }
