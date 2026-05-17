@@ -41,6 +41,7 @@ export interface ChaveLuta {
 export interface DadosArea {
   area: string
   criadoEm: string
+  atualizadoEm?: string
   chaves: ChaveLuta[]
 }
 

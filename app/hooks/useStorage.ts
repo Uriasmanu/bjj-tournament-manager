@@ -1,4 +1,4 @@
-import { ChaveLuta, DadosArea } from "@/app/types"
+import { ChaveLuta, Luta, DadosArea } from "@/app/types"
 
 const STORAGE_KEY = "bjj_tournament_area"
 
@@ -30,11 +30,22 @@ export function getDadosIniciais(): DadosIniciais {
   }
 }
 
+function getCriadoEm(): string {
+  const dadosSalvos = localStorage.getItem(STORAGE_KEY)
+  if (dadosSalvos) {
+    try {
+      const dados: DadosArea = JSON.parse(dadosSalvos)
+      return dados.criadoEm || new Date().toISOString()
+    } catch { return new Date().toISOString() }
+  }
+  return new Date().toISOString()
+}
+
 export function salvarDados(area: string, chaves: ChaveLuta[], criadoEmAnterior?: string): void {
   const dados: DadosArea = {
     area,
     chaves,
-    criadoEm: criadoEmAnterior || new Date().toISOString()
+    criadoEm: criadoEmAnterior || getCriadoEm()
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
 }
@@ -43,22 +54,75 @@ export function limparDados(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-export function exportarDados(area: string, chaves: ChaveLuta[]): void {
-  const dadosExport = {
-    area,
-    exportadoEm: new Date().toISOString(),
-    totalChaves: chaves.length,
-    totalLutas: chaves.reduce((acc, c) => acc + c.lutas.length, 0),
-    lutasConcluidas: chaves.reduce((acc, c) => acc + c.lutas.filter(l => l.resultado?.status === "concluida").length, 0),
-    chaves
+export function adicionarNovaLuta(area: string, chaves: ChaveLuta[], novaLuta: Luta): ChaveLuta[] {
+  let chaveManual = chaves.find(c => c.categoria === "Luta Manual")
+  
+  if (!chaveManual) {
+    chaveManual = {
+      categoria: "Luta Manual",
+      lutas: [],
+      status: "pendente"
+    }
+  }
+  
+  chaveManual.lutas.push(novaLuta)
+  
+  const chavesAtualizadas = chaves.map(c => 
+    c.categoria === "Luta Manual" ? chaveManual! : c
+  )
+  
+  if (!chaves.some(c => c.categoria === "Luta Manual")) {
+    chavesAtualizadas.push(chaveManual!)
   }
 
-  const json = JSON.stringify(dadosExport, null, 2)
-  const blob = new Blob([json], { type: "application/json" })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement("a")
-  link.href = url
-  link.download = `area-${area.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.json`
-  link.click()
-  URL.revokeObjectURL(url)
+  const dados: DadosArea = {
+    area,
+    chaves: chavesAtualizadas,
+    criadoEm: getCriadoEm(),
+    atualizadoEm: new Date().toISOString()
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
+  
+  return chavesAtualizadas
+}
+
+export function marcarLutaConcluida(
+  area: string, 
+  chaveIndex: number, 
+  lutaId: number, 
+  vencedor: string, 
+  chaves: ChaveLuta[]
+): ChaveLuta[] {
+  const chavesAtualizadas = [...chaves]
+  
+  const chave = chavesAtualizadas[chaveIndex]
+  const luta = chave.lutas.find(l => l.id === lutaId)
+  
+  if (luta && luta.resultado) {
+    luta.resultado.status = "concluida"
+    if (vencedor === "finalizacao") {
+      luta.resultado.tipoVitoria = "finalizacao"
+      // Quem finalizou - precisa saber qual atleta
+      // Por enquanto, deixamos null e determinamos pelo tipo
+    } else if (vencedor === "desclassificacao") {
+      luta.resultado.tipoVitoria = "desclassificacao"
+    } else if (vencedor === "empate") {
+      luta.resultado.vencedor = "empate"
+    } else {
+      luta.resultado.vencedor = vencedor as "atleta1" | "atleta2"
+    }
+  }
+  
+  const temLutasPendentes = chave.lutas.some(l => l.resultado?.status !== "concluida")
+  chave.status = temLutasPendentes ? "em_andamento" : "concluida"
+  
+  const dados: DadosArea = {
+    area,
+    chaves: chavesAtualizadas,
+    criadoEm: getCriadoEm(),
+    atualizadoEm: new Date().toISOString()
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
+  
+  return chavesAtualizadas
 }

@@ -77,6 +77,18 @@
 | RF-006.2 | O botão deve estar desabilitado se não houver chaves importadas | Obrigatório |
 | RF-006.3 | O link "Voltar ao Início" deve redirecionar para `/` | Obrigatório |
 
+### RF-007: Tela de Scoreboard
+
+| ID | Descrição | Prioridade |
+|----|-----------|------------|
+| RF-007.1 | Ao acessar `/scoreboard`, carregar chaves do localStorage | Obrigatório |
+| RF-007.2 | Se não houver chaves, exibir mensagem e botão para setup | Obrigatório |
+| RF-007.3 | Se houver chaves, exibir lista de chaves com suas lutas pendentes | Obrigatório |
+| RF-007.4 | Cada luta pendente permite clicar para iniciar a pontuação | Obrigatório |
+| RF-007.5 | O header do placar mostra: área, categoria, botão Voltar e Trocar | Obrigatório |
+| RF-007.6 | Ao clicar em "Trocar", volta para a seleção de lutas | Obrigatório |
+| RF-007.7 | Ao finalizar, baixa JSON com resultado da luta | Obrigatório |
+
 ---
 
 ## 3. Requisitos de Interface

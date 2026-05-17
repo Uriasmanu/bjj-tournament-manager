@@ -22,23 +22,63 @@ interface AtletaCardProps {
   estado: AtletaState
   onScoreChange: (categoria: keyof AtletaState, valor: number) => void
   isLight?: boolean
+  onFinalizacao?: () => void
+  onDesclassificacao?: () => void
+  cor?: "azul" | "branco"
 }
 
-export function AtletaCard({ lutador, estado, onScoreChange, isLight = false }: AtletaCardProps) {
+export function AtletaCard({ 
+  lutador, 
+  estado, 
+  onScoreChange, 
+  isLight = false,
+  onFinalizacao,
+  onDesclassificacao,
+  cor = "azul"
+}: AtletaCardProps) {
   const total = estado.montada + estado.passagem + estado.queda
   const bgColor = isLight ? "bg-white" : "bg-blue-700"
   const textColor = isLight ? "text-black" : "text-white"
   const teamColor = isLight ? "text-gray-500" : "text-blue-200"
 
   return (
-    <div className={`flex-1 ${bgColor} ${textColor} flex flex-col px-8 ${isLight ? "pt-4 pb-16" : "pt-16 pb-4"} justify-center`}>
+    <div className={`flex-1 ${bgColor} ${textColor} flex flex-col px-8 ${isLight ? "pt-4 pb-16" : "pt-16 pb-4"} justify-center relative`}>
+      {/* Botões discretos de Finalização e Desclassificação */}
+      <div className="absolute top-2 right-2 flex gap-1 opacity-40 hover:opacity-100 transition-opacity">
+        {onFinalizacao && (
+          <button
+            onClick={onFinalizacao}
+            className={`text-xs px-2 py-1 rounded font-bold ${
+              cor === "azul" 
+                ? "bg-blue-900 text-blue-200 hover:bg-blue-800" 
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+            title="Finalização (Submissão/KO)"
+          >
+            FIN
+          </button>
+        )}
+        {onDesclassificacao && (
+          <button
+            onClick={onDesclassificacao}
+            className={`text-xs px-2 py-1 rounded font-bold ${
+              cor === "azul" 
+                ? "bg-blue-900 text-red-300 hover:bg-blue-800" 
+                : "bg-gray-200 text-red-600 hover:bg-gray-300"
+            }`}
+            title="Desclassificação"
+          >
+            DSQ
+          </button>
+        )}
+      </div>
+
       <div className="flex justify-between items-center h-full w-full">
         <div className="flex flex-col justify-center max-w-[65%]">
           <div className="text-5xl font-black uppercase tracking-tight mb-1 truncate">
             {lutador.nome}
           </div>
           
-          {/* Badge de Faixa */}
           <div className="mb-2">
             <BadgeFaixa faixa={lutador.faixa} />
           </div>
