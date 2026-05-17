@@ -80,9 +80,9 @@
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
+            "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "concluida"
           }
         },
         {
@@ -108,8 +108,8 @@
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
             "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida"
           }
         },
         {
@@ -135,12 +135,12 @@
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
             "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida"
           }
         }
       ],
-      "status": "em_andamento"
+      "status": "concluida"
     },
     {
       "categoria": "Branca Infantil",
@@ -168,8 +168,8 @@
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
             "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "tipoVitoria": "atleta1",
+            "status": "concluida"
           }
         },
         {
@@ -194,13 +194,13 @@
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "vencedor": "atleta1",
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida"
           }
         }
       ],
-      "status": "pendente"
+      "status": "concluida"
     },
     {
       "categoria": "Azul Adulto",
@@ -377,6 +377,6 @@
       "status": "pendente"
     }
   ],
-  "criadoEm": "2026-05-17T01:28:51.528Z",
-  "atualizadoEm": "2026-05-17T01:28:51.528Z"
+  "criadoEm": "2026-05-17T01:49:56.234Z",
+  "atualizadoEm": "2026-05-17T01:49:56.234Z"
 }

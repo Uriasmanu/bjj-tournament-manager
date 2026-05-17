@@ -5,14 +5,16 @@ import { useState, useEffect, useRef } from "react"
 interface ScoreboardTimerProps {
   onTimeEnd?: () => void
   onReset?: () => void
+  onTimeUpdate?: (elapsedSeconds: number) => void
 }
 
-export function ScoreboardTimer({ onTimeEnd, onReset }: ScoreboardTimerProps) {
+export function ScoreboardTimer({ onTimeEnd, onReset, onTimeUpdate }: ScoreboardTimerProps) {
   const [seconds, setSeconds] = useState(300)
   const [isRunning, setIsRunning] = useState(false)
   const [showManualInput, setShowManualInput] = useState(false)
   const [manualMin, setManualMin] = useState(5)
   const [manualSec, setManualSec] = useState(0)
+  const [initialTime, setInitialTime] = useState(300)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const isWarning = seconds <= 10 && seconds > 0
@@ -37,6 +39,11 @@ export function ScoreboardTimer({ onTimeEnd, onReset }: ScoreboardTimerProps) {
     }
   }, [isRunning, seconds, onTimeEnd])
 
+  useEffect(() => {
+    const elapsed = initialTime - seconds
+    onTimeUpdate?.(elapsed)
+  }, [seconds, initialTime, onTimeUpdate])
+
   const toggleTimer = () => {
     setIsRunning(!isRunning)
   }
@@ -44,12 +51,14 @@ export function ScoreboardTimer({ onTimeEnd, onReset }: ScoreboardTimerProps) {
   const handleReset = () => {
     setIsRunning(false)
     setSeconds(300)
+    setInitialTime(300)
     onReset?.()
   }
 
   const applyManualTime = () => {
     const totalSeconds = (manualMin * 60) + manualSec
     setSeconds(totalSeconds)
+    setInitialTime(totalSeconds)
     setIsRunning(false)
     setShowManualInput(false)
   }
@@ -57,6 +66,7 @@ export function ScoreboardTimer({ onTimeEnd, onReset }: ScoreboardTimerProps) {
   const setTime = (value: number) => {
     setIsRunning(false)
     setSeconds(value)
+    setInitialTime(value)
   }
 
   const formatTime = (s: number) => {

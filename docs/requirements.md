@@ -1,6 +1,6 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 3.0
+**Versão:** 4.0
 **Data:** 2026-05-16
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
@@ -17,9 +17,26 @@
 
 ---
 
-## 2. Armazenamento de Dados (JSON)
+## 2. Regras de Implementação
 
-O sistema utiliza **JSON** como formato principal para armazenamento e persistência de dados das competições.
+### 2.1 Componentes UI
+- **OBRIGATÓRIO**: Usar sempre componentes do **Shadcn UI** nas implementações
+- Componentes disponíveis: Button, Card, Dialog, Input, Select, Toast, etc.
+- Localização: `@/components/ui/`
+
+### 2.2 Botões com Fundo Branco
+- **OBRIGATÓRIO**: Quando um botão tiver fundo branco (#FFFFFF), o texto deve ser obrigatoriamente escuro (#000000 ou similar)
+- Isso garante contraste e acessibilidade
+
+### 2.3 Layout Responsivo
+- O sistema deve funcionar em desktop e dispositivos móveis
+- Layout otimizado para telão/projetor no scoreboard
+
+---
+
+## 3. Armazenamento de Dados (JSON)
+
+O sistema utiliza **JSON** como formato principal para armazenamento e persistência de dados das competências.
 
 ### Estrutura de Arquivos
 
@@ -31,56 +48,80 @@ data/
 └── ...
 ```
 
-**Estrutura do JSON por Área:**
-```json
-{
-  "area": "Área 1",
-  "criadoEm": "2026-05-16T10:00:00Z",
-  "chaves": [
-    {
-      "id": 1,
-      "categoria": "Branca Infantil",
-      "lutas": [
-        {
-          "id": 1,
-          "round": 1,
-          "atleta1": {
-            "nome": "João Silva",
-            "faixa": "Branca",
-            "equipe": "Team Brasil"
-          },
-          "atleta2": {
-            "nome": "Maria Santos",
-            "faixa": "Branca",
-            "equipe": "Team São Paulo"
-          },
-          "resultado": {
-            "pontosAtleta1": 4,
-            "pontosAtleta2": 2,
-            "vantagensAtleta1": 1,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 1,
-            "tempoDecorrido": 180,
-            "finalizacao": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "status": "concluida"
-          },
-          "arbitro": "João Arbito",
-          "dataLuta": "2026-05-16T14:30:00Z"
-        }
-      ],
-      "vencedor": "João Silva",
-      "status": "concluida"
-    }
-  ]
+### API REST
+
+O sistema expõe uma API para manipulação de dados:
+
+| Método | Endpoint | Descrição |
+|--------|-----------|------------|
+| GET | `/api/area?area=NOME` | Retorna dados de uma área |
+| POST | `/api/area` | Cria/sobrescreve dados de uma área |
+| PUT | `/api/area` | Atualiza dados de uma área (mantém existentes) |
+| DELETE | `/api/area?area=NOME` | Remove arquivo da área |
+
+---
+
+## 4. Estrutura de Dados
+
+### Tipos TypeScript
+
+```typescript
+// Atleta
+interface Atleta {
+  nome: string
+  equipe: string
+  faixa?: string
+}
+
+// Resultado da Luta
+interface ResultadoLuta {
+  pontosAtleta1: number
+  pontosAtleta2: number
+  vantagensAtleta1: number
+  vantagensAtleta2: number
+  penalidadesAtleta1: number
+  penalidadesAtleta2: number
+  tempoDecorrido: number
+  finalizacaoAtleta1: boolean
+  finalizacaoAtleta2: boolean
+  desclassificacao: "atleta1" | "atleta2" | null
+  vencedor: "atleta1" | "atleta2" | "empate" | null
+  tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
+  status: "pendente" | "concluida"
+}
+
+// Luta
+interface Luta {
+  id: number
+  round: number
+  atleta1: Atleta
+  atleta2: Atleta
+  resultado?: ResultadoLuta
+  arbitro?: string
+  dataLuta?: string
+}
+
+// Chave de Luta
+interface ChaveLuta {
+  categoria: string
+  lutas: Luta[]
+  arbitro?: string
+  vencedor?: string
+  status: "pendente" | "em_andamento" | "concluida"
+}
+
+// Dados da Área
+interface DadosArea {
+  area: string
+  criadoEm: string
+  atualizadoEm?: string
+  chaves: ChaveLuta[]
 }
 ```
 
 ---
 
-## 3. Stack Tecnológico
+## 5. Stack Tecnológico
 
 | Componente | Tecnologia | Versão |
 |------------|------------|--------|
@@ -93,7 +134,7 @@ data/
 
 ---
 
-## 4. Paleta de Cores
+## 6. Paleta de Cores
 
 | Cor | Hexadecimal | Uso |
 |-----|-------------|-----|
@@ -101,16 +142,26 @@ data/
 | Preto | `#0A0A0A` | Fundos principais, sidebars, áreas de destaque |
 | Branco | `#FFFFFF` | Cards, áreas de conteúdo, texto em fundos escuros |
 | Dourado | `#D4AF37` | Destaques especiais, títulos, elementos premium |
+| Verde | `#22C55E` | Status de luta concluída |
+| Vermelho | `#DC2626` | Botões de desclassificação, alertas |
 
 ---
 
-## 5. Estrutura de Pastas
+## 7. Estrutura de Pastas
 
 ```
 app/
 ├── page.tsx                  # Tela inicial (seleção)
 ├── layout.tsx                # Layout raiz
 ├── globals.css               # Estilos globais
+├── types/                    # Tipos TypeScript
+│   └── index.ts             # Interfaces e tipos
+├── hooks/                    # Hooks personalizados
+│   ├── useStorage.ts         # Persistência (API)
+│   └── useImportacao.ts     # Importação de JSONs
+├── api/                      # Rotas de API
+│   └── area/
+│       └── route.ts         # API REST de área
 ├── admin/                    # Painel administrativo
 │   ├── page.tsx             # Dashboard admin
 │   ├── layout.tsx           # Layout admin
@@ -118,63 +169,79 @@ app/
 │       └── page.tsx         # Página de pontuação
 ├── scoreboard/              # Interface de placar
 │   ├── setup/               # Pré-placar (importação de chaves)
-│   │   └── page.tsx         # Configuração de luta
+│   │   └── page.tsx         # Configuração de área
 │   ├── page.tsx             # Placar principal
 │   └── layout.tsx           # Layout scoreboard
 └── components/
+    ├── ui/                  # Componentes Shadcn
+    │   ├── button.tsx
+    │   ├── card.tsx
+    │   ├── dialog.tsx
+    │   ├── input.tsx
+    │   └── ...
     ├── Timer.tsx            # Componente de cronômetro
     └── scoreboard/          # Componentes do placar
+        ├── AtletaCard.tsx
+        ├── ScoreHeader.tsx
+        ├── ScoreButton.tsx
+        ├── VantagemPunicao.tsx
+        ├── AdicionarLutaModal.tsx
+        └── ...
+    └── setup/               # Componentes do setup
+        ├── AreaCard.tsx
+        ├── ImportacaoCard.tsx
+        ├── ChaveList.tsx
+        └── ...
 
 data/                        # Dados persistidos (JSON)
 └── [area-nome].json         # Arquivos de área
 
 docs/
 ├── requirements.md          # Este documento
-└── roadmap.md               # Plano de implementação
+└── ...
 ```
 
 ---
 
-## 6. Fluxo do Sistema
+## 8. Fluxo do Sistema
 
-### 6.1 Início do Torneio
+### 8.1 Início do Torneio
 
 1. **Definir Área**: Organizador define o nome da área (ex: "Área 1") - **não editável depois**
 2. **Importar Chaves**: Organizador importa arquivos JSON com as chaves de luta
-3. **Carregar na Área**: JSONs são salvos em `data/area-[nome].json`
+3. **Carregar na Área**: JSONs são salvos em `data/[area].json` via API
 
-### 6.2 Durante o Torneio
+### 8.2 Durante o Torneio
 
 1. **Selecionar Chave**: Árbitro seleciona uma chave da lista
-2. **Editar Árbitro**: Pode editar o nome do árbitro para a luta
+2. **Selecionar Luta**: Escolher qual luta da chave será disputada
 3. **Iniciar Luta**: Redireciona para `/scoreboard` com dados da luta
 
-### 6.3 Durante a Luta
+### 8.3 Durante a Luta
 
 1. **Registrar Pontos**: Árbitros registram montada (4), passagem (3), queda (2)
 2. **Vantagens/Punições**: Contador de vantagens e penalidades
 3. **Cronômetro**: Contagem regressiva com controle
-4. **Finalização**: Botão discreto para marcar finalização (submissão/knockout)
-5. **Desclassificação**: Botão discreto para desclassificar atleta
+4. **Editar Árbitro**: Campo editável no header para nome do árbitro
+5. **Desclassificação**: Botão discreto (30% opacity) para desclassificar atleta
 
-### 6.4 Finalização da Luta
+### 8.4 Finalização da Luta
 
 1. Clicar em "Finalizar Luta"
-2. Sistema determina vencedor:
-   - Se finalização → atleta que finalizou vence
-   - Se desclassificação → outro atleta vence
-   - Se nenhum → quem tiver mais pontos + vantagens vence
-3. JSON da área é atualizado com resultado
-4. Download do JSON individual da luta
+2. Modal 1: **Selecionar Vencedor** - escolhe qual atleta venceu
+3. Modal 2: **Selecionar Tipo de Vitória** - pontos ou finalização
+4. Se DSQ: Modal 1 pergunta qual atleta, Modal 2 pede confirmação
+5. JSON da área é atualizado com resultado
+6. Status da luta muda para "concluida"
 
-### 6.5 Conclusão da Chave
+### 8.5 Conclusão da Chave
 
 - Todas as lutas processadas
-- Exportar JSON da área com todos os resultados
+- Status da chave atualiza automaticamente (pendente → em_andamento → concluida)
 
 ---
 
-## 7. Histórias de Usuário
+## 9. Histórias de Usuário
 
 ### HU-001: Tela de Seleção de Entrada
 
@@ -196,14 +263,14 @@ docs/
 **Para** que o sistema esteja preparado para o torneo.
 
 **Critérios de Aceitação:**
-- [ ] Campo para definir nome da área (apenas uma vez, no início)
-- [ ] Botão para importar múltiplos arquivos JSON de chaves de luta
-- [ ] Lista de chaves importadas comvisualização
-- [ ] Cada chave mostra: categoria, número de lutas, status
-- [ ] Botão para editar nome do árbitro em cada luta
-- [ ] Botão "Iniciar Luta" para cada par de atletas
-- [ ] Botão para exportar JSON da área (ao final de todas as lutas)
-- [ ] Ao exportar, gerar JSON completo com todos os resultados
+- [x] Campo para definir nome da área (apenas uma vez, no início)
+- [x] Botão para importar múltiplos arquivos JSON de chaves de luta
+- [x] Validação: categoria obrigatória, array de lutas não vazio
+- [x] Lista de chaves importadas comvisualização
+- [x] Cada chave mostra: categoria, número de lutas, status
+- [x] Botão "Iniciar Luta" para cada par de atletas
+- [x] Botão para criar luta manual (sem arquivo JSON)
+- [x] Botão para limpar todos os dados
 
 ---
 
@@ -250,16 +317,15 @@ docs/
 
 **Critérios de Aceitação:**
 - [x] Layout otimizado para telão/projetor
-- [x] Atleta 1 (Azul) na metade superior
+- [x] Atleta 1 (Branco) na metade superior
 - [x] Atleta 2 (Branco) na metade inferior
-- [x] Header com área de luta e nome do árbitro
+- [x] Header com área de luta e nome do árbitro (editável)
 - [x] Cronômetro flutuante centralizado
 - [x] Nomes, equipes e faixas dos lutadores
 - [x] Pontuação individual e total
 - [x] Vantagens e punições
-- [x] Botão "Voltar" no header
-- [x] Botão "Editar Lutadores" (modal)
-- [x] Botão "Finalizar Luta" com confirmação
+- [x] Botão "Nova Luta" para selecionar outra luta
+- [x] Botão "Finalizar Luta" com confirmação em 2 etapas
 
 ---
 
@@ -270,11 +336,10 @@ docs/
 **Para** que o sistema determine corretamente o vencedor.
 
 **Critérios de Aceitação:**
-- [ ] Botão discreto de **Finalização** no placar (para cada atleta)
-- [ ] Ao clicar em Finalização do lado do atleta → marcar como campeão por finalização
-- [ ] Botão discreto de **Desclassificação** no placar (para cada atleta)
-- [ ] Ao clicar em Desclassificação → outro atleta vence automaticamente
-- [ ] Lógica de determinação do vencedor:
+- [x] Botão discreto de **Desclassificação** no placar (para cada atleta)
+- [x] Ao clicar em DSQ → Modal pergunta qual atleta será desclassificado
+- [x] Modal pede confirmação antes de salvar
+- [x] Lógica de determinação do vencedor:
   1. Se finalização → vence quem finalizou
   2. Se desclassificação → vence o outro
   3. Se nenhum → vence quem tiver mais pontos + vantagens
@@ -288,68 +353,88 @@ docs/
 **Para** que não perca informações em caso de refresh ou erro.
 
 **Critérios de Aceitação:**
-- [ ] Ao clicar em "Finalizar Luta", atualizar JSON da área com:
+- [x] Ao clicar em "Finalizar Luta", atualizar JSON da área com:
   - Pontuações finais
   - Tempo decorrido
   - Nome do árbitro
   - Status (concluida)
   - Vencedor determinado
-  - Se houve finalização ou desclassificação
-- [ ] Dados salvos em `data/area-[nome].json`
-- [ ] Ao exportar, gerar JSON completo de todas as chaves e resultados
+  - Tipo de vitória
+- [x] Dados salvos em `data/[area].json` via API REST
 
 ---
 
-## 8. Estrutura do JSON de Resultado (por luta)
+### HU-008: Nova Luta
+
+**Como** árbitro,
+**Eu quero** selecionar uma nova luta após finalizar,
+**Para** continuar o fluxo da competição.
+
+**Critérios de Aceitação:**
+- [x] Botão "Nova Luta" retorna para tela de seleção de lutas
+- [x] Lutas concluídas aparecem com badge verde "Concluída"
+- [x] Lutas pendentes têm botão "Iniciar"
+
+---
+
+## 10. Estrutura do JSON de Importação
 
 ```json
 {
-  "id": 1,
   "categoria": "Branca Infantil",
-  "round": 1,
-  "atleta1": {
-    "nome": "João Silva",
-    "faixa": "Branca",
-    "equipe": "Team Brasil"
-  },
-  "atleta2": {
-    "nome": "Maria Santos",
-    "faixa": "Branca",
-    "equipe": "Team São Paulo"
-  },
-  "resultado": {
-    "pontosAtleta1": 4,
-    "pontosAtleta2": 2,
-    "vantagensAtleta1": 1,
-    "vantagensAtleta2": 0,
-    "penalidadesAtleta1": 0,
-    "penalidadesAtleta2": 1,
-    "tempoDecorrido": 180,
-    "finalizacao": true,
-    "desclassificacao": null,
-    "vencedor": "atleta1",
-    "tipoVitoria": "finalizacao",
-    "status": "concluida"
-  },
-  "arbitro": "João Arbito",
-  "dataLuta": "2026-05-16T14:30:00Z"
+  "lutas": [
+    {
+      "id": 1,
+      "round": 1,
+      "atleta1": {
+        "nome": "João Silva",
+        "equipe": "Team Brasil"
+      },
+      "atleta2": {
+        "nome": "Maria Santos",
+        "equipe": "Team São Paulo"
+      }
+    }
+  ]
 }
 ```
 
+### Regras de Validação
+- `categoria` é obrigatório (string não vazia)
+- `lutas` é obrigatório (array não vazio)
+- Cada luta deve ter `atleta1` e `atleta2` com `nome` e `equipe`
+- Árbitros são definidos por chave (opcional), não por luta individual
+
 ---
 
-## 9. Glossário de Termos
+## 11. Glossário de Termos
 
 | Termo | Definição |
 |-------|-----------|
 | Chave de Luta | Conjunto de confrontos de uma categoria |
 | Área de Luta | Local físico onde ocorre a luta (definido no início) |
 | Finalização | Vitória por submissão ou knockout (prioridade máxima) |
-| Desclassificação | Eliminação por infração (outro atleta vence) |
+| Desclassificação (DSQ) | Eliminação por infração (outro atleta vence) |
 | Pontos + Vantagens | Critério de desempate após finalização |
-| Exportar Área | Gerar JSON completo com todos os resultados |
+| Status da Luta | pendente → em_andamento → concluida |
+| Status da Chave | pendente → em_andamento → concluida |
+
+---
+
+## 12. Componentes Shadcn Disponíveis
+
+O sistema utiliza os seguintes componentes do Shadcn UI:
+
+| Componente | Localização | Uso |
+|------------|-------------|-----|
+| Button | `@/components/ui/button` | Botões principais e ações |
+| Card | `@/components/ui/card` | Containers de conteúdo |
+| Dialog | `@/components/ui/dialog` | Modais e confirmações |
+| Input | `@/components/ui/input` | Campos de texto |
+| Select | `@/components/ui/select` | Dropdowns |
+| Toast | `@/components/ui/toast` | Notificações |
 
 ---
 
 *Documento atualizado em: 2026-05-16*
-*Versão: 3.0*
+*Versão: 4.0*

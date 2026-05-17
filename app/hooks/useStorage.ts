@@ -1,4 +1,4 @@
-import { ChaveLuta, Luta, DadosArea } from "@/app/types"
+import { ChaveLuta, Luta, DadosArea, ResultadoLuta } from "@/app/types"
 
 const API_URL = "/api/area"
 
@@ -6,6 +6,21 @@ export interface DadosIniciais {
   area: string
   chaves: ChaveLuta[]
   areaDefinida: boolean
+}
+
+export interface DadosResultadoLuta {
+  pontosAtleta1: number
+  pontosAtleta2: number
+  vantagensAtleta1: number
+  vantagensAtleta2: number
+  penalidadesAtleta1: number
+  penalidadesAtleta2: number
+  tempoDecorrido: number
+  finalizacaoAtleta1: boolean
+  finalizacaoAtleta2: boolean
+  desclassificacao: "atleta1" | "atleta2" | null
+  tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
+  vencedor: "atleta1" | "atleta2" | "empate" | null
 }
 
 export async function getDadosIniciais(): Promise<DadosIniciais> {
@@ -78,7 +93,7 @@ export async function marcarLutaConcluida(
   area: string, 
   chaveIndex: number, 
   lutaId: number, 
-  vencedor: string, 
+  dadosResultado: DadosResultadoLuta,
   chaves: ChaveLuta[]
 ): Promise<ChaveLuta[]> {
   const chavesAtualizadas = [...chaves]
@@ -88,15 +103,18 @@ export async function marcarLutaConcluida(
   
   if (luta && luta.resultado) {
     luta.resultado.status = "concluida"
-    if (vencedor === "empate") {
-      luta.resultado.vencedor = "empate"
-    } else if (vencedor === "finalizacao") {
-      luta.resultado.tipoVitoria = "finalizacao"
-    } else if (vencedor === "desclassificacao") {
-      luta.resultado.tipoVitoria = "desclassificacao"
-    } else {
-      luta.resultado.vencedor = vencedor as "atleta1" | "atleta2"
-    }
+    luta.resultado.pontosAtleta1 = dadosResultado.pontosAtleta1
+    luta.resultado.pontosAtleta2 = dadosResultado.pontosAtleta2
+    luta.resultado.vantagensAtleta1 = dadosResultado.vantagensAtleta1
+    luta.resultado.vantagensAtleta2 = dadosResultado.vantagensAtleta2
+    luta.resultado.penalidadesAtleta1 = dadosResultado.penalidadesAtleta1
+    luta.resultado.penalidadesAtleta2 = dadosResultado.penalidadesAtleta2
+    luta.resultado.tempoDecorrido = dadosResultado.tempoDecorrido
+    luta.resultado.finalizacaoAtleta1 = dadosResultado.finalizacaoAtleta1
+    luta.resultado.finalizacaoAtleta2 = dadosResultado.finalizacaoAtleta2
+    luta.resultado.desclassificacao = dadosResultado.desclassificacao
+    luta.resultado.tipoVitoria = dadosResultado.tipoVitoria
+    luta.resultado.vencedor = dadosResultado.vencedor
   }
   
   const temLutasPendentes = chave.lutas.some(l => l.resultado?.status !== "concluida")

@@ -22,7 +22,6 @@ interface AtletaCardProps {
   estado: AtletaState
   onScoreChange: (categoria: keyof AtletaState, valor: number) => void
   isLight?: boolean
-  onFinalizacao?: () => void
   onDesclassificacao?: () => void
   cor?: "azul" | "branco"
 }
@@ -32,7 +31,6 @@ export function AtletaCard({
   estado, 
   onScoreChange, 
   isLight = false,
-  onFinalizacao,
   onDesclassificacao,
   cor = "azul"
 }: AtletaCardProps) {

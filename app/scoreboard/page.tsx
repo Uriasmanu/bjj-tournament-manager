@@ -52,13 +52,6 @@ export default function ScoreboardPage() {
     setChaveIndex(-1)
   }
 
-  const handleVoltar = async () => {
-    await carregarDados()
-    setLutaSelecionada(null)
-    setChaveSelecionada(null)
-    setChaveIndex(-1)
-  }
-
   const handleAdicionarNovaLuta = async (data: NovaLutaData) => {
     const novaLuta: Luta = {
       id: gerarIdUnico(),
@@ -132,7 +125,6 @@ export default function ScoreboardPage() {
       chaveIndex={chaveIndex}
       luta={lutaSelecionada}
       onTrocarChave={handleTrocarChave}
-      onVoltar={handleVoltar}
     />
   )
 }
@@ -276,7 +268,6 @@ interface PlacarCompletoProps {
   chaveIndex: number
   luta: Luta
   onTrocarChave: () => void
-  onVoltar: () => void
 }
 
 function PlacarCompleto({ 
@@ -285,8 +276,7 @@ function PlacarCompleto({
   setChaves, 
   chaveIndex, 
   luta, 
-  onTrocarChave, 
-  onVoltar 
+  onTrocarChave 
 }: PlacarCompletoProps) {
   const [p1, setP1] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
   const [p2, setP2] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
@@ -294,6 +284,10 @@ function PlacarCompleto({
   const [showConfirmFinalizar, setShowConfirmFinalizar] = useState(false)
   const [etapaConfirmacao, setEtapaConfirmacao] = useState<"vencedor" | "tipo" | null>(null)
   const [vencedorSelecionado, setVencedorSelecionado] = useState<"atleta1" | "atleta2" | null>(null)
+  const [showDSQ, setShowDSQ] = useState(false)
+  const [atletaDSQ, setAtletaDSQ] = useState<1 | 2 | null>(null)
+  const [etapaDSQ, setEtapaDSQ] = useState<"escolher" | "confirmar">("escolher")
+  const [tempoDecorrido, setTempoDecorrido] = useState(0)
 
   const initialState = { montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 }
 
@@ -323,9 +317,43 @@ function PlacarCompleto({
   }
 
   const handleDesclassificacao = (atleta: 1 | 2) => {
-    setVencedorSelecionado(atleta === 1 ? "atleta2" : "atleta1")
-    setShowConfirmFinalizar(true)
-    setEtapaConfirmacao("tipo")
+    setAtletaDSQ(atleta)
+    setEtapaDSQ("escolher")
+    setShowDSQ(true)
+  }
+
+  const handleConfirmarDSQ = () => {
+    if (etapaDSQ === "escolher") {
+      setEtapaDSQ("confirmar")
+    } else {
+      handleSalvarDSQ()
+    }
+  }
+
+  const handleSelecionarAtletaDSQ = (atleta: 1 | 2) => {
+    setAtletaDSQ(atleta)
+    setEtapaDSQ("confirmar")
+  }
+
+  const handleSalvarDSQ = async () => {
+    const vencedor = atletaDSQ === 1 ? "atleta2" : "atleta1"
+    const tipoVitoria = "desclassificacao"
+    
+    const chavesAtualizadas = await marcarLutaConcluida(
+      area, 
+      chaveIndex, 
+      luta.id, 
+      tipoVitoria, 
+      chaves,
+      vencedor
+    )
+    setChaves(chavesAtualizadas)
+    
+    setShowDSQ(false)
+    setAtletaDSQ(null)
+    setEtapaDSQ("escolher")
+    
+    onTrocarChave()
   }
 
   const handleFinalizarClick = () => {
@@ -339,19 +367,23 @@ function PlacarCompleto({
     setEtapaConfirmacao("tipo")
   }
 
-  const handleConfirmarTipo = async () => {
+  const handleConfirmarTipo = async (tipo: "pontos" | "finalizacao") => {
+    setTipoVitoriaSelecionado(tipo)
+    
     const chavesAtualizadas = await marcarLutaConcluida(
       area, 
       chaveIndex, 
       luta.id, 
-      vencedorSelecionado!, 
-      chaves
+      tipo, 
+      chaves,
+      vencedorSelecionado!
     )
     setChaves(chavesAtualizadas)
     
     setShowConfirmFinalizar(false)
     setEtapaConfirmacao(null)
     setVencedorSelecionado(null)
+    setTipoVitoriaSelecionado(null)
     
     onTrocarChave()
   }
@@ -366,7 +398,7 @@ function PlacarCompleto({
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
         <div className="bg-black border-4 border-gray-700 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center min-w-[220px]">
-          <ScoreboardTimer onReset={resetAll} />
+          <ScoreboardTimer onReset={resetAll} onTimeUpdate={setTempoDecorrido} />
         </div>
       </div>
 
@@ -392,12 +424,6 @@ function PlacarCompleto({
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-4">
         <button
-          onClick={onVoltar}
-          className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-        >
-          Voltar
-        </button>
-        <button
           onClick={onTrocarChave}
           className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
         >
@@ -410,6 +436,63 @@ function PlacarCompleto({
           Finalizar Luta
         </button>
       </div>
+
+      {showDSQ && (
+        <div className="absolute inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
+            {etapaDSQ === "escolher" ? (
+              <>
+                <h2 className="text-2xl font-bold text-white mb-4">Desclassificar Atleta</h2>
+                <p className="text-gray-400 mb-6">Qual atleta será desclassificado?</p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => handleSelecionarAtletaDSQ(1)}
+                    className="flex-1 bg-red-700 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    {lutador1.nome}
+                  </button>
+                  <button
+                    onClick={() => handleSelecionarAtletaDSQ(2)}
+                    className="flex-1 bg-red-700 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    {lutador2.nome}
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setShowDSQ(false); setAtletaDSQ(null); setEtapaDSQ("escolher"); }}
+                  className="w-full mt-4 text-gray-400 hover:text-white text-sm"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-white mb-4">Confirmar Desclassificação</h2>
+                <p className="text-gray-400 mb-6">
+                  Tem certeza que deseja desclassificar {atletaDSQ === 1 ? lutador1.nome : lutador2.nome}?
+                </p>
+                <p className="text-yellow-400 mb-6 text-sm">
+                  {atletaDSQ === 1 ? lutador2.nome : lutador1.nome} será declarado vencedor.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleConfirmarDSQ}
+                    className="flex-1 bg-red-700 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    Confirmar
+                  </button>
+                  <button
+                    onClick={() => { setEtapaDSQ("escolher"); }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    Voltar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {showConfirmFinalizar && (
         <div className="absolute inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
@@ -449,13 +532,13 @@ function PlacarCompleto({
                 </p>
                 <div className="flex gap-4">
                   <button
-                    onClick={handleConfirmarTipo}
+                    onClick={() => handleConfirmarTipo("pontos")}
                     className="flex-1 bg-[#D4AF37] hover:bg-[#f0c844] text-black px-4 py-3 rounded-lg font-bold"
                   >
                     Pontos
                   </button>
                   <button
-                    onClick={handleConfirmarTipo}
+                    onClick={() => handleConfirmarTipo("finalizacao")}
                     className="flex-1 bg-red-600 hover:bg-red-500 text-white px-4 py-3 rounded-lg font-bold"
                   >
                     Finalização
