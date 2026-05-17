@@ -21,6 +21,13 @@ export interface DadosResultadoLuta {
   desclassificacao: "atleta1" | "atleta2" | null
   tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
   vencedor: "atleta1" | "atleta2" | "empate" | null
+  
+  montadasAtleta1: number
+  montadasAtleta2: number
+  passagensAtleta1: number
+  passagensAtleta2: number
+  quedasAtleta1: number
+  quedasAtleta2: number
 }
 
 export async function getDadosIniciais(): Promise<DadosIniciais> {
@@ -115,6 +122,13 @@ export async function marcarLutaConcluida(
     luta.resultado.desclassificacao = dadosResultado.desclassificacao
     luta.resultado.tipoVitoria = dadosResultado.tipoVitoria
     luta.resultado.vencedor = dadosResultado.vencedor
+    
+    luta.resultado.montadasAtleta1 = dadosResultado.montadasAtleta1
+    luta.resultado.montadasAtleta2 = dadosResultado.montadasAtleta2
+    luta.resultado.passagensAtleta1 = dadosResultado.passagensAtleta1
+    luta.resultado.passagensAtleta2 = dadosResultado.passagensAtleta2
+    luta.resultado.quedasAtleta1 = dadosResultado.quedasAtleta1
+    luta.resultado.quedasAtleta2 = dadosResultado.quedasAtleta2
   }
   
   const temLutasPendentes = chave.lutas.some(l => l.resultado?.status !== "concluida")

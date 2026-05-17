@@ -398,7 +398,14 @@ function PlacarCompleto({
       finalizacaoAtleta2: tipo === "finalizacao" && vencedorSelecionado === "atleta2",
       desclassificacao: null,
       tipoVitoria: tipo,
-      vencedor: vencedorSelecionado
+      vencedor: vencedorSelecionado,
+      
+      montadasAtleta1: p1.montada,
+      montadasAtleta2: p2.montada,
+      passagensAtleta1: p1.passagem,
+      passagensAtleta2: p2.passagem,
+      quedasAtleta1: p1.queda,
+      quedasAtleta2: p2.queda
     }
     
     const chavesAtualizadas = await marcarLutaConcluida(

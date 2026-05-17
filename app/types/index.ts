@@ -18,6 +18,13 @@ export interface ResultadoLuta {
   vencedor: "atleta1" | "atleta2" | "empate" | null
   tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
   status: "pendente" | "concluida"
+  
+  montadasAtleta1: number
+  montadasAtleta2: number
+  passagensAtleta1: number
+  passagensAtleta2: number
+  quedasAtleta1: number
+  quedasAtleta2: number
 }
 
 export interface Luta {
