@@ -217,19 +217,7 @@
             "equipe": "Team CT"
           },
           "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "concluida"
           }
         },
         {
@@ -250,13 +238,13 @@
             "vantagensAtleta2": 0,
             "penalidadesAtleta1": 0,
             "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
+            "tempoDecorrido": 156,
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
+            "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "concluida"
           }
         },
         {
@@ -271,19 +259,19 @@
             "equipe": "Academia Winners"
           },
           "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
+            "pontosAtleta1": 9,
+            "pontosAtleta2": 9,
+            "vantagensAtleta1": 1,
+            "vantagensAtleta2": 1,
+            "penalidadesAtleta1": 1,
+            "penalidadesAtleta2": 1,
+            "tempoDecorrido": 1,
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
+            "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "concluida"
           }
         },
         {
@@ -341,7 +329,7 @@
           }
         }
       ],
-      "status": "pendente"
+      "status": "em_andamento"
     },
     {
       "categoria": "Luta Manual",
@@ -377,6 +365,6 @@
       "status": "pendente"
     }
   ],
-  "criadoEm": "2026-05-17T01:49:56.234Z",
-  "atualizadoEm": "2026-05-17T01:49:56.234Z"
+  "criadoEm": "2026-05-17T02:09:38.669Z",
+  "atualizadoEm": "2026-05-17T02:09:38.669Z"
 }

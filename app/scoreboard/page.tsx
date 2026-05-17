@@ -337,15 +337,30 @@ function PlacarCompleto({
 
   const handleSalvarDSQ = async () => {
     const vencedor = atletaDSQ === 1 ? "atleta2" : "atleta1"
-    const tipoVitoria = "desclassificacao"
+    const pontos1 = p1.montada + p1.passagem + p1.queda
+    const pontos2 = p2.montada + p2.passagem + p2.queda
+    
+    const dadosResultado = {
+      pontosAtleta1: pontos1,
+      pontosAtleta2: pontos2,
+      vantagensAtleta1: p1.vantagem,
+      vantagensAtleta2: p2.vantagem,
+      penalidadesAtleta1: p1.punicao,
+      penalidadesAtleta2: p2.punicao,
+      tempoDecorrido,
+      finalizacaoAtleta1: false,
+      finalizacaoAtleta2: false,
+      desclassificacao: atletaDSQ === 1 ? "atleta1" as const : "atleta2" as const,
+      tipoVitoria: "desclassificacao" as const,
+      vencedor: vencedor as "atleta1" | "atleta2"
+    }
     
     const chavesAtualizadas = await marcarLutaConcluida(
       area, 
       chaveIndex, 
       luta.id, 
-      tipoVitoria, 
-      chaves,
-      vencedor
+      dadosResultado,
+      chaves
     )
     setChaves(chavesAtualizadas)
     
@@ -368,22 +383,36 @@ function PlacarCompleto({
   }
 
   const handleConfirmarTipo = async (tipo: "pontos" | "finalizacao") => {
-    setTipoVitoriaSelecionado(tipo)
+    const pontos1 = p1.montada + p1.passagem + p1.queda
+    const pontos2 = p2.montada + p2.passagem + p2.queda
+    
+    const dadosResultado = {
+      pontosAtleta1: pontos1,
+      pontosAtleta2: pontos2,
+      vantagensAtleta1: p1.vantagem,
+      vantagensAtleta2: p2.vantagem,
+      penalidadesAtleta1: p1.punicao,
+      penalidadesAtleta2: p2.punicao,
+      tempoDecorrido,
+      finalizacaoAtleta1: tipo === "finalizacao" && vencedorSelecionado === "atleta1",
+      finalizacaoAtleta2: tipo === "finalizacao" && vencedorSelecionado === "atleta2",
+      desclassificacao: null,
+      tipoVitoria: tipo,
+      vencedor: vencedorSelecionado
+    }
     
     const chavesAtualizadas = await marcarLutaConcluida(
       area, 
       chaveIndex, 
       luta.id, 
-      tipo, 
-      chaves,
-      vencedorSelecionado!
+      dadosResultado,
+      chaves
     )
     setChaves(chavesAtualizadas)
     
     setShowConfirmFinalizar(false)
     setEtapaConfirmacao(null)
     setVencedorSelecionado(null)
-    setTipoVitoriaSelecionado(null)
     
     onTrocarChave()
   }
