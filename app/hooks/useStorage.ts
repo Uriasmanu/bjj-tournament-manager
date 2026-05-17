@@ -1,6 +1,6 @@
 import { ChaveLuta, Luta, DadosArea } from "@/app/types"
 
-const STORAGE_KEY = "bjj_tournament_area"
+const API_URL = "/api/area"
 
 export interface DadosIniciais {
   area: string
@@ -8,53 +8,47 @@ export interface DadosIniciais {
   areaDefinida: boolean
 }
 
-export function getDadosIniciais(): DadosIniciais {
-  if (typeof window === "undefined") {
-    return { area: "", chaves: [], areaDefinida: false }
-  }
-
-  const dadosSalvos = localStorage.getItem(STORAGE_KEY)
+export async function getDadosIniciais(): Promise<DadosIniciais> {
+  const dadosSalvos = localStorage.getItem("bjj_tournament_area_nome")
+  
   if (!dadosSalvos) {
     return { area: "", chaves: [], areaDefinida: false }
   }
 
   try {
-    const dados: DadosArea = JSON.parse(dadosSalvos)
+    const response = await fetch(`${API_URL}?area=${encodeURIComponent(dadosSalvos)}`)
+    if (!response.ok) {
+      return { area: dadosSalvos, chaves: [], areaDefinida: true }
+    }
+    const dados: DadosArea = await response.json()
     return {
-      area: dados.area || "",
+      area: dados.area || dadosSalvos,
       chaves: dados.chaves || [],
       areaDefinida: !!dados.area
     }
   } catch {
-    return { area: "", chaves: [], areaDefinida: false }
+    return { area: dadosSalvos, chaves: [], areaDefinida: true }
   }
 }
 
-function getCriadoEm(): string {
-  const dadosSalvos = localStorage.getItem(STORAGE_KEY)
-  if (dadosSalvos) {
-    try {
-      const dados: DadosArea = JSON.parse(dadosSalvos)
-      return dados.criadoEm || new Date().toISOString()
-    } catch { return new Date().toISOString() }
+export async function salvarDados(area: string, chaves: ChaveLuta[]): Promise<boolean> {
+  try {
+    localStorage.setItem("bjj_tournament_area_nome", area)
+    
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ area, chaves })
+    })
+    
+    return response.ok
+  } catch (error) {
+    console.error("Failed to save data:", error)
+    return false
   }
-  return new Date().toISOString()
 }
 
-export function salvarDados(area: string, chaves: ChaveLuta[], criadoEmAnterior?: string): void {
-  const dados: DadosArea = {
-    area,
-    chaves,
-    criadoEm: criadoEmAnterior || getCriadoEm()
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
-}
-
-export function limparDados(): void {
-  localStorage.removeItem(STORAGE_KEY)
-}
-
-export function adicionarNovaLuta(area: string, chaves: ChaveLuta[], novaLuta: Luta): ChaveLuta[] {
+export async function adicionarNovaLuta(area: string, chaves: ChaveLuta[], novaLuta: Luta): Promise<ChaveLuta[]> {
   let chaveManual = chaves.find(c => c.categoria === "Luta Manual")
   
   if (!chaveManual) {
@@ -75,24 +69,18 @@ export function adicionarNovaLuta(area: string, chaves: ChaveLuta[], novaLuta: L
     chavesAtualizadas.push(chaveManual!)
   }
 
-  const dados: DadosArea = {
-    area,
-    chaves: chavesAtualizadas,
-    criadoEm: getCriadoEm(),
-    atualizadoEm: new Date().toISOString()
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
+  await salvarDados(area, chavesAtualizadas)
   
   return chavesAtualizadas
 }
 
-export function marcarLutaConcluida(
+export async function marcarLutaConcluida(
   area: string, 
   chaveIndex: number, 
   lutaId: number, 
   vencedor: string, 
   chaves: ChaveLuta[]
-): ChaveLuta[] {
+): Promise<ChaveLuta[]> {
   const chavesAtualizadas = [...chaves]
   
   const chave = chavesAtualizadas[chaveIndex]
@@ -100,14 +88,12 @@ export function marcarLutaConcluida(
   
   if (luta && luta.resultado) {
     luta.resultado.status = "concluida"
-    if (vencedor === "finalizacao") {
+    if (vencedor === "empate") {
+      luta.resultado.vencedor = "empate"
+    } else if (vencedor === "finalizacao") {
       luta.resultado.tipoVitoria = "finalizacao"
-      // Quem finalizou - precisa saber qual atleta
-      // Por enquanto, deixamos null e determinamos pelo tipo
     } else if (vencedor === "desclassificacao") {
       luta.resultado.tipoVitoria = "desclassificacao"
-    } else if (vencedor === "empate") {
-      luta.resultado.vencedor = "empate"
     } else {
       luta.resultado.vencedor = vencedor as "atleta1" | "atleta2"
     }
@@ -116,13 +102,21 @@ export function marcarLutaConcluida(
   const temLutasPendentes = chave.lutas.some(l => l.resultado?.status !== "concluida")
   chave.status = temLutasPendentes ? "em_andamento" : "concluida"
   
-  const dados: DadosArea = {
-    area,
-    chaves: chavesAtualizadas,
-    criadoEm: getCriadoEm(),
-    atualizadoEm: new Date().toISOString()
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados))
+  await salvarDados(area, chavesAtualizadas)
   
   return chavesAtualizadas
+}
+
+export async function limparDados(area: string): Promise<void> {
+  localStorage.removeItem("bjj_tournament_area_nome")
+  
+  if (area) {
+    try {
+      await fetch(`/api/area?area=${encodeURIComponent(area)}`, {
+        method: "DELETE",
+      })
+    } catch (error) {
+      console.error("Erro ao limpar dados da API:", error)
+    }
+  }
 }

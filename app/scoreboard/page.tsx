@@ -1,11 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { ChaveLuta, Luta } from "@/app/types"
 import type { AtletaState, LutadorInfo } from "@/app/components/scoreboard/AtletaCard"
 import { getDadosIniciais, adicionarNovaLuta, marcarLutaConcluida } from "@/app/hooks/useStorage"
@@ -28,12 +28,16 @@ export default function ScoreboardPage() {
   const [chaveIndex, setChaveIndex] = useState<number>(-1)
   const [mostrarModalAdicionar, setMostrarModalAdicionar] = useState(false)
 
-  useEffect(() => {
-    const dados = getDadosIniciais()
+  const carregarDados = useCallback(async () => {
+    const dados = await getDadosIniciais()
     setArea(dados.area)
     setChaves(dados.chaves)
     setIsHydrated(true)
   }, [])
+
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
 
   const handleSelecionarLuta = (chave: ChaveLuta, chaveIdx: number, luta: Luta) => {
     setChaveSelecionada(chave)
@@ -41,24 +45,21 @@ export default function ScoreboardPage() {
     setLutaSelecionada(luta)
   }
 
-  const handleTrocarChave = () => {
-    // Recarregar dados atualizados
-    const dados = getDadosIniciais()
-    setChaves(dados.chaves)
+  const handleTrocarChave = async () => {
+    await carregarDados()
     setLutaSelecionada(null)
     setChaveSelecionada(null)
     setChaveIndex(-1)
   }
 
-  const handleVoltar = () => {
-    const dados = getDadosIniciais()
-    setChaves(dados.chaves)
+  const handleVoltar = async () => {
+    await carregarDados()
     setLutaSelecionada(null)
     setChaveSelecionada(null)
     setChaveIndex(-1)
   }
 
-  const handleAdicionarNovaLuta = (data: NovaLutaData) => {
+  const handleAdicionarNovaLuta = async (data: NovaLutaData) => {
     const novaLuta: Luta = {
       id: gerarIdUnico(),
       round: 1,
@@ -81,7 +82,7 @@ export default function ScoreboardPage() {
       }
     }
 
-    const chavesAtualizadas = adicionarNovaLuta(area, chaves, novaLuta)
+    const chavesAtualizadas = await adicionarNovaLuta(area, chaves, novaLuta)
     setChaves(chavesAtualizadas)
   }
 
@@ -128,7 +129,6 @@ export default function ScoreboardPage() {
       area={area}
       chaves={chaves}
       setChaves={setChaves}
-      chave={chaveSelecionada}
       chaveIndex={chaveIndex}
       luta={lutaSelecionada}
       onTrocarChave={handleTrocarChave}
@@ -147,11 +147,14 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
   const [chavesState, setChavesState] = useState(chaves)
 
   useEffect(() => {
-    const dados = getDadosIniciais()
-    setChavesState(dados.chaves)
+    getDadosIniciais().then(dados => {
+      setChavesState(dados.chaves)
+    })
   }, [])
 
-  const handleAdicionarLuta = (data: NovaLutaData) => {
+  const handleAdicionarLuta = async (data: NovaLutaData) => {
+    const area = (await getDadosIniciais()).area
+    
     const novaLuta: Luta = {
       id: gerarIdUnico(),
       round: 1,
@@ -174,8 +177,7 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
       }
     }
 
-    const area = getDadosIniciais().area
-    const chavesAtualizadas = adicionarNovaLuta(area, chavesState, novaLuta)
+    const chavesAtualizadas = await adicionarNovaLuta(area, chavesState, novaLuta)
     setChavesState(chavesAtualizadas)
     setMostrarModalAdicionar(false)
   }
@@ -271,7 +273,6 @@ interface PlacarCompletoProps {
   area: string
   chaves: ChaveLuta[]
   setChaves: React.Dispatch<React.SetStateAction<ChaveLuta[]>>
-  chave: ChaveLuta
   chaveIndex: number
   luta: Luta
   onTrocarChave: () => void
@@ -282,7 +283,6 @@ function PlacarCompleto({
   area, 
   chaves, 
   setChaves, 
-  chave, 
   chaveIndex, 
   luta, 
   onTrocarChave, 
@@ -339,9 +339,8 @@ function PlacarCompleto({
     setEtapaConfirmacao("tipo")
   }
 
-  const handleConfirmarTipo = () => {
-    // Salvar no localStorage
-    const chavesAtualizadas = marcarLutaConcluida(
+  const handleConfirmarTipo = async () => {
+    const chavesAtualizadas = await marcarLutaConcluida(
       area, 
       chaveIndex, 
       luta.id, 
@@ -349,44 +348,11 @@ function PlacarCompleto({
       chaves
     )
     setChaves(chavesAtualizadas)
-
-    // Baixar JSON do resultado
-    const p1Total = p1.montada + p1.passagem + p1.queda
-    const p2Total = p2.montada + p2.passagem + p2.queda
-    const tipoVitoria = etapaConfirmacao === "tipo" ? "desclassificacao" : "pontos"
-
-    const resultado = {
-      area,
-      categoria: chave.categoria,
-      lutaId: luta.id,
-      arbitro: arbitro || "Não definido",
-      data: new Date().toISOString(),
-      tipoVitoria,
-      lutadores: {
-        atleta1: { nome: lutador1.nome, equipe: lutador1.equipe },
-        atleta2: { nome: lutador2.nome, equipe: lutador2.equipe }
-      },
-      pontuacao: {
-        atleta1: { montada: p1.montada, passagem: p1.passagem, queda: p1.queda, vantagens: p1.vantagem, penalidades: p1.punicao, total: p1Total },
-        atleta2: { montada: p2.montada, passagem: p2.passagem, queda: p2.queda, vantagens: p2.vantagem, penalidades: p2.punicao, total: p2Total }
-      },
-      vencedor: vencedorSelecionado === "atleta1" ? lutador1.nome : lutador2.nome
-    }
-
-    const json = JSON.stringify(resultado, null, 2)
-    const blob = new Blob([json], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `luta-${lutador1.nome}-vs-${lutador2.nome}-${Date.now()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
     
     setShowConfirmFinalizar(false)
     setEtapaConfirmacao(null)
     setVencedorSelecionado(null)
     
-    // Voltar para seleção
     onTrocarChave()
   }
 
@@ -395,6 +361,7 @@ function PlacarCompleto({
       <ScoreHeader 
         area={area} 
         arbitro={arbitro}
+        onArbitroChange={setArbitro}
       />
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
@@ -424,6 +391,12 @@ function PlacarCompleto({
       />
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-4">
+        <button
+          onClick={onVoltar}
+          className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+        >
+          Voltar
+        </button>
         <button
           onClick={onTrocarChave}
           className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"

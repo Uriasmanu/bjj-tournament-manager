@@ -50,12 +50,13 @@ export default function ScoreboardSetupPage() {
   const { resultados, isLoading: isImportando, importarArquivos, limparResultados } = useImportacao()
 
   useEffect(() => {
-    const dados = getDadosIniciais()
-    setArea(dados.area)
-    setChaves(dados.chaves)
-    setAreaDefinida(dados.areaDefinida)
-    setCriadoEm(dados.areaDefinida ? new Date().toISOString() : undefined)
-    setIsHydrated(true)
+    getDadosIniciais().then(dados => {
+      setArea(dados.area)
+      setChaves(dados.chaves)
+      setAreaDefinida(dados.areaDefinida)
+      setCriadoEm(dados.areaDefinida ? new Date().toISOString() : undefined)
+      setIsHydrated(true)
+    })
   }, [])
 
   const showToast = (tipo: "sucesso" | "erro", mensagem: string) => {
@@ -63,7 +64,7 @@ export default function ScoreboardSetupPage() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleDefinirArea = () => {
+  const handleDefinirArea = async () => {
     if (!area.trim()) {
       showToast("erro", "Por favor, defina o nome da área.")
       return
@@ -71,16 +72,16 @@ export default function ScoreboardSetupPage() {
     const agora = new Date().toISOString()
     setCriadoEm(agora)
     setAreaDefinida(true)
-    salvarDados(area, chaves, agora)
+    await salvarDados(area, chaves)
     showToast("sucesso", "Área definida com sucesso!")
   }
 
-  const handleProximo = () => {
+  const handleProximo = async () => {
     if (chaves.length === 0) {
       showToast("erro", "Importe pelo menos uma chave de luta.")
       return
     }
-    salvarDados(area, chaves, criadoEm)
+    await salvarDados(area, chaves)
     router.push("/scoreboard")
   }
 
@@ -94,7 +95,7 @@ export default function ScoreboardSetupPage() {
     if (chavesImportadas.length > 0) {
       const novasChaves = [...chaves, ...chavesImportadas]
       setChaves(novasChaves)
-      salvarDados(area, novasChaves, criadoEm)
+      await salvarDados(area, novasChaves)
     }
 
     event.target.value = ""
@@ -104,7 +105,7 @@ export default function ScoreboardSetupPage() {
     if (confirm("Tem certeza que deseja excluir esta chave?")) {
       const novasChaves = chaves.filter((_, index) => index !== chaveIndex)
       setChaves(novasChaves)
-      salvarDados(area, novasChaves, criadoEm)
+      salvarDados(area, novasChaves)
       showToast("sucesso", "Chave excluída com sucesso!")
     }
   }
@@ -113,7 +114,7 @@ export default function ScoreboardSetupPage() {
     setMostrarFormLutaManual(true)
   }
 
-  const handleSubmeterLutaManual = (data: LutaManualData) => {
+  const handleSubmeterLutaManual = async (data: LutaManualData) => {
     const novaLuta: Luta = {
       id: gerarIdUnico(),
       round: 1,
@@ -144,13 +145,13 @@ export default function ScoreboardSetupPage() {
 
     const novasChaves = [...chaves, novaChave]
     setChaves(novasChaves)
-    salvarDados(area, novasChaves, criadoEm)
+    await salvarDados(area, novasChaves)
     showToast("sucesso", "Luta manual criada com sucesso!")
   }
 
-  const handleLimparDados = () => {
+  const handleLimparDados = async () => {
     if (confirm("Tem certeza que deseja limpar todos os dados?")) {
-      limparDados()
+      await limparDados(area)
       setArea("")
       setChaves([])
       setAreaDefinida(false)
