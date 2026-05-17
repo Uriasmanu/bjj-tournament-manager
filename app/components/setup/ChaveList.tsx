@@ -4,16 +4,14 @@ import { Trophy, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { ChaveLuta, Luta } from "@/app/types"
 
 interface ChaveListProps {
   chaves: ChaveLuta[]
-  onAtualizarArbitroChave: (chaveIndex: number, arbitro: string) => void
   onExcluirChave: (chaveIndex: number) => void
 }
 
-export function ChaveList({ chaves, onAtualizarArbitroChave, onExcluirChave }: ChaveListProps) {
+export function ChaveList({ chaves, onExcluirChave }: ChaveListProps) {
   if (chaves.length === 0) return null
 
   return (
@@ -27,7 +25,6 @@ export function ChaveList({ chaves, onAtualizarArbitroChave, onExcluirChave }: C
             key={chaveIndex} 
             chave={chave} 
             chaveIndex={chaveIndex}
-            onAtualizarArbitroChave={onAtualizarArbitroChave}
             onExcluirChave={onExcluirChave}
           />
         ))}
@@ -39,11 +36,10 @@ export function ChaveList({ chaves, onAtualizarArbitroChave, onExcluirChave }: C
 interface ChaveItemProps {
   chave: ChaveLuta
   chaveIndex: number
-  onAtualizarArbitroChave: (chaveIndex: number, arbitro: string) => void
   onExcluirChave: (chaveIndex: number) => void
 }
 
-function ChaveItem({ chave, chaveIndex, onAtualizarArbitroChave, onExcluirChave }: ChaveItemProps) {
+function ChaveItem({ chave, chaveIndex, onExcluirChave }: ChaveItemProps) {
   const lutasConcluidas = chave.lutas.filter(l => l.resultado?.status === "concluida").length
 
   return (
@@ -67,18 +63,6 @@ function ChaveItem({ chave, chaveIndex, onAtualizarArbitroChave, onExcluirChave 
           >
             <Trash2 className="w-4 h-4" />
           </Button>
-        </div>
-      </div>
-      
-      <div className="px-4 py-3 bg-zinc-800/50 border-b border-zinc-700">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">Árbitro:</span>
-          <Input
-            placeholder="Nome do árbitro..."
-            value={chave.arbitr || ""}
-            onChange={(e) => onAtualizarArbitroChave(chaveIndex, e.target.value)}
-            className="flex-1 bg-zinc-900 border-zinc-700 text-white text-sm h-8 max-w-xs"
-          />
         </div>
       </div>
 

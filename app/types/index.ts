@@ -33,6 +33,7 @@ export interface Luta {
 export interface ChaveLuta {
   categoria: string
   lutas: Luta[]
+  arbitro?: string
   vencedor?: string
   status: "pendente" | "em_andamento" | "concluida"
 }

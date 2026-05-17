@@ -14,7 +14,9 @@ import {
   ImportacaoCard,
   ResultadoImportacaoCard,
   ChaveList,
-  ActionButtons
+  ActionButtons,
+  LutaManualForm,
+  LutaManualData
 } from "@/app/components/setup"
 
 import { 
@@ -43,6 +45,7 @@ export default function ScoreboardSetupPage() {
   const [areaDefinida, setAreaDefinida] = useState(false)
   const [criadoEm, setCriadoEm] = useState<string | undefined>(undefined)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [mostrarFormLutaManual, setMostrarFormLutaManual] = useState(false)
 
   const { resultados, isLoading: isImportando, importarArquivos, limparResultados } = useImportacao()
 
@@ -97,14 +100,6 @@ export default function ScoreboardSetupPage() {
     event.target.value = ""
   }
 
-  const handleAtualizarArbitroChave = (chaveIndex: number, nomeArbitro: string) => {
-    const novasChaves = [...chaves]
-    // @ts-expect-error --arbitro exists in type
-    novasChaves[chaveIndex].arbitr = nomeArbitro
-    setChaves(novasChaves)
-    salvarDados(area, novasChaves, criadoEm)
-  }
-
   const handleExcluirChave = (chaveIndex: number) => {
     if (confirm("Tem certeza que deseja excluir esta chave?")) {
       const novasChaves = chaves.filter((_, index) => index !== chaveIndex)
@@ -115,20 +110,15 @@ export default function ScoreboardSetupPage() {
   }
 
   const handleCriarLutaManual = () => {
-    const nomeAtleta1 = prompt("Nome do Atleta 1:")
-    if (!nomeAtleta1?.trim()) return
+    setMostrarFormLutaManual(true)
+  }
 
-    const nomeAtleta2 = prompt("Nome do Atleta 2:")
-    if (!nomeAtleta2?.trim()) return
-
-    const nomeEquipe1 = prompt("Equipe do Atleta 1 (opcional):") || ""
-    const nomeEquipe2 = prompt("Equipe do Atleta 2 (opcional):") || ""
-
+  const handleSubmeterLutaManual = (data: LutaManualData) => {
     const novaLuta: Luta = {
       id: gerarIdUnico(),
       round: 1,
-      atleta1: { nome: nomeAtleta1.trim(), equipe: nomeEquipe1.trim() },
-      atleta2: { nome: nomeAtleta2.trim(), equipe: nomeEquipe2.trim() },
+      atleta1: { nome: data.nomeAtleta1, equipe: data.equipe1 },
+      atleta2: { nome: data.nomeAtleta2, equipe: data.equipe2 },
       resultado: {
         pontosAtleta1: 0,
         pontosAtleta2: 0,
@@ -214,7 +204,6 @@ export default function ScoreboardSetupPage() {
 
             <ChaveList
               chaves={chaves}
-              onAtualizarArbitroChave={handleAtualizarArbitroChave}
               onExcluirChave={handleExcluirChave}
             />
 
@@ -225,6 +214,12 @@ export default function ScoreboardSetupPage() {
             />
           </>
         )}
+
+        <LutaManualForm
+          isOpen={mostrarFormLutaManual}
+          onClose={() => setMostrarFormLutaManual(false)}
+          onSubmit={handleSubmeterLutaManual}
+        />
       </div>
     </div>
   )

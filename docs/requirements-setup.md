@@ -1,6 +1,6 @@
 # Requisitos - Tela de Setup de Área
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Data:** 2026-05-16  
 **Tela:** `/scoreboard/setup`  
 **Status:** Implementado
@@ -26,7 +26,7 @@
 | ID | Descrição | Prioridade |
 |----|-----------|------------|
 | RF-001.1 | O usuário deve poder inserir o nome da área (ex: "Área 1", "Quadra A") | Obrigatório |
-| RF-001.2 | O nome da área deve ser salvo apenas uma vez (editável após definição, não editavel depois de clicar em proximo) | Obrigatório |
+| RF-001.2 | O nome da área deve ser salvo apenas uma vez e não editável após clicar em Próximo | Obrigatório |
 | RF-001.3 | O campo deve validar que o nome não está vazio antes de permitir a definição | Obrigatório |
 | RF-001.4 | Após definida, a área deve exibir o nome com indicador visual de "Definida" | Obrigatório |
 
@@ -50,33 +50,32 @@
 | RF-003.2 | O sistema deve mostrar o progresso de lutas concluídas (ex: 2/5) | Obrigatório |
 | RF-003.3 | Cada luta dentro da chave deve exibir: nome dos atletas vs | Obrigatório |
 | RF-003.4 | Lutas concluídas devem exibir o nome do vencedor | Obrigatório |
-| RF-003.5 | Lutas pendentes devem permitir edição do nome do árbitro | Obrigatório | [Errado, o arbitro é por chave e não por luta]
-| RF-003.6 | Cada luta pendente deve ter botão para iniciar a luta | Obrigatório | [Não é para ter botão de iniciar]
+| RF-003.5 | Cada chave deve ter botão para excluir | Obrigatório |
 
-### RF-001: Gerenciamento de Dados
+### RF-004: Gerenciamento de Dados
 
 | ID | Descrição | Prioridade |
 |----|-----------|------------|
 | RF-004.1 | Os dados devem ser salvos automaticamente no localStorage | Obrigatório |
 | RF-004.2 | Ao carregar a página, os dados devem ser restaurados do localStorage | Obrigatório |
-| RF-004.3 | O usuário deve poder exportar todos os dados da área como JSON | Obrigatório | [O exporta area não vai mais ficar aqui, remova]
-| RF-004.4 | O usuário deve poder limpar todos os dados com confirmação | Obrigatório |
-| RF-004.5 | O arquivo exportado deve incluir: área, data de exportação, total de chaves, total de lutas, lutas concluídas | Obrigatório |
+| RF-004.3 | O usuário deve poder limpar todos os dados com confirmação | Obrigatório |
 
-Eu posso excluir a chave da luta apos importa
-o btão criar luta manualmente adiciona como se fosse um JSON importado
-A categoria vem na chave não é usado nas lutas casadas
-
-### RF-005: Navegação
+### RF-005: Criar Luta Manual
 
 | ID | Descrição | Prioridade |
 |----|-----------|------------|
-| RF-005.1 | O botão "Próximo" deve redirecionar para `/scoreboard` | Obrigatório |
-| RF-005.2 | O botão deve estar desabilitado se não houver chaves importadas | Obrigatório |
-| RF-005.3 | O botão "Criar Luta Manual" deve permitir criar luta sem importação | Obrigatório |
-| RF-005.4 | O link "Voltar ao Início" deve redirecionar para `/` | Obrigatório |
+| RF-005.1 | O botão "Criar Luta Manual" deve abrir um modal/form | Obrigatório |
+| RF-005.2 | O form deve ter campos: Atleta 1 (nome), Equipe 1, Atleta 2 (nome), Equipe 2 | Obrigatório |
+| RF-005.3 | Os campos de nome são obrigatórios, equipes são opcionais | Obrigatório |
+| RF-005.4 | Ao submeter, criar uma nova chave com categoria "Luta Manual" | Obrigatório |
 
-depois de clicar em proximo, o usuario pode selecionar a chae ( deve trazer o nome da chave)
+### RF-006: Navegação
+
+| ID | Descrição | Prioridade |
+|----|-----------|------------|
+| RF-006.1 | O botão "Próximo" deve redirecionar para `/scoreboard` | Obrigatório |
+| RF-006.2 | O botão deve estar desabilitado se não houver chaves importadas | Obrigatório |
+| RF-006.3 | O link "Voltar ao Início" deve redirecionar para `/` | Obrigatório |
 
 ---
 
@@ -98,8 +97,8 @@ depois de clicar em proximo, o usuario pode selecionar a chae ( deve trazer o no
 | **AreaCard** | Campo de entrada + botão "Definir Área" ou área definida com Badge |
 | **ImportacaoCard** | Botão para selecionar arquivos com loading state |
 | **ResultadoImportacaoCard** | Lista de cards com ícone de sucesso/erro, nome do arquivo, detalhes |
-| **ChaveList** | Lista expansível de chaves com suas lutas |
-| **ActionButtons** | Botões "Próximo", "Exportar" e "Criar Luta Manual" |
+| **ChaveList** | Lista de chaves com: categoria, status, progresso, botão excluir, campo árbitro |
+| **ActionButtons** | Botões "Próximo" e "Criar Luta Manual" |
 
 ### Feedback Visual
 
@@ -136,6 +135,7 @@ depois de clicar em proximo, o usuario pode selecionar a chae ( deve trazer o no
 interface ChaveLuta {
   categoria: string
   lutas: Luta[]
+  arbitro?: string
   status: "pendente" | "em_andamento" | "concluida"
 }
 
@@ -176,7 +176,7 @@ interface DadosArea {
 2. Insere nome no campo
 3. Clica em "Definir Área"
 4. Sistema valida nome não vazio
-5. Sistema salva no arquivo JSON dentro cda aplicação
+5. Sistema salva no localStorage
 6. Exibe indicador visual de área definida
 
 ### CU-002: Importar Chaves
@@ -186,14 +186,29 @@ interface DadosArea {
 3. Sistema processa cada arquivo:
    - **Sucesso**: Adiciona à lista, exibe card verde
    - **Erro**: Exibe card vermelho com mensagem
-4. Atualiza arquivo JSON dentro cda aplicação com novas chaves
+4. Atualiza localStorage com novas chaves
 
-### CU-003: Iniciar Luta
+### CU-003: Excluir Chave
 
-1. Usuário preenche nome do árbitro (opcional)
-2. Clica no botão play de uma luta
-3. Sistema atualiza status da chave para "em_andamento"
-4. Sistema redireciona para `/scoreboard` com parâmetros da luta
+1. Usuário clica no botão de lixeira na chave
+2. Sistema solicita confirmação
+3. Se confirmado, remove chave da lista
+4. Atualiza localStorage
+
+### CU-004: Criar Luta Manual
+
+1. Usuário clica em "Criar Luta Manual"
+2. Sistema solicita nome do Atleta 1
+3. Sistema solicita nome do Atleta 2
+4. Sistema opcionalmente solicita equipes
+5. Cria nova chave com categoria "Luta Manual"
+6. Adiciona à lista de chaves
+
+### CU-005: Prosseguir para Placar
+
+1. Usuário clica em "Próximo"
+2. Sistema verifica se há chaves
+3. Se houver, redireciona para `/scoreboard`
 
 ---
 
@@ -206,11 +221,13 @@ interface DadosArea {
 | CA-003 | Múltiplos arquivos podem ser importados | Selecionar 3 arquivos JSON - todos devem ser processados |
 | CA-004 | Arquivo inválido mostra erro específico | Importar JSON malformado - deve exibir mensagem de erro |
 | CA-005 | Lista de chaves exibe todas as informações | Verificar categoria, quantidade, status, lutas |
-| CA-006 | Botão próximo redireciona corretamente | Clicar em próximo com chaves - deve ir para /scoreboard |
-| CA-007 | Botão próximo desabilitado sem chaves | Acessar sem importar - botão deve estar disabled |
-| CA-008 | Dados persistem ao recarregar | Importar chaves, recarregar página - dados devem estar lá |
-| CA-009 | Exportar gera JSON válido | Clicar exportar - arquivo deve ter todos os dados |
-| CA-010 | Limpar dados remove tudo | Clicar limpar com confirmação - localStorage deve estar vazio |
+| CA-006 | Árbitro é por chave, não por luta | Campo árbitro está no header da chave |
+| CA-007 | Botão excluir remove a chave | Clicar em excluir - chave deve ser removida |
+| CA-008 | Botão próximo redireciona corretamente | Clicar em próximo com chaves - deve ir para /scoreboard |
+| CA-009 | Botão próximo desabilitado sem chaves | Acessar sem importar - botão deve estar disabled |
+| CA-010 | Dados persistem ao recarregar | Importar chaves, recarregar página - dados devem estar lá |
+| CA-011 | Criar Luta Manual adiciona nova chave | Criar luta manual - nova chave deve aparecer na lista |
+| CA-012 | Limpar dados remove tudo | Clicar limpar com confirmação - localStorage deve estar vazio |
 
 ---
 
@@ -218,8 +235,9 @@ interface DadosArea {
 
 | Versão | Data | Descrição |
 |--------|------|-----------|
+| 1.1 | 2026-05-16 | Corrigido: Árbitro por chave, removido botão iniciar, adicionado excluir, criado luta manual |
 | 1.0 | 2026-05-16 | Versão inicial implementada |
 
 ---
 
-*Documento criado em: 2026-05-16*
+*Documento atualizado em: 2026-05-16*
