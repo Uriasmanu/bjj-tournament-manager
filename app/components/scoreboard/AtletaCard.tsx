@@ -77,7 +77,6 @@ export function AtletaCard({ lutador, estado, onScoreChange, isLight = false }: 
               punicao={estado.punicao}
               onVantagemChange={(v) => onScoreChange("vantagem", v)}
               onPunicaoChange={(v) => onScoreChange("punicao", v)}
-              isLight={isLight}
             />
           </div>
         </div>

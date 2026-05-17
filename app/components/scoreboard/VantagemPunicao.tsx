@@ -3,10 +3,9 @@ interface VantagemPunicaoProps {
   punicao: number
   onVantagemChange: (delta: number) => void
   onPunicaoChange: (delta: number) => void
-  isLight?: boolean
 }
 
-export function VantagemPunicao({ vantagem, punicao, onVantagemChange, onPunicaoChange, isLight = false }: VantagemPunicaoProps) {
+export function VantagemPunicao({ vantagem, punicao, onVantagemChange, onPunicaoChange }: VantagemPunicaoProps) {
   return (
     <div className="flex gap-3 ml-3">
       <div className="bg-yellow-400 text-black p-3 flex flex-col items-center rounded-lg border-2 border-black min-w-[100px]">
