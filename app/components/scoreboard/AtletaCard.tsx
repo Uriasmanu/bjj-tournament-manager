@@ -43,21 +43,8 @@ export function AtletaCard({
 
   return (
     <div className={`flex-1 ${bgColor} ${textColor} flex flex-col px-8 ${isLight ? "pt-4 pb-16" : "pt-16 pb-4"} justify-center relative`}>
-      {/* Botões discretos de Finalização e Desclassificação */}
-      <div className="absolute top-2 right-2 flex gap-1 opacity-40 hover:opacity-100 transition-opacity">
-        {onFinalizacao && (
-          <button
-            onClick={onFinalizacao}
-            className={`text-xs px-2 py-1 rounded font-bold ${
-              cor === "azul" 
-                ? "bg-blue-900 text-blue-200 hover:bg-blue-800" 
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-            title="Finalização (Submissão/KO)"
-          >
-            FIN
-          </button>
-        )}
+      {/* Botão discreto de Desclassificação */}
+      <div className="absolute top-2 right-2 opacity-30 hover:opacity-100 transition-opacity">
         {onDesclassificacao && (
           <button
             onClick={onDesclassificacao}

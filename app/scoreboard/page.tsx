@@ -1,11 +1,11 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { ChaveLuta, Luta } from "@/app/types"
 import type { AtletaState, LutadorInfo } from "@/app/components/scoreboard/AtletaCard"
 import { getDadosIniciais, adicionarNovaLuta, marcarLutaConcluida } from "@/app/hooks/useStorage"
@@ -13,7 +13,6 @@ import { AdicionarLutaModal, NovaLutaData } from "@/app/components/scoreboard/Ad
 import { ScoreboardTimer } from "@/app/components/Timer"
 import { ScoreHeader } from "@/app/components/scoreboard/ScoreHeader"
 import { AtletaCard } from "@/app/components/scoreboard/AtletaCard"
-import { CheckCircle } from "lucide-react"
 
 function gerarIdUnico(): number {
   return Date.now() + Math.floor(Math.random() * 1000)
@@ -43,12 +42,17 @@ export default function ScoreboardPage() {
   }
 
   const handleTrocarChave = () => {
+    // Recarregar dados atualizados
+    const dados = getDadosIniciais()
+    setChaves(dados.chaves)
     setLutaSelecionada(null)
     setChaveSelecionada(null)
     setChaveIndex(-1)
   }
 
   const handleVoltar = () => {
+    const dados = getDadosIniciais()
+    setChaves(dados.chaves)
     setLutaSelecionada(null)
     setChaveSelecionada(null)
     setChaveIndex(-1)
@@ -213,23 +217,41 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
               </div>
 
               <div className="divide-y divide-zinc-800">
-                {chave.lutas
-                  .filter(luta => luta.resultado?.status !== "concluida")
-                  .map((luta, lutaIndex) => (
-                    <button
+                {chave.lutas.map((luta, lutaIndex) => {
+                  const isConcluida = luta.resultado?.status === "concluida"
+                  return (
+                    <div
                       key={lutaIndex}
-                      onClick={() => onSelecionarLuta(chave, index, luta)}
-                      className="w-full px-4 py-3 flex items-center justify-between hover:bg-zinc-800/50 transition-colors text-left"
+                      className={`flex items-center justify-between px-4 py-3 ${
+                        isConcluida ? "bg-green-900/20" : "hover:bg-zinc-800/50"
+                      }`}
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-gray-500 text-sm">Luta {lutaIndex + 1}</span>
-                        <span className="text-white font-medium">{luta.atleta1.nome}</span>
+                        <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
+                          {luta.atleta1.nome}
+                        </span>
                         <span className="text-gray-500">vs</span>
-                        <span className="text-white font-medium">{luta.atleta2.nome}</span>
+                        <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
+                          {luta.atleta2.nome}
+                        </span>
+                        {isConcluida && (
+                          <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">
+                            Concluída
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[#D4AF37] text-sm">Iniciar →</span>
-                    </button>
-                  ))}
+                      {!isConcluida && (
+                        <button
+                          onClick={() => onSelecionarLuta(chave, index, luta)}
+                          className="text-[#D4AF37] text-sm hover:underline"
+                        >
+                          Iniciar →
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           ))}
@@ -266,13 +288,14 @@ function PlacarCompleto({
   onTrocarChave, 
   onVoltar 
 }: PlacarCompletoProps) {
-  const initialState = useMemo(() => ({
-    montada: 0,
-    passagem: 0,
-    queda: 0,
-    vantagem: 0,
-    punicao: 0,
-  }), [])
+  const [p1, setP1] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
+  const [p2, setP2] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
+  const [arbitro, setArbitro] = useState("")
+  const [showConfirmFinalizar, setShowConfirmFinalizar] = useState(false)
+  const [etapaConfirmacao, setEtapaConfirmacao] = useState<"vencedor" | "tipo" | null>(null)
+  const [vencedorSelecionado, setVencedorSelecionado] = useState<"atleta1" | "atleta2" | null>(null)
+
+  const initialState = { montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 }
 
   const [lutador1] = useState<LutadorInfo>({
     nome: luta.atleta1.nome,
@@ -286,11 +309,6 @@ function PlacarCompleto({
     equipe: luta.atleta2.equipe,
   })
 
-  const [p1, setP1] = useState<AtletaState>(initialState)
-  const [p2, setP2] = useState<AtletaState>(initialState)
-  const [tipoVitoria, setTipoVitoria] = useState<"pontos" | "finalizacao" | "desclassificacao" | null>(null)
-  const [showConfirmFinalizar, setShowConfirmFinalizar] = useState(false)
-
   const handleScoreChange = (player: 1 | 2, category: keyof AtletaState, value: number) => {
     const setState = player === 1 ? setP1 : setP2
     setState((prev) => ({
@@ -302,65 +320,48 @@ function PlacarCompleto({
   const resetAll = () => {
     setP1(initialState)
     setP2(initialState)
-    setTipoVitoria(null)
-  }
-
-  const handleFinalizacao = (atleta: 1 | 2) => {
-    setTipoVitoria("finalizacao")
-    setShowConfirmFinalizar(true)
   }
 
   const handleDesclassificacao = (atleta: 1 | 2) => {
-    setTipoVitoria("desclassificacao")
+    setVencedorSelecionado(atleta === 1 ? "atleta2" : "atleta1")
     setShowConfirmFinalizar(true)
+    setEtapaConfirmacao("tipo")
   }
 
-  const handleFinalizar = () => {
-    let vencedor = ""
-    
-    if (tipoVitoria === "finalizacao") {
-      // Se foi por finalização, quem finalizou vence
-      // Precisamos saber qual atleta - por enquanto, vamos perguntar
-      vencedor = "finalizacao"
-    } else if (tipoVitoria === "desclassificacao") {
-      // Se foi por desclassificação, o outro vence
-      // Precisamos saber qual atleta - por enquanto, vamos perguntar
-      vencedor = "desclassificacao"
-    } else {
-      // Por pontos
-      const p1Total = p1.montada + p1.passagem + p1.queda
-      const p2Total = p2.montada + p2.passagem + p2.queda
-      
-      if (p1Total > p2Total) {
-        vencedor = "atleta1"
-      } else if (p2Total > p1Total) {
-        vencedor = "atleta2"
-      } else {
-        // Verificar vantagens
-        if (p1.vantagem > p2.vantagem) {
-          vencedor = "atleta1"
-        } else if (p2.vantagem > p1.vantagem) {
-          vencedor = "atleta2"
-        } else {
-          vencedor = "empate"
-        }
-      }
-    }
+  const handleFinalizarClick = () => {
+    setShowConfirmFinalizar(true)
+    setEtapaConfirmacao("vencedor")
+    setVencedorSelecionado(null)
+  }
 
+  const handleConfirmarVencedor = (vencedor: "atleta1" | "atleta2") => {
+    setVencedorSelecionado(vencedor)
+    setEtapaConfirmacao("tipo")
+  }
+
+  const handleConfirmarTipo = () => {
     // Salvar no localStorage
-    const chavesAtualizadas = marcarLutaConcluida(area, chaveIndex, luta.id, vencedor, chaves)
+    const chavesAtualizadas = marcarLutaConcluida(
+      area, 
+      chaveIndex, 
+      luta.id, 
+      vencedorSelecionado!, 
+      chaves
+    )
     setChaves(chavesAtualizadas)
 
     // Baixar JSON do resultado
     const p1Total = p1.montada + p1.passagem + p1.queda
     const p2Total = p2.montada + p2.passagem + p2.queda
+    const tipoVitoria = etapaConfirmacao === "tipo" ? "desclassificacao" : "pontos"
 
     const resultado = {
       area,
       categoria: chave.categoria,
       lutaId: luta.id,
+      arbitro: arbitro || "Não definido",
       data: new Date().toISOString(),
-      tipoVitoria: tipoVitoria || "pontos",
+      tipoVitoria,
       lutadores: {
         atleta1: { nome: lutador1.nome, equipe: lutador1.equipe },
         atleta2: { nome: lutador2.nome, equipe: lutador2.equipe }
@@ -369,7 +370,7 @@ function PlacarCompleto({
         atleta1: { montada: p1.montada, passagem: p1.passagem, queda: p1.queda, vantagens: p1.vantagem, penalidades: p1.punicao, total: p1Total },
         atleta2: { montada: p2.montada, passagem: p2.passagem, queda: p2.queda, vantagens: p2.vantagem, penalidades: p2.punicao, total: p2Total }
       },
-      vencedor: p1Total > p2Total ? lutador1.nome : p2Total > p1Total ? lutador2.nome : "Empate"
+      vencedor: vencedorSelecionado === "atleta1" ? lutador1.nome : lutador2.nome
     }
 
     const json = JSON.stringify(resultado, null, 2)
@@ -382,7 +383,8 @@ function PlacarCompleto({
     URL.revokeObjectURL(url)
     
     setShowConfirmFinalizar(false)
-    setTipoVitoria(null)
+    setEtapaConfirmacao(null)
+    setVencedorSelecionado(null)
     
     // Voltar para seleção
     onTrocarChave()
@@ -390,7 +392,10 @@ function PlacarCompleto({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-black relative select-none">
-      <ScoreHeader area={area} arbitro="Árbitr" />
+      <ScoreHeader 
+        area={area} 
+        arbitro={arbitro}
+      />
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
         <div className="bg-black border-4 border-gray-700 p-3 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center min-w-[220px]">
@@ -403,8 +408,7 @@ function PlacarCompleto({
         estado={p1}
         onScoreChange={(cat, val) => handleScoreChange(1, cat, val)}
         isLight={false}
-        cor="azul"
-        onFinalizacao={() => handleFinalizacao(1)}
+        cor="branco"
         onDesclassificacao={() => handleDesclassificacao(1)}
       />
 
@@ -416,7 +420,6 @@ function PlacarCompleto({
         onScoreChange={(cat, val) => handleScoreChange(2, cat, val)}
         isLight={true}
         cor="branco"
-        onFinalizacao={() => handleFinalizacao(2)}
         onDesclassificacao={() => handleDesclassificacao(2)}
       />
 
@@ -428,40 +431,71 @@ function PlacarCompleto({
           Nova Luta
         </button>
         <button
-          onClick={() => setShowConfirmFinalizar(true)}
-          className="bg-[#D4AF37] hover:bg-[#f0c844] text-black px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
+          onClick={handleFinalizarClick}
+          className="bg-[#D4AF37] hover:bg-[#f0c844] text-black px-4 py-2 rounded-lg font-bold text-sm transition-colors"
         >
-          <CheckCircle className="w-4 h-4" />
-          Finalizar
+          Finalizar Luta
         </button>
       </div>
 
       {showConfirmFinalizar && (
         <div className="absolute inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
-            <h2 className="text-2xl font-bold text-white mb-4">Finalizar Luta?</h2>
-            <p className="text-gray-400 mb-2">
-              {lutador1.nome} vs {lutador2.nome}
-            </p>
-            {tipoVitoria && (
-              <p className="text-yellow-400 mb-4 text-sm">
-                Tipo de vitória: {tipoVitoria === "finalizacao" ? "Finalização" : "Desclassificação"}
-              </p>
+            {etapaConfirmacao === "vencedor" ? (
+              <>
+                <h2 className="text-2xl font-bold text-white mb-4">Quem venceu?</h2>
+                <p className="text-gray-400 mb-6">
+                  {lutador1.nome} vs {lutador2.nome}
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => handleConfirmarVencedor("atleta1")}
+                    className="flex-1 bg-blue-700 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    {lutador1.nome}
+                  </button>
+                  <button
+                    onClick={() => handleConfirmarVencedor("atleta2")}
+                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    {lutador2.nome}
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setShowConfirmFinalizar(false); setEtapaConfirmacao(null); }}
+                  className="w-full mt-4 text-gray-400 hover:text-white text-sm"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-white mb-4">Tipo de vitória?</h2>
+                <p className="text-gray-400 mb-2">
+                  {vencedorSelecionado === "atleta1" ? lutador1.nome : lutador2.nome} venceu
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleConfirmarTipo}
+                    className="flex-1 bg-[#D4AF37] hover:bg-[#f0c844] text-black px-4 py-3 rounded-lg font-bold"
+                  >
+                    Pontos
+                  </button>
+                  <button
+                    onClick={handleConfirmarTipo}
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white px-4 py-3 rounded-lg font-bold"
+                  >
+                    Finalização
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setShowConfirmFinalizar(false); setEtapaConfirmacao(null); }}
+                  className="w-full mt-4 text-gray-400 hover:text-white text-sm"
+                >
+                  Cancelar
+                </button>
+              </>
             )}
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={() => { setShowConfirmFinalizar(false); setTipoVitoria(null); }}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-bold"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleFinalizar}
-                className="bg-[#D4AF37] hover:bg-[#f0c844] text-black px-4 py-2 rounded-lg font-bold"
-              >
-                Confirmar e Baixar
-              </button>
-            </div>
           </div>
         </div>
       )}
