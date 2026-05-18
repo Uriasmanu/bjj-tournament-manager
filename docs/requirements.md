@@ -1,7 +1,7 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 5.0
-**Data:** 2026-05-17
+**Versão:** 6.0
+**Data:** 2026-05-18
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
 ---
@@ -19,16 +19,30 @@
 
 ## 2. Regras de Implementação
 
-### 2.1 Componentes UI
+### 2.1 Identificadores (UUID)
+
+**Todos os IDs do sistema devem ser UUIDs v4**, sem exceções. Isso garante unicidade global, evitar conflitos em importações/merge de dados e rastreabilidade.
+
+| Entidade | Tipo do ID | Formato |
+|----------|-----------|---------|
+| `Atleta` | `id: string` | `uuid-v4` |
+| `Luta` | `id: string` | `uuid-v4` |
+| `ChaveLuta` | `id: string` | `uuid-v4` |
+| `DadosArea` | `id: string` | `uuid-v4` |
+| `ResultadoLuta` | `id: string` | `uuid-v4` |
+
+> **IMPORTANTE:** Campos numéricos como `round`, `position` e `seed` **não são IDs** — estes permanecem como `number`.
+
+### 2.2 Componentes UI
 - **OBRIGATÓRIO**: Usar sempre componentes do **Shadcn UI** nas implementações
 - Componentes disponíveis: Button, Card, Dialog, Input, Select, Toast, etc.
 - Localização: `@/components/ui/`
 
-### 2.2 Botões com Fundo Branco
+### 2.3 Botões com Fundo Branco
 - **OBRIGATÓRIO**: Quando um botão tiver fundo branco (#FFFFFF), o texto deve ser obrigatoriamente escuro (#000000 ou similar)
 - Isso garante contraste e acessibilidade
 
-### 2.3 Layout Responsivo
+### 2.4 Layout Responsivo
 - O sistema deve funcionar em desktop e dispositivos móveis
 - Layout otimizado para telão/projetor no scoreboard
 
@@ -43,8 +57,8 @@ O sistema utiliza **JSON** como formato principal para armazenamento e persistê
 **Pasta `data/`:**
 ```
 data/
-├── area-1.json       # Dados da Área 1
-├── area-2.json      # Dados da Área 2
+├── [uuid-area-1].json    # Dados da Área 1 (nome do arquivo = id da área)
+├── [uuid-area-2].json     # Dados da Área 2
 └── ...
 ```
 
@@ -54,10 +68,11 @@ O sistema expõe uma API para manipulação de dados:
 
 | Método | Endpoint | Descrição |
 |--------|-----------|------------|
-| GET | `/api/area?area=NOME` | Retorna dados de uma área |
+| GET | `/api/area?id=UUID` | Retorna dados de uma área pelo UUID |
+| GET | `/api/area?area=NOME` | Retorna dados de uma área pelo nome (busca em todos os arquivos) |
 | POST | `/api/area` | Cria/sobrescreve dados de uma área |
 | PUT | `/api/area` | Atualiza dados de uma área (mantém existentes) |
-| DELETE | `/api/area?area=NOME` | Remove arquivo da área |
+| DELETE | `/api/area?id=UUID` | Remove arquivo da área pelo UUID |
 
 ---
 
@@ -68,6 +83,7 @@ O sistema expõe uma API para manipulação de dados:
 ```typescript
 // Atleta
 interface Atleta {
+  id: string                  // UUID v4 — identificador único do atleta
   nome: string
   equipe: string
   faixa?: string
@@ -75,27 +91,28 @@ interface Atleta {
 
 // Resultado da Luta
 interface ResultadoLuta {
+  id: string                  // UUID v4 — identificador único do resultado
   // Pontuação total
   pontosAtleta1: number
   pontosAtleta2: number
-  
+
   // Detalhamento de pontos por tipo
   montadasAtleta1: number     // 4 pontos cada
   montadasAtleta2: number
-  passagensAtleta1: number     // 3 pontos cada
+  passagensAtleta1: number    // 3 pontos cada
   passagensAtleta2: number
-  quedasAtleta1: number       // 2 pontos cada
+  quedasAtleta1: number      // 2 pontos cada
   quedasAtleta2: number
-  
+
   // Vantagens e penalidades
   vantagensAtleta1: number
   vantagensAtleta2: number
   penalidadesAtleta1: number
   penalidadesAtleta2: number
-  
+
   // Tempo
   tempoDecorrido: number
-  
+
   // Resultado
   finalizacaoAtleta1: boolean
   finalizacaoAtleta2: boolean
@@ -103,31 +120,45 @@ interface ResultadoLuta {
   vencedor: "atleta1" | "atleta2" | "empate" | null
   tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
   status: "pendente" | "concluida"
+
+  // Referências por UUID
+  lutaId: string             // UUID da luta a que este resultado pertence
+  vencedorAtletaId: string | null  // UUID do atleta vencedor
+  perdedorAtletaId: string | null  // UUID do atleta perdedor
+ AtletaDesclassificadoId: string | null  // UUID do atleta desclassificado (se houver)
 }
 
 // Luta
 interface Luta {
-  id: number
-  round: number
-  atleta1: Atleta
-  atleta2: Atleta
-  resultado?: ResultadoLuta
+  id: string                  // UUID v4 — identificador único da luta
+  round: number              // 1, 2, 3, 4 (não é ID, é posição na chave)
+  position: number           // Posição dentro do round (não é ID)
+  atleta1: Atleta             // Inclui id UUID
+  atleta2: Atleta             // Inclui id UUID
+  resultado?: ResultadoLuta   // Inclui id UUID
   arbitro?: string
   dataLuta?: string
+
+  // Referências de chaveamento (por UUID)
+  nextMatchId?: string       // UUID da próxima luta na chave
+  previousMatchIds?: string[] // UUIDs das lutas anteriores que alimentam esta
 }
 
 // Chave de Luta
 interface ChaveLuta {
+  id: string                  // UUID v4 — identificador único da chave
   categoria: string
   lutas: Luta[]
   arbitro?: string
-  vencedor?: string
+  vencedorAtletaId?: string   // UUID do campeão
   status: "pendente" | "em_andamento" | "concluida"
+  totalCompetidores: number   // Quantidade de competidores na chave
 }
 
 // Dados da Área
 interface DadosArea {
-  area: string
+  id: string                  // UUID v4 — identificador único da área
+  area: string                // Nome da área (ex: "Área 1")
   criadoEm: string
   atualizadoEm?: string
   chaves: ChaveLuta[]
@@ -170,7 +201,7 @@ app/
 ├── layout.tsx                # Layout raiz
 ├── globals.css               # Estilos globais
 ├── types/                    # Tipos TypeScript
-│   └── index.ts             # Interfaces e tipos
+│   └── index.ts             # Interfaces e tipos (UUID para todos os ids)
 ├── hooks/                    # Hooks personalizados
 │   ├── useStorage.ts         # Persistência (API)
 │   └── useImportacao.ts     # Importação de JSONs
@@ -209,7 +240,7 @@ app/
         └── ...
 
 data/                        # Dados persistidos (JSON)
-└── [area-nome].json         # Arquivos de área
+└── [uuid-da-area].json      # Arquivos de área nomeados por UUID
 
 exemplos/                    # Arquivos de exemplo para teste
 ├── chave-3-lutadores.json
@@ -227,15 +258,15 @@ docs/
 
 ### 8.1 Início do Torneio
 
-1. **Definir Área**: Organizador define o nome da área (ex: "Área 1") - **não editável depois**
+1. **Definir Área**: Organizador define o nome da área (ex: "Área 1") — `id` gerado como UUID automaticamente
 2. **Importar Chaves**: Organizador importa arquivos JSON com as chaves de luta
-3. **Carregar na Área**: JSONs são salvos em `data/[area].json` via API
+3. **Carregar na Área**: JSONs são salvos em `data/[uuid-da-area].json` via API
 
 ### 8.2 Durante o Torneio
 
-1. **Selecionar Chave**: Árbitro seleciona uma chave da lista
-2. **Selecionar Luta**: Escolher qual luta da chave será disputada
-3. **Iniciar Luta**: Redireciona para `/scoreboard` com dados da luta
+1. **Selecionar Chave**: Árbitro seleciona uma chave da lista (pela `id: string`)
+2. **Selecionar Luta**: Escolher qual luta da chave será disputada (pela `id: string` da `Luta`)
+3. **Iniciar Luta**: Redireciona para `/scoreboard` com UUID da luta
 
 ### 8.3 Durante a Luta
 
@@ -248,16 +279,18 @@ docs/
 ### 8.4 Finalização da Luta
 
 1. Clicar em "Finalizar Luta"
-2. Modal 1: **Selecionar Vencedor** - escolhe qual atleta venceu
-3. Modal 2: **Selecionar Tipo de Vitória** - pontos ou finalização
+2. Modal 1: **Selecionar Vencedor** — escolhe qual atleta venceu
+3. Modal 2: **Selecionar Tipo de Vitória** — pontos ou finalização
 4. Se DSQ: Modal 1 pergunta qual atleta, Modal 2 pede confirmação antes de salvar
-5. JSON da área é atualizado com todos os campos do resultado
-6. Status da luta muda para "concluida"
+5. `ResultadoLuta` criado com UUID próprio, vinculado à `Luta.id`
+6. JSON da área é atualizado com todos os campos do resultado
+7. Status da luta muda para `"concluida"`
 
 ### 8.5 Conclusão da Chave
 
 - Todas as lutas processadas
-- Status da chave atualiza automaticamente (pendente → em_andamento → concluida)
+- `ChaveLuta.vencedorAtletaId` preenchido com o UUID do campeão
+- `ChaveLuta.status` atualiza automaticamente (pendente → em_andamento → concluida)
 
 ---
 
@@ -267,6 +300,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 | Campo | Descrição |
 |-------|-----------|
+| id | UUID único do resultado |
 | pontosAtleta1/2 | Total de pontos do atleta |
 | montadasAtleta1/2 | Quantidade de montadas (4 pontos cada) |
 | passagensAtleta1/2 | Quantidade de passagens de guarda (3 pontos cada) |
@@ -279,6 +313,10 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 | tipoVitoria | Tipo: pontos, finalizacao, desclassificacao, empate |
 | vencedor | Quem venceu a luta |
 | status | Status: pendente ou concluida |
+| lutaId | UUID da luta |
+| vencedorAtletaId | UUID do atleta vencedor |
+| perdedorAtletaId | UUID do atleta perdedor |
+| AtletaDesclassificadoId | UUID do atleta desclassificado (se houver) |
 
 ---
 
@@ -300,7 +338,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 - [x] Botão para importar múltiplos arquivos JSON de chaves de luta
 - [x] Validação: categoria obrigatória, array de lutas não vazio
 - [x] Lista de chaves importadas comvisualização
-- [x] Cada chave mostra: categoria, número de lutas, status
+- [x] Cada chave mostra: categoria, número de lutas, status, UUID
 - [x] Botão "Iniciar Luta" para cada par de atletas
 - [x] Botão para criar luta manual (sem arquivo JSON)
 - [x] Botão para limpar todos os dados
@@ -369,6 +407,8 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 **Critérios de Aceitação:**
 - [x] Ao clicar em "Finalizar Luta", atualizar JSON da área com:
+  - UUID do resultado (`ResultadoLuta.id`)
+  - UUIDs dos atletas (`Atleta.id`)
   - Pontuações finais detalhadas (montadas, passagens, quedas)
   - Total de pontos
   - Tempo decorrido
@@ -377,7 +417,8 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
   - Vencedor determinado
   - Tipo de vitória
   - Flags de finalização e desclassificação
-- [x] Dados salvos em `data/[area].json` via API REST
+  - Referências por UUID (`vencedorAtletaId`, `perdedorAtletaId`, etc.)
+- [x] Dados salvos em `data/[uuid-da-area].json` via API REST
 
 ---
 
@@ -387,6 +428,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 - [x] Botão "Nova Luta" retorna para tela de seleção de lutas
 - [x] Lutas concluídas aparecem com badge verde "Concluída"
 - [x] Lutas pendentes têm botão "Iniciar"
+- [x] Seleção de luta feita pelo `Luta.id` (UUID)
 
 ---
 
@@ -394,16 +436,21 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ```json
 {
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "categoria": "Branca Infantil",
+  "totalCompetidores": 8,
   "lutas": [
     {
-      "id": 1,
+      "id": "550e8400-e29b-41d4-a716-446655440001",
       "round": 1,
+      "position": 0,
       "atleta1": {
+        "id": "550e8400-e29b-41d4-a716-446655440011",
         "nome": "João Silva",
         "equipe": "Team Brasil"
       },
       "atleta2": {
+        "id": "550e8400-e29b-41d4-a716-446655440012",
         "nome": "Maria Santos",
         "equipe": "Team São Paulo"
       }
@@ -413,10 +460,13 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 ```
 
 ### Regras de Validação
+- `id` é obrigatório (UUID v4) para a `ChaveLuta`
 - `categoria` é obrigatório (string não vazia)
 - `lutas` é obrigatório (array não vazio)
-- Cada luta deve ter `atleta1` e `atleta2` com `nome` e `equipe`
-- Árbitros são definidos por chave (opcional), não por luta individual
+- Cada luta deve ter `id` (UUID v4)
+- Cada luta deve ter `atleta1` e `atleta2` com `id` (UUID v4), `nome` e `equipe`
+- `nextMatchId` (UUID) opcional para indicar a próxima luta na chave
+- `previousMatchIds` (UUID[]) opcional para indicar de quais lutas este match recebe competidores
 
 ---
 
@@ -424,9 +474,10 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 | Termo | Definição |
 |-------|-----------|
-| Chave de Luta | Conjunto de confrontos de uma categoria |
-| Área de Luta | Local físico onde ocorre a luta (definido no início) |
-| Montada | Posição de控制了4 pontos) |
+| UUID | Identificador único universal (v4), formato `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` |
+| Chave de Luta | Conjunto de confrontos de uma categoria, identificada por `ChaveLuta.id` |
+| Área de Luta | Local físico onde ocorre a luta (identificado por `DadosArea.id` UUID) |
+| Montada | Posição de controle (4 pontos) |
 | Passagem | Passagem de guarda (3 pontos) |
 | Queda | Queda ou raspagem (2 pontos) |
 | Finalização | Vitória por submissão ou knockout (prioridade máxima) |
@@ -434,6 +485,10 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 | Pontos + Vantagens | Critério de desempate após finalização |
 | Status da Luta | pendente → em_andamento → concluida |
 | Status da Chave | pendente → em_andamento → concluida |
+| `nextMatchId` | UUID da próxima luta na chave que o vencedor avança |
+| `previousMatchIds` | Array de UUIDs das lutas que alimentam esta luta |
+| round | Número do round na chave (1, 2, 3, 4) — **não é ID** |
+| position | Posição vertical do matchup dentro do round — **não é ID** |
 
 ---
 
@@ -452,5 +507,14 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 ---
 
-*Documento atualizado em: 2026-05-17*
-*Versão: 5.0*
+## 14. Regras de Geração de UUID
+
+- Usar `crypto.randomUUID()` (built-in do Node.js/ browser) para gerar UUIDs v4
+- Ao importar JSON externo sem UUIDs, gerar UUIDs automaticamente para `id` de `ChaveLuta`, `Luta`, `Atleta` e `ResultadoLuta`
+- Manter UUIDs consistentes durante toda a sessão — não regerar IDs de entidades já salvas
+
+---
+
+*Documento atualizado em: 2026-05-18*
+*Versão: 6.0*
+*Mudança principal: Todos os IDs agora são UUIDs v4 (antes: IDs numéricos)*
