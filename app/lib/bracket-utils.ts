@@ -238,3 +238,21 @@ export function getUnicoAtleta(chave: ChaveLuta): Atleta | undefined {
   }
   return nomes.size === 1 ? ultimo : undefined
 }
+
+export function podeIniciarLuta(luta: Luta, chave: ChaveLuta): boolean {
+  if (!luta.atleta1?.id || !luta.atleta2?.id) return false
+
+  if (luta.previousMatchIds && luta.previousMatchIds.length > 0) {
+    for (const prevId of luta.previousMatchIds) {
+      const lutaAnterior = chave.lutas.find(l => l.id === prevId)
+      if (!lutaAnterior) continue
+
+      const eraBye = !lutaAnterior.atleta1?.id || !lutaAnterior.atleta2?.id
+      if (!eraBye && lutaAnterior.resultado?.status !== "concluida") {
+        return false
+      }
+    }
+  }
+
+  return true
+}

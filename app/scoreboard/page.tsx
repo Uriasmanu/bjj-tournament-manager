@@ -149,9 +149,35 @@ interface SeletorLutasProps {
 }
 
 function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: SeletorLutasProps) {
-  const [chaveAtiva, setChaveAtiva] = useState<ChaveLuta | null>(chaves[0] || null)
+  const [chaveAtiva, setChaveAtiva] = useState<ChaveLuta | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("bjj_tournament_ultima_categoria")
+      if (saved) {
+        const chaveSalva = chaves.find(c => c.id === saved)
+        if (chaveSalva) return chaveSalva
+      }
+    }
+    const emAndamento = chaves.find(c => c.status === "em_andamento")
+    return emAndamento || chaves[0] || null
+  })
   const [lutaAtivaId, setLutaAtivaId] = useState<string | undefined>(undefined)
   const [mostrarBracket, setMostrarBracket] = useState(true)
+
+  const handleChangeChave = (novaChave: ChaveLuta | null) => {
+    setChaveAtiva(novaChave)
+    setLutaAtivaId(undefined)
+    if (novaChave) {
+      localStorage.setItem("bjj_tournament_ultima_categoria", novaChave.id)
+    }
+  }
+
+  useEffect(() => {
+    const emAndamento = chaves.find(c => c.status === "em_andamento")
+    if (emAndamento && (!chaveAtiva || chaveAtiva.status !== "em_andamento")) {
+      setChaveAtiva(emAndamento)
+      localStorage.setItem("bjj_tournament_ultima_categoria", emAndamento.id)
+    }
+  }, [chaves])
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] p-4">
@@ -164,7 +190,7 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
             <Button
               variant="outline"
               onClick={() => setMostrarBracket(!mostrarBracket)}
-              className="border-zinc-700 text-white hover:bg-zinc-800 text-sm"
+              className="border-zinc-600 bg-zinc-800 text-gray-200 hover:bg-zinc-700 hover:text-white text-sm"
             >
               {mostrarBracket ? "Ocultar Bracket" : "Mostrar Bracket"}
             </Button>
@@ -184,8 +210,7 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
             value={chaveAtiva?.id || ""}
             onChange={(e) => {
               const chave = chaves.find(c => c.id === e.target.value)
-              setChaveAtiva(chave || null)
-              setLutaAtivaId(undefined)
+              handleChangeChave(chave || null)
             }}
             className="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 text-sm max-w-md"
           >

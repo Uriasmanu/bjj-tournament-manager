@@ -5,8 +5,10 @@ import { ChaveLuta, BracketRound, Luta } from "@/app/types"
 import { BracketEmptyState } from "./BracketEmptyState"
 import { BracketChampion } from "./BracketChampion"
 import { ChampionModal } from "./ChampionModal"
-import { getUnicoAtleta } from "@/app/lib/bracket-utils"
-import { useState, useEffect } from "react"
+import { getUnicoAtleta, podeIniciarLuta } from "@/app/lib/bracket-utils"
+import { useState, useEffect, useMemo, useRef } from "react"
+import { Trophy, Edit3 } from "lucide-react"
+import { canInteract } from "@/lib/bracket-utils"
 
 interface BracketLayoutProps {
   rounds: BracketRound[]
@@ -17,12 +19,54 @@ interface BracketLayoutProps {
   className?: string
 }
 
+interface CompetitorNode {
+  id: string
+  round: number
+  position: number
+  side: "L" | "R"
+  luta: Luta
+}
+
 export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode = "live", className }: BracketLayoutProps) {
   const [showChampionModal, setShowChampionModal] = useState(false)
   const [championTrigger, setChampionTrigger] = useState(0)
-  const champion = chave.vencedorAtletaId
-    ? findChampion(chave)
-    : undefined
+  const [editingNode, setEditingNode] = useState<{ side: "L" | "R"; round: number; position: number } | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  const todasLutasConcluidas = useMemo(() => {
+    return chave.lutas.every(l => 
+      l.resultado?.status === "concluida" || 
+      (!l.atleta1?.id || !l.atleta2?.id)
+    )
+  }, [chave.lutas])
+
+  const podeExibirCampeao = chave.status === "concluida" && !!chave.vencedorAtletaId && todasLutasConcluidas
+  const champion = podeExibirCampeao ? findChampion(chave) : undefined
+
+  const nodes = useMemo(() => {
+    const result: CompetitorNode[] = []
+    
+    rounds.forEach((round, roundIndex) => {
+      const side: "L" | "R" = round.label === "Round 1" 
+        ? (roundIndex < rounds.length / 2 ? "L" : "R")
+        : "L"
+      
+      round.matchups.forEach((matchup, pos) => {
+        const luta = chave.lutas.find(l => l.id === matchup.id)
+        if (!luta) return
+        
+        result.push({
+          id: matchup.id,
+          round: roundIndex + 1,
+          position: pos,
+          side: round.label === "Round 1" && pos >= 4 ? "R" : "L",
+          luta
+        })
+      })
+    })
+    
+    return result
+  }, [rounds, chave.lutas])
 
   useEffect(() => {
     if (chave.status === "concluida" && champion) {
@@ -36,14 +80,16 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
     }
   }, [championTrigger])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      drawConnections()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [nodes, chave])
+
   if (!chave || !chave.lutas || chave.lutas.length === 0) {
     return <BracketEmptyState />
   }
-
-  const round1 = rounds.find(r => r.label === "Round 1")
-  const roundQuartas = rounds.find(r => r.label === "Quartas")
-  const roundSemi = rounds.find(r => r.label === "Semifinal")
-  const roundFinal = rounds.find(r => r.label === "Final")
 
   if (chave.totalCompetidores === 1) {
     const unico = getUnicoAtleta(chave)
@@ -55,124 +101,158 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
     )
   }
 
-  const leftMatchups = round1 ? splitLeftRight(round1.matchups).left : []
-  const rightMatchups = round1 ? splitLeftRight(round1.matchups).right : []
-  const leftGap = leftMatchups.length > 1 ? `gap-${getGap(leftMatchups.length)}` : "gap-4"
-  const rightGap = rightMatchups.length > 1 ? `gap-${getGap(rightMatchups.length)}` : "gap-4"
+  const round1Lutas = chave.lutas.filter(l => l.round === 1)
+  const round2Lutas = chave.lutas.filter(l => l.round === 2)
+  const round3Lutas = chave.lutas.filter(l => l.round === 3)
+  const finalLutas = chave.lutas.filter(l => l.round === Math.max(...chave.lutas.map(l => l.round)))
 
-  const leftOffset = round1 ? getVerticalOffset(round1.matchups.length) : 0
+  const leftRound1 = round1Lutas.filter(l => l.position < 4).slice(0, 4)
+  const rightRound1 = round1Lutas.filter(l => l.position >= 4).slice(0, 4)
 
   return (
     <>
-      <div className={cn("overflow-x-auto", className)}>
-        <div className="flex items-center justify-center gap-0 p-4 min-w-max">
-          {/* LEFT SIDE - Round 1 positions left half */}
-          <div className={cn("flex flex-col", leftGap)} style={{ marginTop: `${leftOffset}px` }}>
-            {leftMatchups.map(matchup => {
-              const luta = findLuta(chave, matchup.id)
-              if (!luta) return null
-              return (
-                <BracketMatchupCardInline
-                  key={matchup.id}
-                  luta={luta}
-                  onClick={() => onFightClick?.(luta)}
-                  isActive={activeFightId === matchup.id}
-                  mode={mode}
+      <div className={cn("w-full overflow-x-auto", className)}>
+        <div className="min-w-[900px] p-4 relative">
+          <svg 
+            ref={svgRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ zIndex: 1 }}
+          />
+
+          <div className="grid grid-cols-7 gap-4 items-stretch relative z-10">
+            {/* ================= LADO ESQUERDO ================= */}
+            
+            {/* Round 1 - Oitavas Esquerda */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              {leftRound1.map((luta, idx) => (
+                <RoundPair key={luta.id} luta={luta} idx={idx} side="L" round={1} />
+              ))}
+            </div>
+
+            {/* Round 2 - Quartas Esquerda */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              {round2Lutas.filter((_, i) => i < 2).map((luta, idx) => (
+                <div key={luta.id} className="flex flex-col gap-16 py-2">
+                  <CompetitorCard 
+                    luta={luta} 
+                    side="L" 
+                    round={2} 
+                    position={idx}
+                    isFinalist={false}
+                    podeAvancar={canInteract(luta, chave)}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Round 3 - Semifinal Esquerda */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              <div className="flex flex-col gap-36 py-2">
+                {round3Lutas.filter((_, i) => i < 1).map((luta, idx) => (
+                  <CompetitorCard 
+                    key={luta.id} 
+                    luta={luta} 
+                    side="L" 
+                    round={3} 
+                    position={idx}
+                    isFinalist={false}
+                    podeAvancar={canInteract(luta, chave)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* ================= PAINEL CENTRAL ================= */}
+            <div className="col-span-1 flex flex-col justify-center items-center gap-8 min-h-[480px]">
+              
+              {/* Finalista Esquerdo */}
+              <div className="flex flex-col items-center w-full">
+                <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Finalista Esquerdo</span>
+                <CompetitorCard 
+                  luta={findFinalLuta(chave, 0)} 
+                  side="F" 
+                  round={0} 
+                  position={0}
+                  isFinalist={true}
+                  podeAvancar={true}
                 />
-              )
-            })}
+              </div>
+
+              {/* Troféu Central */}
+              <div className="flex flex-col items-center">
+                <div className="bg-yellow-500 text-slate-950 p-2 rounded-full shadow-lg">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">Disputa de Ouro</span>
+              </div>
+
+              {/* Finalista Direito */}
+              <div className="flex flex-col items-center w-full">
+                <CompetitorCard 
+                  luta={findFinalLuta(chave, 1)} 
+                  side="F" 
+                  round={0} 
+                  position={1}
+                  isFinalist={true}
+                  podeAvancar={true}
+                />
+                <span className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-wider">Finalista Direito</span>
+              </div>
+            </div>
+
+            {/* Round 3 - Semifinal Direita */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              <div className="flex flex-col gap-36 py-2">
+                {round3Lutas.filter((_, i) => i >= 1).map((luta, idx) => (
+                  <CompetitorCard 
+                    key={luta.id} 
+                    luta={luta} 
+                    side="R" 
+                    round={3} 
+                    position={idx + 1}
+                    isFinalist={false}
+                    podeAvancar={canInteract(luta, chave)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Round 2 - Quartas Direita */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              {round2Lutas.filter((_, i) => i >= 2).map((luta, idx) => (
+                <div key={luta.id} className="flex flex-col gap-16 py-2">
+                  <CompetitorCard 
+                    luta={luta} 
+                    side="R" 
+                    round={2} 
+                    position={idx + 2}
+                    isFinalist={false}
+                    podeAvancar={canInteract(luta, chave)}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Round 1 - Oitavas Direita */}
+            <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+              {rightRound1.map((luta, idx) => (
+                <RoundPair key={luta.id} luta={luta} idx={idx} side="R" round={1} />
+              ))}
+            </div>
           </div>
 
-          {/* QUARTAS - Next round from left */}
-          {roundQuartas && leftMatchups.length > 0 && (
-            <>
-              <ConnectorV />
-              <div className={cn("flex flex-col", getGap(roundQuartas.matchups.length))}>
-                {roundQuartas.matchups.map(matchup => {
-                  const luta = findLuta(chave, matchup.id)
-                  if (!luta) return null
-                  return (
-                    <BracketMatchupCardInline
-                      key={matchup.id}
-                      luta={luta}
-                      onClick={() => onFightClick?.(luta)}
-                      isActive={activeFightId === matchup.id}
-                      mode={mode}
-                    />
-                  )
-                })}
+          {/* ================= PÓDIO ================= */}
+          <div className="w-full flex justify-center mt-8">
+            <div className="w-full max-w-xl border-t-2 border-slate-300 pt-4">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 text-center">Classificação Final</h3>
+              <div className="flex flex-col gap-1 text-sm font-semibold">
+                <PodiumLine label="1º" colorClass="text-amber-500" value={champion ? `${champion.nome} (${champion.equipe})` : "-- Aguardando final --"} />
+                <PodiumLine label="2º" colorClass="text-slate-400" value={getRunnerUp()} />
+                <PodiumLine label="3º" colorClass="text-amber-700" value={getThirdPlace("left")} />
+                <PodiumLine label="3º" colorClass="text-amber-700" value={getThirdPlace("right")} />
               </div>
-            </>
-          )}
-
-          {/* SEMIFINAL */}
-          {roundSemi && (
-            <>
-              <ConnectorV />
-              <div className={cn("flex flex-col", getGap(roundSemi.matchups.length))}>
-                {roundSemi.matchups.map(matchup => {
-                  const luta = findLuta(chave, matchup.id)
-                  if (!luta) return null
-                  return (
-                    <BracketMatchupCardInline
-                      key={matchup.id}
-                      luta={luta}
-                      onClick={() => onFightClick?.(luta)}
-                      isActive={activeFightId === matchup.id}
-                      mode={mode}
-                    />
-                  )
-                })}
-              </div>
-            </>
-          )}
-
-          {/* FINAL + CAMPEÃO */}
-          {roundFinal && (
-            <>
-              <ConnectorV />
-              <div className="flex flex-col items-center gap-3">
-                {roundFinal.matchups.map(matchup => {
-                  const luta = findLuta(chave, matchup.id)
-                  if (!luta) return null
-                  return (
-                    <BracketMatchupCardInline
-                      key={matchup.id}
-                      luta={luta}
-                      onClick={() => onFightClick?.(luta)}
-                      isActive={activeFightId === matchup.id}
-                      mode={mode}
-                    />
-                  )
-                })}
-                {champion && (
-                  <BracketChampion champion={champion} categoryName={chave.categoria} />
-                )}
-              </div>
-            </>
-          )}
-
-          {/* RIGHT SIDE - Round 1 positions right half (AFTER final) */}
-          {rightMatchups.length > 0 && (
-            <>
-              <ConnectorV />
-              <div className={cn("flex flex-col", rightGap)} style={{ marginTop: `${leftOffset}px` }}>
-                {rightMatchups.map(matchup => {
-                  const luta = findLuta(chave, matchup.id)
-                  if (!luta) return null
-                  return (
-                    <BracketMatchupCardInline
-                      key={matchup.id}
-                      luta={luta}
-                      onClick={() => onFightClick?.(luta)}
-                      isActive={activeFightId === matchup.id}
-                      mode={mode}
-                    />
-                  )
-                })}
-              </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -183,40 +263,107 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
           onClose={() => setShowChampionModal(false)}
         />
       )}
+
+      {editingNode && (
+        <EditModal 
+          node={editingNode}
+          chave={chave}
+          onClose={() => setEditingNode(null)}
+        />
+      )}
     </>
   )
 }
 
-function splitLeftRight(matchups: BracketRound["matchups"]) {
-  const half = Math.ceil(matchups.length / 2)
-  return {
-    left: matchups.slice(0, half),
-    right: matchups.slice(half),
-  }
+function CompetitorCard({ 
+  luta, 
+  side, 
+  round, 
+  position, 
+  isFinalist,
+  podeAvancar,
+}: { 
+  luta?: Luta
+  side: "L" | "R" | "F"
+  round: number
+  position: number
+  isFinalist: boolean
+  podeAvancar: boolean
+}) {
+  const isEmpty = !luta?.atleta1?.id && !luta?.atleta2?.id
+  const isBye = !!luta?.atleta1?.id !== !!luta?.atleta2?.id
+  const isConcluida = luta?.resultado?.status === "concluida"
+  const isActive = false
+
+  const borderClass = isFinalist 
+    ? "border-yellow-500 shadow-md" 
+    : "border-slate-950 shadow-sm"
+
+  return (
+    <div 
+      className={cn(
+        "bg-white p-2 text-xs flex flex-col justify-center min-h-[52px] border-2 relative transition-all duration-200",
+        borderClass,
+        isEmpty && "bg-slate-50",
+        isConcluida && "bg-slate-100"
+      )}
+    >
+      {luta?.atleta1?.id ? (
+        <>
+          <div className="font-bold uppercase truncate pr-5 text-slate-900">
+            {luta.atleta1.nome}
+          </div>
+          <div className="text-[10px] text-slate-500 uppercase truncate">
+            {luta.atleta1.equipe}
+          </div>
+          {luta.atleta1.id && isConcluida && (
+            <div className="absolute right-1 top-1 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+              VENCEU
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="font-bold uppercase truncate pr-5 text-slate-400 italic">
+            -- Vazio --
+          </div>
+          <div className="text-[10px] text-slate-400 uppercase truncate">
+            Equipe
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
-function getGap(count: number): string {
-  switch (count) {
-    case 1: return "gap-4"
-    case 2: return "gap-8"
-    case 3: return "gap-6"
-    case 4: return "gap-4"
-    default: return "gap-4"
-  }
+function RoundPair({ luta, idx, side, round }: { luta: Luta; idx: number; side: "L" | "R"; round: number }) {
+  return (
+    <div className="flex flex-col gap-3 py-2">
+      <CompetitorCard luta={luta} side={side} round={round} position={idx * 2} isFinalist={false} podeAvancar={true} />
+      <CompetitorCard luta={undefined} side={side} round={round} position={idx * 2 + 1} isFinalist={false} podeAvancar={true} />
+    </div>
+  )
 }
 
-function getVerticalOffset(fightCount: number): number {
-  switch (fightCount) {
-    case 1: return 0
-    case 2: return 50
-    case 3: return 30
-    case 4: return 0
-    default: return 0
-  }
+function PodiumLine({ label, colorClass, value }: { label: string; colorClass: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={cn("w-8 text-right font-black", colorClass)}>{label}</span>
+      <div className="flex-1 border-b border-slate-900 px-2 py-0.5 text-xs font-bold uppercase min-h-[24px]">
+        {value.includes("--") ? (
+          <span className="text-slate-400 italic">{value}</span>
+        ) : (
+          <span className="text-slate-900">{value}</span>
+        )}
+      </div>
+    </div>
+  )
 }
 
-function findLuta(chave: ChaveLuta, id: string): Luta | undefined {
-  return chave.lutas.find(l => l.id === id)
+function findFinalLuta(chave: ChaveLuta, index: number): Luta | undefined {
+  const maxRound = Math.max(...chave.lutas.map(l => l.round))
+  const finalLutas = chave.lutas.filter(l => l.round === maxRound)
+  return finalLutas[index]
 }
 
 function findChampion(chave: ChaveLuta): { id: string; nome: string; equipe: string; faixa?: string } | undefined {
@@ -228,114 +375,23 @@ function findChampion(chave: ChaveLuta): { id: string; nome: string; equipe: str
   return undefined
 }
 
-function BracketMatchupCardInline({
-  luta,
-  onClick,
-  isActive,
-  mode = "live",
-}: {
-  luta: Luta
-  onClick?: () => void
-  isActive?: boolean
-  mode?: "live" | "readonly"
-}) {
-  const isCompleted = luta.resultado?.status === "concluida"
-  const isLive = isActive
-
-  const bgClass = isCompleted
-    ? "bg-gray-100 border-gray-300"
-    : isLive
-    ? "bg-amber-50 border-amber-400"
-    : "bg-white border-gray-200"
-
-  const borderClass = isLive ? "ring-2 ring-amber-400" : "border-2"
-  const podeClicar = mode === "live" && !isCompleted && !!luta.atleta1?.id && !!luta.atleta2?.id
-
-  return (
-    <div
-      onClick={podeClicar ? onClick : undefined}
-      className={cn(
-        "w-[160px] rounded-lg overflow-hidden cursor-pointer transition-all",
-        bgClass,
-        borderClass,
-        isLive && "animate-pulse",
-        podeClicar ? "hover:shadow-md cursor-pointer" : "cursor-default"
-      )}
-    >
-      <FighterCell
-        atleta={luta.atleta1}
-        resultado={luta.resultado}
-        fighter="atleta1"
-      />
-      <div className="bg-gray-200 text-gray-500 text-xs font-bold text-center py-1 border-y border-gray-300">
-        {isCompleted && luta.resultado
-          ? `${luta.resultado.pontosAtleta1} x ${luta.resultado.pontosAtleta2}`
-          : "VS"}
-      </div>
-      <FighterCell
-        atleta={luta.atleta2}
-        resultado={luta.resultado}
-        fighter="atleta2"
-      />
-    </div>
-  )
+function getRunnerUp(): string {
+  return "-- Aguardando disputa de ouro --"
 }
 
-function FighterCell({
-  atleta,
-  resultado,
-  fighter,
-}: {
-  atleta: Luta["atleta1"]
-  resultado?: Luta["resultado"]
-  fighter: "atleta1" | "atleta2"
-}) {
-  if (!atleta?.id) {
-    return (
-      <div className="bg-gray-200 px-3 py-2">
-        <span className="text-gray-500 text-sm font-medium">BYE</span>
-        <span className="text-gray-400 text-xs block">Avanca</span>
-      </div>
-    )
-  }
-
-  const tags: { label: string; className: string }[] = []
-
-  if (resultado?.status === "concluida") {
-    if (resultado.desclassificacao === fighter) {
-      tags.push({ label: "DESCLASS.", className: "bg-red-800 text-white text-xs px-2 py-0.5 rounded-full border-2 border-red-600" })
-      tags.push({ label: "VENCEU", className: "bg-green-500 text-white text-xs px-2 py-0.5 rounded-full" })
-    } else if (resultado.vencedor === fighter) {
-      tags.push({ label: "VENCEU", className: "bg-green-500 text-white text-xs px-2 py-0.5 rounded-full" })
-      if ((fighter === "atleta1" ? resultado.finalizacaoAtleta1 : resultado.finalizacaoAtleta2)) {
-        tags.push({ label: "FINALIZOU", className: "bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full" })
-      }
-    } else {
-      tags.push({ label: "PERDEU", className: "bg-red-500 text-white text-xs px-2 py-0.5 rounded-full" })
-    }
-  }
-
-  return (
-    <div className="px-3 py-2">
-      <p className="font-semibold text-gray-900 text-sm truncate">{atleta.nome}</p>
-      <p className="text-gray-500 text-xs truncate">{atleta.equipe}</p>
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1">
-          {tags.map((tag, i) => (
-            <span key={i} className={tag.className}>{tag.label}</span>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+function getThirdPlace(side: "left" | "right"): string {
+  return `-- Definido automaticamente pelo perdedor da semifinal ${side} --`
 }
 
-function ConnectorV() {
-  return (
-    <div className="w-4 flex-shrink-0 flex flex-col justify-around min-h-[80px]">
-      <svg width="16" height="100%" viewBox="0 0 16 100" preserveAspectRatio="none">
-        <path d="M 8 0 L 8 100" stroke="#d1d5db" strokeWidth="2" fill="none" strokeLinecap="round" />
-      </svg>
-    </div>
-  )
+function drawConnections() {
+  // SVG connection logic would be implemented here
+}
+
+function EditModal({ node, chave, onClose }: { node: { side: "L" | "R"; round: number; position: number }; chave: ChaveLuta; onClose: () => void }) {
+  return null // Placeholder - would implement modal if needed
+}
+
+function canInteract(luta: Luta, chave: ChaveLuta): boolean {
+  if (!luta.atleta1?.id || !luta.atleta2?.id) return false
+  return podeIniciarLuta(luta, chave)
 }
