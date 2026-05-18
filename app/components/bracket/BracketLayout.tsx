@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 import { ChaveLuta, BracketRound, Luta } from "@/app/types"
 import { BracketEmptyState } from "./BracketEmptyState"
 import { BracketChampion } from "./BracketChampion"
-import { ChampionModal } from "./ChampionModal"
 import { getUnicoAtleta, podeIniciarLuta } from "@/app/lib/bracket-utils"
 import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { Trophy, Edit3 } from "lucide-react"
@@ -19,8 +18,6 @@ interface BracketLayoutProps {
 }
 
 export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode = "live", className }: BracketLayoutProps) {
-  const [showChampionModal, setShowChampionModal] = useState(false)
-  const [championTrigger, setChampionTrigger] = useState(0)
   const svgRef = useRef<SVGSVGElement>(null)
 
   const todasLutasConcluidas = useMemo(() => {
@@ -32,18 +29,6 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
 
   const podeExibirCampeao = chave.status === "concluida" && !!chave.vencedorAtletaId && todasLutasConcluidas
   const champion = podeExibirCampeao ? findChampion(chave) : undefined
-
-  useEffect(() => {
-    if (chave.status === "concluida" && champion) {
-      setChampionTrigger(prev => prev + 1)
-    }
-  }, [chave.status, champion])
-
-  useEffect(() => {
-    if (championTrigger > 0 && champion) {
-      setShowChampionModal(true)
-    }
-  }, [championTrigger])
 
   useEffect(() => {
     const timer = setTimeout(() => drawConnections(), 100)
@@ -307,14 +292,6 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
           </div>
         </div>
       </div>
-
-      {showChampionModal && champion && (
-        <ChampionModal
-          champion={champion}
-          categoryName={chave.categoria}
-          onClose={() => setShowChampionModal(false)}
-        />
-      )}
     </>
   )
 }
@@ -327,7 +304,8 @@ function CompetitorCard({
   isCompleted,
   isFinalist = false,
   mode = "live",
-  cardPosition
+  cardPosition,
+ atletaIndex = 1
 }: { 
   luta?: Luta
   nodeId: string
@@ -337,8 +315,10 @@ function CompetitorCard({
   isFinalist?: boolean
   mode?: "live" | "readonly"
   cardPosition?: number
+ atletaIndex?: 1 | 2
 }) {
-  const temAtleta = luta?.atleta1?.id
+  const atleta = atletaIndex === 1 ? luta?.atleta1 : luta?.atleta2
+  const temAtleta = atleta?.id
   const borderClass = isFinalist ? "border-yellow-500 shadow-md" : "border-slate-950 shadow-sm"
 
   return (
@@ -350,17 +330,17 @@ function CompetitorCard({
         borderClass,
         !temAtleta && "bg-slate-50",
         isCompleted && "bg-slate-100",
-        isActive && "ring-2 ring-amber-400 animate-pulse",
+        isActive && "ring-2 ring-amber-400",
         onClick && temAtleta && mode === "live" && "hover:bg-slate-50 cursor-pointer"
       )}
     >
       {temAtleta ? (
         <>
           <div className="font-bold uppercase truncate pr-8 text-slate-900">
-            {luta?.atleta1?.nome || "-- Vazio --"}
+            {atleta?.nome || "-- Vazio --"}
           </div>
           <div className="text-[10px] text-slate-500 uppercase truncate">
-            {luta?.atleta1?.equipe || "Equipe"}
+            {atleta?.equipe || "Equipe"}
           </div>
           {isCompleted && (
             <span className="absolute right-1 top-1 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
@@ -406,41 +386,89 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard 
           luta={lutas[0]} 
-          nodeId={`node-${side}-${round}-${baseIndex}`}
+          nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex}
+          cardPosition={baseIndex * 2}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[0]} 
+          nodeId={`node-${side}-${round}-${baseIndex}-2`}
+          onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
+          isActive={activeFightId === lutas[0]?.id}
+          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={baseIndex * 2 + 1}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-3 py-2">
+        <CompetitorCard 
           luta={lutas[1]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 1}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 1}
+          cardPosition={(baseIndex + 1) * 2}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[1]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
+          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
+          isActive={activeFightId === lutas[1]?.id}
+          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 1) * 2 + 1}
+          atletaIndex={2}
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard 
           luta={lutas[2]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 2}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
           isCompleted={lutas[2]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 2}
+          cardPosition={(baseIndex + 2) * 2}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[2]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
+          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
+          isActive={activeFightId === lutas[2]?.id}
+          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 2) * 2 + 1}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-3 py-2">
+        <CompetitorCard 
           luta={lutas[3]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 3}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
           isCompleted={lutas[3]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 3}
+          cardPosition={(baseIndex + 3) * 2}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[3]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
+          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
+          isActive={activeFightId === lutas[3]?.id}
+          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 3) * 2 + 1}
+          atletaIndex={2}
         />
       </div>
     </>
@@ -461,41 +489,89 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard 
           luta={lutas[0]} 
-          nodeId={`node-${side}-${round}-${baseIndex}`}
+          nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex}
+          cardPosition={baseIndex * 2}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[0]} 
+          nodeId={`node-${side}-${round}-${baseIndex}-2`}
+          onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
+          isActive={activeFightId === lutas[0]?.id}
+          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={baseIndex * 2 + 1}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-3 py-2">
+        <CompetitorCard 
           luta={lutas[1]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 1}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 1}
+          cardPosition={(baseIndex + 1) * 2}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[1]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
+          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
+          isActive={activeFightId === lutas[1]?.id}
+          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 1) * 2 + 1}
+          atletaIndex={2}
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard 
           luta={lutas[2]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 2}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
           isCompleted={lutas[2]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 2}
+          cardPosition={(baseIndex + 2) * 2}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[2]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
+          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
+          isActive={activeFightId === lutas[2]?.id}
+          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 2) * 2 + 1}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-3 py-2">
+        <CompetitorCard 
           luta={lutas[3]} 
-          nodeId={`node-${side}-${round}-${baseIndex + 3}`}
+          nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
           isCompleted={lutas[3]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={baseIndex + 3}
+          cardPosition={(baseIndex + 3) * 2}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[3]} 
+          nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
+          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
+          isActive={activeFightId === lutas[3]?.id}
+          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={(baseIndex + 3) * 2 + 1}
+          atletaIndex={2}
         />
       </div>
     </>
@@ -515,21 +591,45 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
       <div className="flex flex-col gap-16 py-2">
         <CompetitorCard 
           luta={lutas[0]} 
-          nodeId={`node-${side}-${round}-0`}
+          nodeId={`node-${side}-${round}-0-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida"}
           mode={mode}
           cardPosition={0}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[0]} 
+          nodeId={`node-${side}-${round}-0-2`}
+          onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
+          isActive={activeFightId === lutas[0]?.id}
+          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={1}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-16 py-2">
+        <CompetitorCard 
           luta={lutas[1]} 
-          nodeId={`node-${side}-${round}-1`}
+          nodeId={`node-${side}-${round}-1-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={1}
+          cardPosition={2}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[1]} 
+          nodeId={`node-${side}-${round}-1-2`}
+          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
+          isActive={activeFightId === lutas[1]?.id}
+          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={3}
+          atletaIndex={2}
         />
       </div>
     </>
@@ -549,21 +649,45 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
       <div className="flex flex-col gap-16 py-2">
         <CompetitorCard 
           luta={lutas[0]} 
-          nodeId={`node-${side}-${round}-2`}
+          nodeId={`node-${side}-${round}-2-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={2}
+          cardPosition={4}
+          atletaIndex={1}
         />
         <CompetitorCard 
+          luta={lutas[0]} 
+          nodeId={`node-${side}-${round}-2-2`}
+          onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
+          isActive={activeFightId === lutas[0]?.id}
+          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={5}
+          atletaIndex={2}
+        />
+      </div>
+      <div className="flex flex-col gap-16 py-2">
+        <CompetitorCard 
           luta={lutas[1]} 
-          nodeId={`node-${side}-${round}-3`}
+          nodeId={`node-${side}-${round}-3-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida"}
           mode={mode}
-          cardPosition={3}
+          cardPosition={6}
+          atletaIndex={1}
+        />
+        <CompetitorCard 
+          luta={lutas[1]} 
+          nodeId={`node-${side}-${round}-3-2`}
+          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
+          isActive={activeFightId === lutas[1]?.id}
+          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          mode={mode}
+          cardPosition={7}
+          atletaIndex={2}
         />
       </div>
     </>
@@ -580,15 +704,28 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
   mode?: "live" | "readonly"
 }) {
   return (
-    <CompetitorCard 
-      luta={luta} 
-      nodeId={`node-${side}-${round}-${position}`}
-      onClick={luta ? () => onClick?.(luta) : undefined}
-      isActive={activeFightId === luta?.id}
-      isCompleted={luta?.resultado?.status === "concluida"}
-      mode={mode}
-      cardPosition={position}
-    />
+    <div className="flex flex-col gap-3">
+      <CompetitorCard 
+        luta={luta} 
+        nodeId={`node-${side}-${round}-${position}-1`}
+        onClick={luta ? () => onClick?.(luta) : undefined}
+        isActive={activeFightId === luta?.id}
+        isCompleted={luta?.resultado?.status === "concluida"}
+        mode={mode}
+        cardPosition={position * 2}
+        atletaIndex={1}
+      />
+      <CompetitorCard 
+        luta={luta} 
+        nodeId={`node-${side}-${round}-${position}-2`}
+        onClick={luta ? () => onClick?.(luta) : undefined}
+        isActive={activeFightId === luta?.id}
+        isCompleted={luta?.resultado?.status === "concluida"}
+        mode={mode}
+        cardPosition={position * 2 + 1}
+        atletaIndex={2}
+      />
+    </div>
   )
 }
 

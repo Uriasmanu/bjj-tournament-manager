@@ -110,15 +110,15 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 ## 5. Critérios de Aceitação
 
 - [x] Cards vazios exibem número da posição no canto direito (cor cinza)
-- [ ] Cada card exibe apenas UM atleta (atleta1 OU atleta2)
-- [ ] Cada luta gera DOIS cards (um para cada atleta)
-- [ ] Card 1: João Pereira, Card 2: Leandro Borges (mesma luta)
-- [ ] Se atleta2 for null, card exibe "Aguardando oponente"
-- [ ] Efeito de piscar (`animate-pulse`) removido dos cards
-- [ ] Modal de campeão (`ChampionModal`) completamente removido
-- [ ] Layout do bracket permanece visualmente idêntico
-- [ ] Conexões SVG entre nodes continuam funcionando
-- [ ] Comportamento de clique nas lutas permanece inalterado
+- [x] Cada card exibe apenas UM atleta (atleta1 OU atleta2)
+- [x] Cada luta gera DOIS cards (um para cada atleta)
+- [x] Card 1: João Pereira, Card 2: Leandro Borges (mesma luta)
+- [x] Se atleta2 for null, card exibe "Aguardando oponente"
+- [x] Efeito de piscar (`animate-pulse`) removido dos cards
+- [x] Modal de campeão (`ChampionModal`) completamente removido
+- [x] Layout do bracket permanece visualmente idêntico
+- [x] Conexões SVG entre nodes continuam funcionando
+- [x] Comportamento de clique nas lutas permanece inalterado
 
 ---
 
