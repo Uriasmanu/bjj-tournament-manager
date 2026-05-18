@@ -15,30 +15,30 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ## 2. Requisito Funcional
 
-### RF-001: Cada Atleta Ocupa um Card Separado
+### RF-001: Cada Atleta em um Card Separado
 
-**Descrição:** Cada luta deve renderizar DOIS cards - um para cada atleta.
+**Descrição:** Cada atleta deve occupar seu próprio card. Cada luta gera DOIS cards.
 
 **Comportamento Atual:**
-- Cada par de lutas (ex: Round1Pair) renderiza 4 cards
-- Cada card exibe apenas `luta.atleta1`
-- `atleta2` não é renderizado/visível
+- Cada card exibe `atleta1` da luta
+- Luta 1 gera 1 card (João Pereira), deveria gerar 2 cards (João + Leandro)
+- Luta 2 gera 1 card (Marcelo), deveria gerar 2 cards (Marcelo + vazio)
+- Luta 3 gera 1 card (Paulo), deveria gerar 2 cards (Paulo + Renato)
 
-**Comportamento Esperado:**
-- Cada par de lutas deve renderizar 8 cards (2 por luta):
-  - Card 1: `luta[0].atleta1`
-  - Card 2: `luta[0].atleta2`
-  - Card 3: `luta[1].atleta1`
-  - Card 4: `luta[1].atleta2`
-  - ...e assim sucessivamente
-- Ambos os atletas de cada luta devem ser visíveis
-
-**Nota:** A estrutura visual do bracket (grid de 7 colunas) está correta - apenas adicionar cards para `atleta2`.
+**Comportamento Esperado (usando JSON de exemplo):**
+- Card 1: João Pereira (Team Alpha) - atleta1 da luta 1
+- Card 2: Leandro Borges (Gracie Barra) - atleta2 da luta 1
+- Card 3: Marcelo Filho (ATOS JJ) - atleta1 da luta 2
+- Card 4: (vazio) - atleta2 da luta 2
+- Card 5: Paulo Henrique (Alliance) - atleta1 da luta 3
+- Card 6: Renato Silva (Checkmat) - atleta2 da luta 3
 
 **Implementação:**
-- Duplicar os cards em cada par de lutas
-- No primeiro card renderizar `atleta1`, no segundo card renderizar `atleta2`
-- Ajustar `nodeId` para serem únicos (ex: `node-L-1-0-a1` e `node-L-1-0-a2`)
+- Adicionar prop `atletaIndex: 1 | 2` ao `CompetitorCard`
+- Se `atletaIndex === 1`: renderizar `luta.atleta1`
+- Se `atletaIndex === 2`: renderizar `luta.atleta2`
+- Em cada par de lutas, renderizar DOIS cards por luta
+- Ajustar `nodeId` para ser único por card (ex: `node-L-1-0-1` e `node-L-1-0-2`)
 
 
 ---
@@ -79,6 +79,26 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ---
 
+### RV-003: Mostrar Posição no Card Vazio
+
+**Descrição:** Exibir o número da posição (card) no canto direito dos cards vazios.
+
+**Localização no Código:**
+- Arquivo: `BracketLayout.tsx`
+- Componente: `CompetitorCard` (linha ~342-379)
+
+**Ação:**
+- Quando `atleta1` for null (card vazio), exibir no canto direito o número da posição
+- Cor: cinza (#6B7280 ou text-slate-500)
+- Posição: canto direito do card
+- Usar a prop `nodeId` ou calcular a partir dela para obter o número
+
+**Exemplo:**
+- Card vazio mostra "1" no canto direito se for position 0
+- Card vazio mostra "2" no canto direito se for position 1
+
+---
+
 ## 4. Restrições Técnicas
 
 1. **Manter o formato atual:** O layout visual do bracket (grid de 7 colunas) deve permanecer inalterado
@@ -89,11 +109,14 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ## 5. Critérios de Aceitação
 
-- [ ] Cada luta exibe DOIS cards (atleta 1 e atleta 2)
-- [ ] Ambos os nomes são visíveis simultaneamente no bracket
+- [x] Cards vazios exibem número da posição no canto direito (cor cinza)
+- [ ] Cada card exibe apenas UM atleta (atleta1 OU atleta2)
+- [ ] Cada luta gera DOIS cards (um para cada atleta)
+- [ ] Card 1: João Pereira, Card 2: Leandro Borges (mesma luta)
+- [ ] Se atleta2 for null, card exibe "Aguardando oponente"
 - [ ] Efeito de piscar (`animate-pulse`) removido dos cards
 - [ ] Modal de campeão (`ChampionModal`) completamente removido
-- [ ] Layout do bracket permanece visualmente idêntico (grid 7 colunas)
+- [ ] Layout do bracket permanece visualmente idêntico
 - [ ] Conexões SVG entre nodes continuam funcionando
 - [ ] Comportamento de clique nas lutas permanece inalterado
 
