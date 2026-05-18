@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ChaveLuta } from "@/app/types"
-import { BracketVisualizer } from "@/components/bracket"
+import { BracketVisualizer } from "@/app/components/bracket"
 import { cn } from "@/lib/utils"
 
 interface BracketPanelProps {

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ChaveLuta } from "@/app/types"
-import { BracketVisualizer } from "@/components/bracket"
+import { BracketVisualizer } from "@/app/components/bracket"
 import { createMockChave } from "@/app/lib/mock-bracket-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

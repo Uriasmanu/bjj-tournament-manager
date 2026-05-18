@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { ChaveLuta, Luta } from "@/app/types"
-import { useBracket } from "@/hooks/useBracket"
+import { useBracket } from "@/app/hooks/useBracket"
 import { buildBracketFromChaveLuta } from "@/app/lib/bracket-utils"
 import { BracketLayout } from "./BracketLayout"
 import { BracketEmptyState } from "./BracketEmptyState"

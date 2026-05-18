@@ -23,7 +23,7 @@ export function buildBracketFromChaveLuta(chave: ChaveLuta): BracketRound[] {
   if (leftLutas.length > 0 || rightLutas.length > 0) {
     result.push({
       label: "Round 1",
-      matchups: [...leftLutas.map(l => toMatchup(l, "Round 1")), ...rightLutas.map(l => toMatchup(l, "Round 1"))],
+      matchups: round1Lutas.map(l => toMatchup(l, "Round 1")),
       side: "left",
     })
   }
@@ -49,9 +49,8 @@ export function buildBracketFromChaveLuta(chave: ChaveLuta): BracketRound[] {
   const maxRound = rounds.size > 0 ? Math.max(...Array.from(rounds.keys())) : 1
   const finalLutas = rounds.get(maxRound) || []
   if (finalLutas.length > 0 || rounds.size === 0) {
-    const isSingleFight = maxRound === 1 && rounds.size <= 1
     result.push({
-      label: isSingleFight ? "Final" : "Final",
+      label: "Final",
       matchups: finalLutas.map(l => toMatchup(l, "Final")),
       side: "center",
     })

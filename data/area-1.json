@@ -20,7 +20,7 @@
             "equipe": "Academia Jiu-Jitsu"
           },
           "resultado": {
-            "id": "1504fc0b-a875-46b7-88a2-0e563fb5eac0",
+            "id": "d78231b5-3cb8-4bb9-bc6b-fe41109a1a55",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -31,18 +31,18 @@
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
+            "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "pendente",
+            "status": "concluida",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
+            "lutaId": 1,
+            "vencedorAtletaId": "e3a27d37-43c2-4712-b6d7-585f12e16a73",
+            "perdedorAtletaId": "9cfc20e7-23b1-45f2-a917-9d67652bee11",
             "AtletaDesclassificadoId": null
           }
         },
@@ -84,8 +84,9 @@
           }
         }
       ],
-      "status": "pendente",
-      "totalCompetidores": 3
+      "status": "em_andamento",
+      "totalCompetidores": 3,
+      "vencedorAtletaId": "e3a27d37-43c2-4712-b6d7-585f12e16a73"
     },
     {
       "id": "931e33d6-9ea2-4e9e-8c36-f98b35caf53b",
@@ -106,7 +107,7 @@
             "equipe": "Academia Jiu-Jitsu"
           },
           "resultado": {
-            "id": "ef0e22cb-1ded-47d9-8317-fe17b0247d0c",
+            "id": "22ba2499-908f-4b12-8328-da0c32c741c4",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -116,20 +117,20 @@
             "tempoDecorrido": 0,
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
+            "desclassificacao": "atleta2",
+            "vencedor": "atleta1",
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
-            "AtletaDesclassificadoId": null
+            "lutaId": 1,
+            "vencedorAtletaId": "e5f7ea65-64bb-4f7f-8bea-17eae57537a6",
+            "perdedorAtletaId": "a59b4368-0c76-43aa-9348-12bc0eeee5e1",
+            "AtletaDesclassificadoId": "a59b4368-0c76-43aa-9348-12bc0eeee5e1"
           }
         },
         {
@@ -215,10 +216,60 @@
           }
         }
       ],
+      "status": "em_andamento",
+      "totalCompetidores": 6,
+      "vencedorAtletaId": "e5f7ea65-64bb-4f7f-8bea-17eae57537a6"
+    },
+    {
+      "id": "159c6a2f-9b1b-49d5-b426-803270ee2dba",
+      "categoria": "Luta Manual",
+      "lutas": [
+        {
+          "id": "cd6992d4-9354-43c0-8090-ff0bc57a8e6b",
+          "round": 1,
+          "position": 0,
+          "atleta1": {
+            "id": "df1bb08b-5677-402c-ad0c-bf56b156bc85",
+            "nome": "a",
+            "equipe": "b"
+          },
+          "atleta2": {
+            "id": "55a9395c-6980-40df-be77-90617ca5a4e6",
+            "nome": "c",
+            "equipe": "d"
+          },
+          "resultado": {
+            "id": "25e64a92-256b-49fd-bdbc-f1938c03c744",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
+          }
+        }
+      ],
       "status": "pendente",
-      "totalCompetidores": 6
+      "totalCompetidores": 2
     }
   ],
-  "criadoEm": "2026-05-18T14:49:20.941Z",
-  "atualizadoEm": "2026-05-18T14:49:20.941Z"
+  "criadoEm": "2026-05-18T14:56:04.269Z",
+  "atualizadoEm": "2026-05-18T14:56:04.269Z"
 }

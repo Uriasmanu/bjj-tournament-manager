@@ -9,7 +9,6 @@ export function migrateChaveLuta(chave: ChaveLuta): ChaveLuta {
     id: generateUUID(),
     lutas: chave.lutas.map(migrateLuta),
     totalCompetidores: calculateTotalCompetidores(chave.lutas),
-    vencedorAtletaId: resolveVencedorId(chave.vencedor, chave.lutas),
   }
 }
 
@@ -52,15 +51,6 @@ function calculateTotalCompetidores(lutas: Luta[]): number {
     if (l.atleta2?.nome) nomes.add(l.atleta2.nome)
   })
   return nomes.size
-}
-
-function resolveVencedorId(vencedorNome: string | undefined, lutas: Luta[]): string | undefined {
-  if (!vencedorNome) return undefined
-  for (const luta of lutas) {
-    if (luta.atleta1?.nome === vencedorNome) return luta.atleta1?.id
-    if (luta.atleta2?.nome === vencedorNome) return luta.atleta2?.id
-  }
-  return undefined
 }
 
 export function migrateDadosArea(dados: DadosArea): DadosArea {

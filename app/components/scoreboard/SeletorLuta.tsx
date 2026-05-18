@@ -19,27 +19,19 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
   const atletasDisponiveis = useMemo(() => {
     if (!chaveAtual) return []
 
-    const nomes = new Set<string>()
+    const atletas: Atleta[] = []
     chaveAtual.lutas.forEach((luta) => {
       if (luta.resultado?.status !== "concluida") {
-        if (luta.atleta1?.nome) nomes.add(luta.atleta1.nome)
-        if (luta.atleta2?.nome) nomes.add(luta.atleta2.nome)
+        if (luta.atleta1?.id && !atletas.find(a => a.id === luta.atleta1?.id)) {
+          atletas.push(luta.atleta1)
+        }
+        if (luta.atleta2?.id && !atletas.find(a => a.id === luta.atleta2?.id)) {
+          atletas.push(luta.atleta2)
+        }
       }
     })
 
-    return Array.from(nomes).map((nome) => {
-      const luta = chaveAtual.lutas.find(
-        (l) => l.atleta1?.nome === nome || l.atleta2?.nome === nome
-      )
-      return {
-        nome,
-        equipe:
-          luta?.atleta1?.nome === nome
-            ? (luta.atleta1?.equipe || "")
-            : (luta?.atleta2?.equipe || ""),
-        faixa: luta?.atleta1?.nome === nome ? luta.atleta1?.faixa : luta?.atleta2?.faixa,
-      }
-    })
+    return atletas
   }, [chaveAtual])
 
   const podeIniciar =
@@ -103,7 +95,7 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
                   Atleta 1 (Azul)
                 </label>
                 <select
-                  value={atleta1Selecionado?.nome || ""}
+                  value={atleta1Selecionado?.id || ""}
                   onChange={(e) => {
                     const atleta = atletasDisponiveis.find(
                       (a) => a.nome === e.target.value
@@ -114,9 +106,9 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
                 >
                   <option value="">Selecione...</option>
                   {atletasDisponiveis
-                    .filter((a) => a.nome !== atleta2Selecionado?.nome)
+                    .filter((a) => a.id !== atleta2Selecionado?.id)
                     .map((atleta) => (
-                      <option key={atleta.nome} value={atleta.nome}>
+                      <option key={atleta.id} value={atleta.id}>
                         {atleta.nome}
                       </option>
                     ))}
@@ -141,10 +133,10 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
                   Atleta 2 (Branco)
                 </label>
                 <select
-                  value={atleta2Selecionado?.nome || ""}
+                  value={atleta2Selecionado?.id || ""}
                   onChange={(e) => {
                     const atleta = atletasDisponiveis.find(
-                      (a) => a.nome === e.target.value
+                      (a) => a.id === e.target.value
                     )
                     setAtleta2Selecionado(atleta || null)
                   }}
@@ -152,9 +144,9 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
                 >
                   <option value="">Selecione...</option>
                   {atletasDisponiveis
-                    .filter((a) => a.nome !== atleta1Selecionado?.nome)
+                    .filter((a) => a.id !== atleta1Selecionado?.id)
                     .map((atleta) => (
-                      <option key={atleta.nome} value={atleta.nome}>
+                      <option key={atleta.id} value={atleta.id}>
                         {atleta.nome}
                       </option>
                     ))}

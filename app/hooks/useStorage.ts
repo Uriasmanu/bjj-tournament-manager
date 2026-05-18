@@ -184,10 +184,10 @@ export async function marcarLutaConcluida(
 
   const finalChaves = chavesComLutaAtualizada.map(c => {
     if (c.id !== chaveId) return c
-    return chaveResult
+    return chaveResult as ChaveLuta
   })
 
-  const temLutasPendentes = chaveResult.lutas.some(l => l.resultado?.status !== "concluida")
+  const temLutasPendentes = (chaveResult as ChaveLuta).lutas.some(l => l.resultado?.status !== "concluida")
   const chavesFinais = finalChaves.map(c => {
     if (c.id !== chaveId) return c
     return { ...c, status: temLutasPendentes ? "em_andamento" as const : "concluida" as const }

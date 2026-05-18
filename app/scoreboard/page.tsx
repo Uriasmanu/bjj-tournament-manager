@@ -14,10 +14,7 @@ import { AdicionarLutaModal, NovaLutaData } from "@/app/components/scoreboard/Ad
 import { ScoreboardTimer } from "@/app/components/Timer"
 import { ScoreHeader } from "@/app/components/scoreboard/ScoreHeader"
 import { AtletaCard } from "@/app/components/scoreboard/AtletaCard"
-
-function gerarIdUnico(): string {
-  return generateUUID()
-}
+import { BracketVisualizer } from "@/app/components/bracket"
 
 export default function ScoreboardPage() {
   const router = useRouter()
@@ -55,11 +52,13 @@ export default function ScoreboardPage() {
 
   const handleAdicionarNovaLuta = async (data: NovaLutaData) => {
     const novaLuta: Luta = {
-      id: gerarIdUnico(),
+      id: generateUUID(),
       round: 1,
-      atleta1: { nome: data.nomeAtleta1, equipe: data.equipe1 },
-      atleta2: { nome: data.nomeAtleta2, equipe: data.equipe2 },
+      position: 0,
+      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1 },
+      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2 },
       resultado: {
+        id: generateUUID(),
         pontosAtleta1: 0,
         pontosAtleta2: 0,
         vantagensAtleta1: 0,
@@ -78,7 +77,11 @@ export default function ScoreboardPage() {
         passagensAtleta1: 0,
         passagensAtleta2: 0,
         quedasAtleta1: 0,
-        quedasAtleta2: 0
+        quedasAtleta2: 0,
+        lutaId: null,
+        vencedorAtletaId: null,
+        perdedorAtletaId: null,
+        AtletaDesclassificadoId: null,
       }
     }
 
@@ -114,6 +117,8 @@ export default function ScoreboardPage() {
         <SeletorLutas
           chaves={chaves}
           onSelecionarLuta={handleSelecionarLuta}
+          onAdicionar={() => setMostrarModalAdicionar(true)}
+          onVoltar={() => router.push("/")}
         />
         <AdicionarLutaModal
           isOpen={mostrarModalAdicionar}
@@ -139,143 +144,129 @@ export default function ScoreboardPage() {
 interface SeletorLutasProps {
   chaves: ChaveLuta[]
   onSelecionarLuta: (chave: ChaveLuta, luta: Luta) => void
+  onAdicionar: () => void
+  onVoltar: () => void
 }
 
-function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
-  const [mostrarModalAdicionar, setMostrarModalAdicionar] = useState(false)
-  const [chavesState, setChavesState] = useState(chaves)
-
-  useEffect(() => {
-    getDadosIniciais().then(dados => {
-      setChavesState(dados.chaves)
-    })
-  }, [])
-
-  const handleAdicionarLuta = async (data: NovaLutaData) => {
-    const area = (await getDadosIniciais()).area
-
-    const novaLuta: Luta = {
-      id: generateUUID(),
-      round: 1,
-      position: 0,
-      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1 },
-      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2 },
-      resultado: {
-        id: generateUUID(),
-        pontosAtleta1: 0,
-        pontosAtleta2: 0,
-        vantagensAtleta1: 0,
-        vantagensAtleta2: 0,
-        penalidadesAtleta1: 0,
-        penalidadesAtleta2: 0,
-        tempoDecorrido: 0,
-        finalizacaoAtleta1: false,
-        finalizacaoAtleta2: false,
-        desclassificacao: null,
-        vencedor: null,
-        tipoVitoria: "pontos",
-        status: "pendente",
-        montadasAtleta1: 0,
-        montadasAtleta2: 0,
-        passagensAtleta1: 0,
-        passagensAtleta2: 0,
-        quedasAtleta1: 0,
-        quedasAtleta2: 0,
-        lutaId: null,
-        vencedorAtletaId: null,
-        perdedorAtletaId: null,
-        AtletaDesclassificadoId: null,
-      }
-    }
-
-    const chavesAtualizadas = await adicionarNovaLuta(area, chavesState, novaLuta)
-    setChavesState(chavesAtualizadas)
-    setMostrarModalAdicionar(false)
-  }
+function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: SeletorLutasProps) {
+  const [chaveAtiva, setChaveAtiva] = useState<ChaveLuta | null>(chaves[0] || null)
+  const [lutaAtivaId, setLutaAtivaId] = useState<string | undefined>(undefined)
+  const [mostrarBracket, setMostrarBracket] = useState(true)
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] p-8">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/" className="text-[#D4AF37] hover:text-[#f0c844] transition-colors mb-6 inline-block">
-          ← Voltar
-        </Link>
-
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-3xl font-bold text-white">Selecionar Luta</h1>
-          <Button 
-            onClick={() => setMostrarModalAdicionar(true)}
-            className="bg-[#4338CA] hover:bg-[#5a47e8]"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Luta
-          </Button>
-        </div>
-        <p className="text-gray-400 mb-8">Escolha a chave e a luta para iniciar</p>
-
-        <div className="space-y-4">
-          {chavesState.map((chave, index) => (
-            <div 
-              key={index} 
-              className="border border-zinc-700 rounded-lg overflow-hidden"
+    <div className="min-h-screen bg-[#0A0A0A] p-4">
+      <div className="max-w-full mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={onVoltar} className="text-[#D4AF37] hover:text-[#f0c844] transition-colors">
+            ← Voltar
+          </button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setMostrarBracket(!mostrarBracket)}
+              className="border-zinc-700 text-white hover:bg-zinc-800 text-sm"
             >
-              <div className="bg-zinc-800 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="text-white font-bold">{chave.categoria}</span>
-                  <span className="text-gray-400 text-sm">({chave.lutas.length} lutas)</span>
-                </div>
-                <span className="text-gray-400 text-sm">
-                  {chave.lutas.filter(l => l.resultado?.status === "concluida").length}/{chave.lutas.length}
-                </span>
-              </div>
-
-              <div className="divide-y divide-zinc-800">
-                {chave.lutas.map((luta, lutaIndex) => {
-                  const isConcluida = luta.resultado?.status === "concluida"
-                  return (
-                    <div
-                      key={lutaIndex}
-                      className={`flex items-center justify-between px-4 py-3 ${
-                        isConcluida ? "bg-green-900/20" : "hover:bg-zinc-800/50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="text-gray-500 text-sm">Luta {lutaIndex + 1}</span>
-                        <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
-                          {luta.atleta1?.nome || "BYE"}
-                        </span>
-                        <span className="text-gray-500">vs</span>
-                        <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
-                          {luta.atleta2?.nome || "BYE"}
-                        </span>
-                        {isConcluida && (
-                          <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">
-                            Concluída
-                          </span>
-                        )}
-                      </div>
-                      {!isConcluida && (
-                        <button
-                          onClick={() => onSelecionarLuta(chave, luta)}
-                          className="text-[#D4AF37] text-sm hover:underline"
-                        >
-                          Iniciar →
-                        </button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+              {mostrarBracket ? "Ocultar Bracket" : "Mostrar Bracket"}
+            </Button>
+            <Button
+              onClick={onAdicionar}
+              className="bg-[#4338CA] hover:bg-[#5a47e8]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Luta
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <AdicionarLutaModal
-        isOpen={mostrarModalAdicionar}
-        onClose={() => setMostrarModalAdicionar(false)}
-        onSubmit={handleAdicionarLuta}
-      />
+        <div className="flex items-center gap-4 mb-4">
+          <h1 className="text-2xl font-bold text-white">Selecionar Luta</h1>
+          <select
+            value={chaveAtiva?.id || ""}
+            onChange={(e) => {
+              const chave = chaves.find(c => c.id === e.target.value)
+              setChaveAtiva(chave || null)
+              setLutaAtivaId(undefined)
+            }}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 text-sm max-w-md"
+          >
+            {chaves.map((chave) => {
+              const pendentes = chave.lutas.filter(l => l.resultado?.status !== "concluida").length
+              return (
+                <option key={chave.id} value={chave.id}>
+                  {chave.categoria} ({pendentes} pendentes)
+                </option>
+              )
+            })}
+          </select>
+        </div>
+
+        {mostrarBracket && chaveAtiva && (
+          <div className="mb-6">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 overflow-x-auto">
+              <BracketVisualizer
+                chave={chaveAtiva}
+                mode="live"
+                activeFightId={lutaAtivaId}
+                onFightClick={(luta) => {
+                  setLutaAtivaId(luta.id)
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {chaveAtiva && (
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold text-gray-300 mb-2">
+              Lutas — {chaveAtiva.categoria}
+            </h2>
+            {chaveAtiva.lutas.map((luta, idx) => {
+              const isConcluida = luta.resultado?.status === "concluida"
+              return (
+                <div
+                  key={luta.id || idx}
+                  onClick={() => !isConcluida && onSelecionarLuta(chaveAtiva, luta)}
+                  className={`flex items-center justify-between px-5 py-3 rounded-lg transition-colors ${
+                    isConcluida
+                      ? "bg-green-900/20 border border-green-800/50"
+                      : luta.id === lutaAtivaId
+                      ? "bg-amber-900/20 border border-amber-600 cursor-pointer"
+                      : "bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-gray-500 text-sm font-mono w-16">
+                      Round {luta.round}
+                    </span>
+                    <span className={`font-bold ${isConcluida ? "text-green-400" : "text-white"}`}>
+                      {luta.atleta1?.nome || "BYE"}
+                    </span>
+                    <span className="text-gray-500 text-xl">×</span>
+                    <span className={`font-bold ${isConcluida ? "text-green-400" : "text-white"}`}>
+                      {luta.atleta2?.nome || "BYE"}
+                    </span>
+                    {isConcluida && luta.resultado && (
+                      <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">
+                        {luta.resultado.pontosAtleta1}×{luta.resultado.pontosAtleta2}
+                      </span>
+                    )}
+                  </div>
+                  {!isConcluida && (
+                    <span className="text-[#D4AF37] text-sm font-bold hover:underline">
+                      Iniciar →
+                    </span>
+                  )}
+                  {isConcluida && (
+                    <span className="text-green-500 text-sm">
+                      Concluída
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -289,13 +280,13 @@ interface PlacarCompletoProps {
   onTrocarChave: () => void
 }
 
-function PlacarCompleto({ 
-  area, 
-  chaves, 
-  setChaves, 
-  chaveId, 
-  luta, 
-  onTrocarChave 
+function PlacarCompleto({
+  area,
+  chaves,
+  setChaves,
+  chaveId,
+  luta,
+  onTrocarChave
 }: PlacarCompletoProps) {
   const [p1, setP1] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
   const [p2, setP2] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
@@ -358,7 +349,7 @@ function PlacarCompleto({
     const vencedor = atletaDSQ === 1 ? "atleta2" : "atleta1"
     const pontos1 = p1.montada + p1.passagem + p1.queda
     const pontos2 = p2.montada + p2.passagem + p2.queda
-    
+
     const dadosResultado = {
       pontosAtleta1: pontos1,
       pontosAtleta2: pontos2,
@@ -372,7 +363,7 @@ function PlacarCompleto({
       desclassificacao: atletaDSQ === 1 ? "atleta1" as const : "atleta2" as const,
       tipoVitoria: "desclassificacao" as const,
       vencedor: vencedor as "atleta1" | "atleta2",
-      
+
       montadasAtleta1: p1.montada,
       montadasAtleta2: p2.montada,
       passagensAtleta1: p1.passagem,
@@ -380,20 +371,20 @@ function PlacarCompleto({
       quedasAtleta1: p1.queda,
       quedasAtleta2: p2.queda
     }
-    
+
     const chavesAtualizadas = await marcarLutaConcluida(
-      area, 
-      chaveId, 
-      luta.id, 
+      area,
+      chaveId,
+      luta.id,
       dadosResultado,
       chaves
     )
     setChaves(chavesAtualizadas)
-    
+
     setShowDSQ(false)
     setAtletaDSQ(null)
     setEtapaDSQ("escolher")
-    
+
     onTrocarChave()
   }
 
@@ -411,7 +402,7 @@ function PlacarCompleto({
   const handleConfirmarTipo = async (tipo: "pontos" | "finalizacao") => {
     const pontos1 = p1.montada + p1.passagem + p1.queda
     const pontos2 = p2.montada + p2.passagem + p2.queda
-    
+
     const dadosResultado = {
       pontosAtleta1: pontos1,
       pontosAtleta2: pontos2,
@@ -425,7 +416,7 @@ function PlacarCompleto({
       desclassificacao: null,
       tipoVitoria: tipo,
       vencedor: vencedorSelecionado,
-      
+
       montadasAtleta1: p1.montada,
       montadasAtleta2: p2.montada,
       passagensAtleta1: p1.passagem,
@@ -433,27 +424,27 @@ function PlacarCompleto({
       quedasAtleta1: p1.queda,
       quedasAtleta2: p2.queda
     }
-    
+
     const chavesAtualizadas = await marcarLutaConcluida(
-      area, 
-      chaveId, 
-      luta.id, 
+      area,
+      chaveId,
+      luta.id,
       dadosResultado,
       chaves
     )
     setChaves(chavesAtualizadas)
-    
+
     setShowConfirmFinalizar(false)
     setEtapaConfirmacao(null)
     setVencedorSelecionado(null)
-    
+
     onTrocarChave()
   }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-black relative select-none">
-      <ScoreHeader 
-        area={area} 
+      <ScoreHeader
+        area={area}
         arbitro={arbitro}
         onArbitroChange={setArbitro}
       />
@@ -610,7 +601,7 @@ function PlacarCompleto({
                   onClick={() => { setShowConfirmFinalizar(false); setEtapaConfirmacao(null); }}
                   className="w-full mt-4 text-gray-400 hover:text-white text-sm"
                 >
-                  Cancelar
+                  Voltar
                 </button>
               </>
             )}
