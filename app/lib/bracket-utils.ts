@@ -256,3 +256,8 @@ export function podeIniciarLuta(luta: Luta, chave: ChaveLuta): boolean {
 
   return true
 }
+
+export function canInteract(luta: Luta, chave: ChaveLuta): boolean {
+  if (!luta.atleta1?.id || !luta.atleta2?.id) return false
+  return podeIniciarLuta(luta, chave)
+}
