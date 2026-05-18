@@ -94,7 +94,7 @@ A visualização da chave tem animação de piscar que é irritante.
 ## 4. Posicionamento Alternado dos Atletas
 
 ### Problema
-Currently:
+Formato atual:
 ```
 carlos
 x
@@ -234,7 +234,7 @@ return (
 ## 6. Cada Atleta Ocupa um Card Separado
 
 ### Problema
-Currently only `atleta1` is displayed in the card. Each athlete needs their own card.
+Apenas `atleta1` é exibido no card. Cada atleta precisa do seu próprio card.
 
 ### Solução
 O modelo de dados já tem `atleta1` e `atleta2`. Precisa criar cards para AMBOS:
@@ -444,10 +444,10 @@ if (chave.status === "concluida" && chave.vencedorAtletaId) {
       "atleta1": { "nome": "Rafael Lima", "equipe": "Checkmat", "faixa": "Branca" },
       "atleta2": null
     }
-  ]
+]
 }
-```
-Você tem que colocar a classificação no JSON da area e não no JSON da chave
+
+> **Nota:** A classificação deve ser salva no JSON da área e não no JSON da chave.
 ---
 
 ## Resumo das Correções
