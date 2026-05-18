@@ -1,4 +1,4 @@
-import { ChaveLuta, Luta, DadosArea, DadosResultadoLuta } from "@/app/types"
+import { ChaveLuta, Luta, DadosArea } from "@/app/types"
 
 const API_URL = "/api/area"
 

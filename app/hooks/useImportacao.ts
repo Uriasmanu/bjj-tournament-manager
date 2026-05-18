@@ -64,7 +64,13 @@ function processarChave(data: ChaveRaw): ChaveLuta {
       desclassificacao: null,
       vencedor: null,
       tipoVitoria: "pontos" as const,
-      status: "pendente" as const
+      status: "pendente" as const,
+      montadasAtleta1: 0,
+      montadasAtleta2: 0,
+      passagensAtleta1: 0,
+      passagensAtleta2: 0,
+      quedasAtleta1: 0,
+      quedasAtleta2: 0
     }
   }))
 

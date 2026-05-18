@@ -133,7 +133,13 @@ export default function ScoreboardSetupPage() {
         desclassificacao: null,
         vencedor: null,
         tipoVitoria: "pontos",
-        status: "pendente"
+        status: "pendente",
+        montadasAtleta1: 0,
+        montadasAtleta2: 0,
+        passagensAtleta1: 0,
+        passagensAtleta2: 0,
+        quedasAtleta1: 0,
+        quedasAtleta2: 0
       }
     }
 

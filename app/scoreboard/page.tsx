@@ -71,7 +71,13 @@ export default function ScoreboardPage() {
         desclassificacao: null,
         vencedor: null,
         tipoVitoria: "pontos",
-        status: "pendente"
+        status: "pendente",
+        montadasAtleta1: 0,
+        montadasAtleta2: 0,
+        passagensAtleta1: 0,
+        passagensAtleta2: 0,
+        quedasAtleta1: 0,
+        quedasAtleta2: 0
       }
     }
 
@@ -165,7 +171,13 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
         desclassificacao: null,
         vencedor: null,
         tipoVitoria: "pontos",
-        status: "pendente"
+        status: "pendente",
+        montadasAtleta1: 0,
+        montadasAtleta2: 0,
+        passagensAtleta1: 0,
+        passagensAtleta2: 0,
+        quedasAtleta1: 0,
+        quedasAtleta2: 0
       }
     }
 
@@ -352,7 +364,14 @@ function PlacarCompleto({
       finalizacaoAtleta2: false,
       desclassificacao: atletaDSQ === 1 ? "atleta1" as const : "atleta2" as const,
       tipoVitoria: "desclassificacao" as const,
-      vencedor: vencedor as "atleta1" | "atleta2"
+      vencedor: vencedor as "atleta1" | "atleta2",
+      
+      montadasAtleta1: p1.montada,
+      montadasAtleta2: p2.montada,
+      passagensAtleta1: p1.passagem,
+      passagensAtleta2: p2.passagem,
+      quedasAtleta1: p1.queda,
+      quedasAtleta2: p2.queda
     }
     
     const chavesAtualizadas = await marcarLutaConcluida(

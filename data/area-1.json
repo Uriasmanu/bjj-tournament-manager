@@ -2,18 +2,18 @@
   "area": "Area 1",
   "chaves": [
     {
-      "categoria": "Azul Adulto",
+      "categoria": "Branca Adulto - Leve",
       "lutas": [
         {
           "id": 1,
           "round": 1,
           "atleta1": {
-            "nome": "Marcos Paulo",
-            "equipe": "Academia Winners"
+            "nome": "Carlos Silva",
+            "equipe": "Team Brasil"
           },
           "atleta2": {
-            "nome": "Rodrigo Souza",
-            "equipe": "Team CT"
+            "nome": "Pedro Santos",
+            "equipe": "Academia Jiu-Jitsu"
           },
           "resultado": {
             "pontosAtleta1": 0,
@@ -28,96 +28,21 @@
             "desclassificacao": null,
             "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "concluida"
+            "status": "concluida",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0
           }
         },
         {
           "id": 2,
           "round": 1,
           "atleta1": {
-            "nome": "Felipe Alves",
-            "equipe": "Grappling Shop"
-          },
-          "atleta2": {
-            "nome": "Bruno Costa",
-            "equipe": "Team Brasil"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta2",
-            "tipoVitoria": "pontos",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 3,
-          "round": 2,
-          "atleta1": {
-            "nome": "André Martins",
-            "equipe": "Nova União"
-          },
-          "atleta2": {
-            "nome": "Marcos Paulo",
-            "equipe": "Academia Winners"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "pontos",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 4,
-          "round": 2,
-          "atleta1": {
-            "nome": "Rafael Santos",
-            "equipe": "Team São Paulo"
-          },
-          "atleta2": {
-            "nome": "Felipe Alves",
-            "equipe": "Grappling Shop"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "desclassificacao",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 5,
-          "round": 3,
-          "atleta1": {
-            "nome": "Gustavo Lima",
-            "equipe": "Alliance"
+            "nome": "Marcos Oliveira",
+            "equipe": "Grappling Team"
           },
           "atleta2": {
             "nome": "",
@@ -135,221 +60,65 @@
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
             "vencedor": null,
-            "tipoVitoria": "desclassificacao",
-            "status": "concluida"
-          }
-        }
-      ],
-      "status": "concluida"
-    },
-    {
-      "categoria": "Branca Infantil",
-      "lutas": [
-        {
-          "id": 1,
-          "round": 1,
-          "atleta1": {
-            "nome": "Lucas Silva",
-            "equipe": "Team Brasil"
-          },
-          "atleta2": {
-            "nome": "Caio Santos",
-            "equipe": "Team São Paulo"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "atleta1",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 2,
-          "round": 2,
-          "atleta1": {
-            "nome": "Pedro Oliveira",
-            "equipe": "Team Rio"
-          },
-          "atleta2": {
-            "nome": "Lucas Silva",
-            "equipe": "Team Brasil"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "desclassificacao",
-            "status": "concluida"
-          }
-        }
-      ],
-      "status": "concluida"
-    },
-    {
-      "categoria": "Azul Adulto",
-      "lutas": [
-        {
-          "id": 1,
-          "round": 1,
-          "atleta1": {
-            "nome": "Marcos Paulo",
-            "equipe": "Academia Winners"
-          },
-          "atleta2": {
-            "nome": "Rodrigo Souza",
-            "equipe": "Team CT"
-          },
-          "resultado": {
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 2,
-          "round": 1,
-          "atleta1": {
-            "nome": "Felipe Alves",
-            "equipe": "Grappling Shop"
-          },
-          "atleta2": {
-            "nome": "Bruno Costa",
-            "equipe": "Team Brasil"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 156,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
             "tipoVitoria": "pontos",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 3,
-          "round": 2,
-          "atleta1": {
-            "nome": "André Martins",
-            "equipe": "Nova União"
-          },
-          "atleta2": {
-            "nome": "Marcos Paulo",
-            "equipe": "Academia Winners"
-          },
-          "resultado": {
-            "pontosAtleta1": 9,
-            "pontosAtleta2": 9,
-            "vantagensAtleta1": 1,
-            "vantagensAtleta2": 1,
-            "penalidadesAtleta1": 1,
-            "penalidadesAtleta2": 1,
-            "tempoDecorrido": 1,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "pontos",
-            "status": "concluida"
-          }
-        },
-        {
-          "id": 4,
-          "round": 2,
-          "atleta1": {
-            "nome": "Rafael Santos",
-            "equipe": "Team São Paulo"
-          },
-          "atleta2": {
-            "nome": "Felipe Alves",
-            "equipe": "Grappling Shop"
-          },
-          "resultado": {
-            "pontosAtleta1": 9,
-            "pontosAtleta2": 9,
-            "vantagensAtleta1": 1,
-            "vantagensAtleta2": 1,
-            "penalidadesAtleta1": 1,
-            "penalidadesAtleta2": 1,
-            "tempoDecorrido": 3,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "pontos",
-            "status": "concluida",
-            "montadasAtleta1": 4,
-            "montadasAtleta2": 4,
-            "passagensAtleta1": 3,
-            "passagensAtleta2": 3,
-            "quedasAtleta1": 2,
-            "quedasAtleta2": 2
-          }
-        },
-        {
-          "id": 5,
-          "round": 3,
-          "atleta1": {
-            "nome": "Gustavo Lima",
-            "equipe": "Alliance"
-          },
-          "atleta2": {
-            "nome": "André Martins",
-            "equipe": "Nova União"
-          },
-          "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0
           }
         }
       ],
       "status": "em_andamento"
     },
     {
-      "categoria": "Luta Manual",
+      "categoria": "Branca Adulto - Leve",
       "lutas": [
         {
-          "id": 1778981311799,
+          "id": 1,
           "round": 1,
           "atleta1": {
-            "nome": "a",
-            "equipe": "b"
+            "nome": "Carlos Silva",
+            "equipe": "Team Brasil"
           },
           "atleta2": {
-            "nome": "c",
-            "equipe": "d"
+            "nome": "Pedro Santos",
+            "equipe": "Academia Jiu-Jitsu"
+          },
+          "resultado": {
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": "atleta2",
+            "vencedor": "atleta1",
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0
+          }
+        },
+        {
+          "id": 2,
+          "round": 1,
+          "atleta1": {
+            "nome": "Marcos Oliveira",
+            "equipe": "Grappling Team"
+          },
+          "atleta2": {
+            "nome": "João Costa",
+            "equipe": "Team Fighter"
           },
           "resultado": {
             "pontosAtleta1": 0,
@@ -364,13 +133,52 @@
             "desclassificacao": null,
             "vencedor": null,
             "tipoVitoria": "pontos",
-            "status": "pendente"
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0
+          }
+        },
+        {
+          "id": 3,
+          "round": 2,
+          "atleta1": {
+            "nome": "Vencedor Luta 1",
+            "equipe": ""
+          },
+          "atleta2": {
+            "nome": "Vencedor Luta 2",
+            "equipe": ""
+          },
+          "resultado": {
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0
           }
         }
       ],
-      "status": "pendente"
+      "status": "em_andamento"
     }
   ],
-  "criadoEm": "2026-05-17T02:14:16.569Z",
-  "atualizadoEm": "2026-05-17T02:14:16.569Z"
+  "criadoEm": "2026-05-18T12:46:54.157Z",
+  "atualizadoEm": "2026-05-18T12:46:54.157Z"
 }

@@ -1,7 +1,7 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 4.0
-**Data:** 2026-05-16
+**Versão:** 5.0
+**Data:** 2026-05-17
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
 ---
@@ -75,13 +75,28 @@ interface Atleta {
 
 // Resultado da Luta
 interface ResultadoLuta {
+  // Pontuação total
   pontosAtleta1: number
   pontosAtleta2: number
+  
+  // Detalhamento de pontos por tipo
+  montadasAtleta1: number     // 4 pontos cada
+  montadasAtleta2: number
+  passagensAtleta1: number     // 3 pontos cada
+  passagensAtleta2: number
+  quedasAtleta1: number       // 2 pontos cada
+  quedasAtleta2: number
+  
+  // Vantagens e penalidades
   vantagensAtleta1: number
   vantagensAtleta2: number
   penalidadesAtleta1: number
   penalidadesAtleta2: number
+  
+  // Tempo
   tempoDecorrido: number
+  
+  // Resultado
   finalizacaoAtleta1: boolean
   finalizacaoAtleta2: boolean
   desclassificacao: "atleta1" | "atleta2" | null
@@ -196,6 +211,11 @@ app/
 data/                        # Dados persistidos (JSON)
 └── [area-nome].json         # Arquivos de área
 
+exemplos/                    # Arquivos de exemplo para teste
+├── chave-3-lutadores.json
+├── chave-4-lutadores.json
+└── chave-5-lutadores.json
+
 docs/
 ├── requirements.md          # Este documento
 └── ...
@@ -221,7 +241,7 @@ docs/
 
 1. **Registrar Pontos**: Árbitros registram montada (4), passagem (3), queda (2)
 2. **Vantagens/Punições**: Contador de vantagens e penalidades
-3. **Cronômetro**: Contagem regressiva com controle
+3. **Cronômetro**: Contagem regressiva com controle, retorna tempo decorrido
 4. **Editar Árbitro**: Campo editável no header para nome do árbitro
 5. **Desclassificação**: Botão discreto (30% opacity) para desclassificar atleta
 
@@ -230,8 +250,8 @@ docs/
 1. Clicar em "Finalizar Luta"
 2. Modal 1: **Selecionar Vencedor** - escolhe qual atleta venceu
 3. Modal 2: **Selecionar Tipo de Vitória** - pontos ou finalização
-4. Se DSQ: Modal 1 pergunta qual atleta, Modal 2 pede confirmação
-5. JSON da área é atualizado com resultado
+4. Se DSQ: Modal 1 pergunta qual atleta, Modal 2 pede confirmação antes de salvar
+5. JSON da área é atualizado com todos os campos do resultado
 6. Status da luta muda para "concluida"
 
 ### 8.5 Conclusão da Chave
@@ -241,13 +261,30 @@ docs/
 
 ---
 
-## 9. Histórias de Usuário
+## 9. Dados Salvos no Resultado
+
+Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
+
+| Campo | Descrição |
+|-------|-----------|
+| pontosAtleta1/2 | Total de pontos do atleta |
+| montadasAtleta1/2 | Quantidade de montadas (4 pontos cada) |
+| passagensAtleta1/2 | Quantidade de passagens de guarda (3 pontos cada) |
+| quedasAtleta1/2 | Quantidade de quedas/raspagens (2 pontos cada) |
+| vantagensAtleta1/2 | Contador de vantagens |
+| penalidadesAtleta1/2 | Contador de penalidades |
+| tempoDecorrido | Tempo total decorrido em segundos |
+| finalizacaoAtleta1/2 | Indica se houve finalização |
+| desclassificacao | Indica qual atleta foi desclassificado |
+| tipoVitoria | Tipo: pontos, finalizacao, desclassificacao, empate |
+| vencedor | Quem venceu a luta |
+| status | Status: pendente ou concluida |
+
+---
+
+## 10. Histórias de Usuário
 
 ### HU-001: Tela de Seleção de Entrada
-
-**Como** usuário do sistema,
-**Eu quero** ver uma tela inicial que me permita escolher entre acessar o painel de administração ou a tela de placar,
-**Para** que eu possa navegar facilmente para a função desejada.
 
 **Critérios de Aceitação:**
 - [x] Dois botões grandes e claramente identificáveis
@@ -257,10 +294,6 @@ docs/
 ---
 
 ### HU-002: Tela de Pré-Placar (Setup de Área)
-
-**Como** organizador/árbitro,
-**Eu quero** configurar a área de luta e importar as chaves de luta,
-**Para** que o sistema esteja preparado para o torneo.
 
 **Critérios de Aceitação:**
 - [x] Campo para definir nome da área (apenas uma vez, no início)
@@ -276,10 +309,6 @@ docs/
 
 ### HU-003: Cronômetro de Luta
 
-**Como** árbitro,
-**Eu quero** controlar o tempo de luta com contagem regressiva,
-**Para** que a luta tenha duração definida e controlada.
-
 **Critérios de Aceitação:**
 - [x] Tempos predefinidos: Select com opções de 2, 5, 6 e 10 minutos
 - [x] Configuração manual: Campos de minutos e segundos
@@ -287,14 +316,11 @@ docs/
 - [x] Controles: Iniciar/Parar, Reiniciar
 - [x] Alerta visual nos últimos 10 segundos (vermelho)
 - [x] Reiniciar zera todos os pontos também
+- [x] Retorna tempo decorrido para registro no resultado
 
 ---
 
 ### HU-004: Sistema de Pontuação
-
-**Como** árbitro,
-**Eu quero** registrar e controlar a pontuação dos lutadores,
-**Para** que o placar reflita corretamente o andamento da luta.
 
 **Critérios de Aceitação:**
 - [x] Montada / Pegada nas Costas = **4 pontos**
@@ -306,14 +332,11 @@ docs/
 - [x] Contador de **vantagens** (+1/-1)
 - [x] Contador de **penalidades** (-1/+1)
 - [x] Exibição: nome do atleta, equipe, faixa
+- [x] **Registro detalhado**: salva quantidade de cada tipo de ponto
 
 ---
 
 ### HU-005: Placar em Tempo Real
-
-**Como** espectador ou atleta,
-**Eu quero** visualizar o placar em tempo real,
-**Para** acompanhar o andamento da luta durante a competição.
 
 **Critérios de Aceitação:**
 - [x] Layout otimizado para telão/projetor
@@ -331,14 +354,10 @@ docs/
 
 ### HU-006: Finalização e Desclassificação
 
-**Como** árbitro,
-**Eu quero** marcar se houve finalização ou desclassificação,
-**Para** que o sistema determine corretamente o vencedor.
-
 **Critérios de Aceitação:**
 - [x] Botão discreto de **Desclassificação** no placar (para cada atleta)
 - [x] Ao clicar em DSQ → Modal pergunta qual atleta será desclassificado
-- [x] Modal pede confirmação antes de salvar
+- [x] Modal pede **confirmação** antes de salvar
 - [x] Lógica de determinação do vencedor:
   1. Se finalização → vence quem finalizou
   2. Se desclassificação → vence o outro
@@ -348,27 +367,21 @@ docs/
 
 ### HU-007: Persistência de Dados
 
-**Como** organizador,
-**Eu quero** que os dados sejam salvos automaticamente,
-**Para** que não perca informações em caso de refresh ou erro.
-
 **Critérios de Aceitação:**
 - [x] Ao clicar em "Finalizar Luta", atualizar JSON da área com:
-  - Pontuações finais
+  - Pontuações finais detalhadas (montadas, passagens, quedas)
+  - Total de pontos
   - Tempo decorrido
   - Nome do árbitro
   - Status (concluida)
   - Vencedor determinado
   - Tipo de vitória
+  - Flags de finalização e desclassificação
 - [x] Dados salvos em `data/[area].json` via API REST
 
 ---
 
 ### HU-008: Nova Luta
-
-**Como** árbitro,
-**Eu quero** selecionar uma nova luta após finalizar,
-**Para** continuar o fluxo da competição.
 
 **Critérios de Aceitação:**
 - [x] Botão "Nova Luta" retorna para tela de seleção de lutas
@@ -377,7 +390,7 @@ docs/
 
 ---
 
-## 10. Estrutura do JSON de Importação
+## 11. Estrutura do JSON de Importação
 
 ```json
 {
@@ -407,12 +420,15 @@ docs/
 
 ---
 
-## 11. Glossário de Termos
+## 12. Glossário de Termos
 
 | Termo | Definição |
 |-------|-----------|
 | Chave de Luta | Conjunto de confrontos de uma categoria |
 | Área de Luta | Local físico onde ocorre a luta (definido no início) |
+| Montada | Posição de控制了4 pontos) |
+| Passagem | Passagem de guarda (3 pontos) |
+| Queda | Queda ou raspagem (2 pontos) |
 | Finalização | Vitória por submissão ou knockout (prioridade máxima) |
 | Desclassificação (DSQ) | Eliminação por infração (outro atleta vence) |
 | Pontos + Vantagens | Critério de desempate após finalização |
@@ -421,7 +437,7 @@ docs/
 
 ---
 
-## 12. Componentes Shadcn Disponíveis
+## 13. Componentes Shadcn Disponíveis
 
 O sistema utiliza os seguintes componentes do Shadcn UI:
 
@@ -436,5 +452,5 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 ---
 
-*Documento atualizado em: 2026-05-16*
-*Versão: 4.0*
+*Documento atualizado em: 2026-05-17*
+*Versão: 5.0*
