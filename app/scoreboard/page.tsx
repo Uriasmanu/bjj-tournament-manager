@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button"
 import { ChaveLuta, Luta } from "@/app/types"
 import type { AtletaState, LutadorInfo } from "@/app/components/scoreboard/AtletaCard"
 import { getDadosIniciais, adicionarNovaLuta, marcarLutaConcluida } from "@/app/hooks/useStorage"
+import { generateUUID } from "@/app/lib/uuid"
 import { AdicionarLutaModal, NovaLutaData } from "@/app/components/scoreboard/AdicionarLutaModal"
 import { ScoreboardTimer } from "@/app/components/Timer"
 import { ScoreHeader } from "@/app/components/scoreboard/ScoreHeader"
 import { AtletaCard } from "@/app/components/scoreboard/AtletaCard"
 
-function gerarIdUnico(): number {
-  return Date.now() + Math.floor(Math.random() * 1000)
+function gerarIdUnico(): string {
+  return generateUUID()
 }
 
 export default function ScoreboardPage() {
@@ -25,7 +26,7 @@ export default function ScoreboardPage() {
   const [chaves, setChaves] = useState<ChaveLuta[]>([])
   const [chaveSelecionada, setChaveSelecionada] = useState<ChaveLuta | null>(null)
   const [lutaSelecionada, setLutaSelecionada] = useState<Luta | null>(null)
-  const [chaveIndex, setChaveIndex] = useState<number>(-1)
+  const [chaveId, setChaveId] = useState<string>("")
   const [mostrarModalAdicionar, setMostrarModalAdicionar] = useState(false)
 
   const carregarDados = useCallback(async () => {
@@ -39,9 +40,9 @@ export default function ScoreboardPage() {
     carregarDados()
   }, [carregarDados])
 
-  const handleSelecionarLuta = (chave: ChaveLuta, chaveIdx: number, luta: Luta) => {
+  const handleSelecionarLuta = (chave: ChaveLuta, luta: Luta) => {
     setChaveSelecionada(chave)
-    setChaveIndex(chaveIdx)
+    setChaveId(chave.id)
     setLutaSelecionada(luta)
   }
 
@@ -49,7 +50,7 @@ export default function ScoreboardPage() {
     await carregarDados()
     setLutaSelecionada(null)
     setChaveSelecionada(null)
-    setChaveIndex(-1)
+    setChaveId("")
   }
 
   const handleAdicionarNovaLuta = async (data: NovaLutaData) => {
@@ -107,7 +108,7 @@ export default function ScoreboardPage() {
     )
   }
 
-  if (!lutaSelecionada || !chaveSelecionada || chaveIndex < 0) {
+  if (!lutaSelecionada || !chaveSelecionada || !chaveId) {
     return (
       <>
         <SeletorLutas
@@ -128,7 +129,7 @@ export default function ScoreboardPage() {
       area={area}
       chaves={chaves}
       setChaves={setChaves}
-      chaveIndex={chaveIndex}
+      chaveId={chaveId}
       luta={lutaSelecionada}
       onTrocarChave={handleTrocarChave}
     />
@@ -137,7 +138,7 @@ export default function ScoreboardPage() {
 
 interface SeletorLutasProps {
   chaves: ChaveLuta[]
-  onSelecionarLuta: (chave: ChaveLuta, chaveIdx: number, luta: Luta) => void
+  onSelecionarLuta: (chave: ChaveLuta, luta: Luta) => void
 }
 
 function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
@@ -152,13 +153,15 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
 
   const handleAdicionarLuta = async (data: NovaLutaData) => {
     const area = (await getDadosIniciais()).area
-    
+
     const novaLuta: Luta = {
-      id: gerarIdUnico(),
+      id: generateUUID(),
       round: 1,
-      atleta1: { nome: data.nomeAtleta1, equipe: data.equipe1 },
-      atleta2: { nome: data.nomeAtleta2, equipe: data.equipe2 },
+      position: 0,
+      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1 },
+      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2 },
       resultado: {
+        id: generateUUID(),
         pontosAtleta1: 0,
         pontosAtleta2: 0,
         vantagensAtleta1: 0,
@@ -177,7 +180,11 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
         passagensAtleta1: 0,
         passagensAtleta2: 0,
         quedasAtleta1: 0,
-        quedasAtleta2: 0
+        quedasAtleta2: 0,
+        lutaId: null,
+        vencedorAtletaId: null,
+        perdedorAtletaId: null,
+        AtletaDesclassificadoId: null,
       }
     }
 
@@ -249,7 +256,7 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
                       </div>
                       {!isConcluida && (
                         <button
-                          onClick={() => onSelecionarLuta(chave, index, luta)}
+                          onClick={() => onSelecionarLuta(chave, luta)}
                           className="text-[#D4AF37] text-sm hover:underline"
                         >
                           Iniciar →
@@ -277,7 +284,7 @@ interface PlacarCompletoProps {
   area: string
   chaves: ChaveLuta[]
   setChaves: React.Dispatch<React.SetStateAction<ChaveLuta[]>>
-  chaveIndex: number
+  chaveId: string
   luta: Luta
   onTrocarChave: () => void
 }
@@ -286,7 +293,7 @@ function PlacarCompleto({
   area, 
   chaves, 
   setChaves, 
-  chaveIndex, 
+  chaveId, 
   luta, 
   onTrocarChave 
 }: PlacarCompletoProps) {
@@ -304,15 +311,15 @@ function PlacarCompleto({
   const initialState = { montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 }
 
   const [lutador1] = useState<LutadorInfo>({
-    nome: luta.atleta1.nome,
-    faixa: "Branca",
-    equipe: luta.atleta1.equipe,
+    nome: luta.atleta1?.nome || "",
+    faixa: luta.atleta1?.faixa || "Branca",
+    equipe: luta.atleta1?.equipe || "",
   })
 
   const [lutador2] = useState<LutadorInfo>({
-    nome: luta.atleta2.nome,
-    faixa: "Branca",
-    equipe: luta.atleta2.equipe,
+    nome: luta.atleta2?.nome || "",
+    faixa: luta.atleta2?.faixa || "Branca",
+    equipe: luta.atleta2?.equipe || "",
   })
 
   const handleScoreChange = (player: 1 | 2, category: keyof AtletaState, value: number) => {
@@ -376,7 +383,7 @@ function PlacarCompleto({
     
     const chavesAtualizadas = await marcarLutaConcluida(
       area, 
-      chaveIndex, 
+      chaveId, 
       luta.id, 
       dadosResultado,
       chaves
@@ -429,7 +436,7 @@ function PlacarCompleto({
     
     const chavesAtualizadas = await marcarLutaConcluida(
       area, 
-      chaveIndex, 
+      chaveId, 
       luta.id, 
       dadosResultado,
       chaves

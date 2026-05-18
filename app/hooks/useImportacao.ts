@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react"
 import { ChaveLuta, Luta } from "@/app/types"
+import { generateUUID } from "@/app/lib/uuid"
 
 export interface ResultadoImportacao {
   nomeArquivo: string
@@ -10,17 +11,17 @@ export interface ResultadoImportacao {
 }
 
 interface ChaveRaw {
+  id?: string
   categoria: string
   lutas: Array<{
-    id?: number
+    id?: string
     round?: number
-    atleta1?: { nome?: string; equipe?: string }
-    atleta2?: { nome?: string; equipe?: string }
+    position?: number
+    nextMatchId?: string
+    previousMatchIds?: string[]
+    atleta1?: { id?: string; nome?: string; equipe?: string; faixa?: string }
+    atleta2?: { id?: string; nome?: string; equipe?: string; faixa?: string }
   }>
-}
-
-function gerarIdUnico(): number {
-  return Date.now() + Math.floor(Math.random() * 1000)
 }
 
 function validarChave(data: unknown): { valido: boolean; dados?: ChaveRaw; erro?: string } {
@@ -47,11 +48,19 @@ function validarChave(data: unknown): { valido: boolean; dados?: ChaveRaw; erro?
 
 function processarChave(data: ChaveRaw): ChaveLuta {
   const lutas: Luta[] = data.lutas.map((luta, index) => ({
-    id: luta.id || gerarIdUnico() + index,
+    id: luta.id || generateUUID(),
     round: luta.round || 1,
-    atleta1: { nome: luta.atleta1?.nome || "", equipe: luta.atleta1?.equipe || "" },
-    atleta2: { nome: luta.atleta2?.nome || "", equipe: luta.atleta2?.equipe || "" },
+    position: luta.position ?? index,
+    nextMatchId: luta.nextMatchId,
+    previousMatchIds: luta.previousMatchIds,
+    atleta1: luta.atleta1
+      ? { id: luta.atleta1.id || generateUUID(), nome: luta.atleta1.nome || "", equipe: luta.atleta1.equipe || "", faixa: luta.atleta1.faixa }
+      : null,
+    atleta2: luta.atleta2
+      ? { id: luta.atleta2.id || generateUUID(), nome: luta.atleta2.nome || "", equipe: luta.atleta2.equipe || "", faixa: luta.atleta2.faixa }
+      : null,
     resultado: {
+      id: generateUUID(),
       pontosAtleta1: 0,
       pontosAtleta2: 0,
       vantagensAtleta1: 0,
@@ -70,14 +79,26 @@ function processarChave(data: ChaveRaw): ChaveLuta {
       passagensAtleta1: 0,
       passagensAtleta2: 0,
       quedasAtleta1: 0,
-      quedasAtleta2: 0
+      quedasAtleta2: 0,
+      lutaId: null,
+      vencedorAtletaId: null,
+      perdedorAtletaId: null,
+      AtletaDesclassificadoId: null,
     }
   }))
 
+  const nomes = new Set<string>()
+  lutas.forEach(l => {
+    if (l.atleta1?.nome) nomes.add(l.atleta1.nome)
+    if (l.atleta2?.nome) nomes.add(l.atleta2.nome)
+  })
+
   return {
+    id: data.id || generateUUID(),
     categoria: data.categoria,
     lutas,
-    status: "pendente"
+    status: "pendente",
+    totalCompetidores: nomes.size,
   }
 }
 

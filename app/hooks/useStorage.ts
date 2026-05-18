@@ -1,4 +1,9 @@
-import { ChaveLuta, Luta, DadosArea } from "@/app/types"
+"use client"
+
+import { ChaveLuta, Luta, DadosArea, Atleta } from "@/app/types"
+import { generateUUID } from "@/app/lib/uuid"
+import { migrateAllData } from "@/app/lib/migrate-ids"
+import { advanceWinner } from "@/app/lib/bracket-utils"
 
 const API_URL = "/api/area"
 
@@ -21,7 +26,7 @@ export interface DadosResultadoLuta {
   desclassificacao: "atleta1" | "atleta2" | null
   tipoVitoria: "pontos" | "finalizacao" | "desclassificacao" | "empate"
   vencedor: "atleta1" | "atleta2" | "empate" | null
-  
+
   montadasAtleta1: number
   montadasAtleta2: number
   passagensAtleta1: number
@@ -32,7 +37,7 @@ export interface DadosResultadoLuta {
 
 export async function getDadosIniciais(): Promise<DadosIniciais> {
   const dadosSalvos = localStorage.getItem("bjj_tournament_area_nome")
-  
+
   if (!dadosSalvos) {
     return { area: "", chaves: [], areaDefinida: false }
   }
@@ -43,10 +48,13 @@ export async function getDadosIniciais(): Promise<DadosIniciais> {
       return { area: dadosSalvos, chaves: [], areaDefinida: true }
     }
     const dados: DadosArea = await response.json()
+
+    const dadosMigrados = migrateAllData(dados)
+
     return {
-      area: dados.area || dadosSalvos,
-      chaves: dados.chaves || [],
-      areaDefinida: !!dados.area
+      area: dadosMigrados.area || dadosSalvos,
+      chaves: dadosMigrados.chaves || [],
+      areaDefinida: !!dadosMigrados.area
     }
   } catch {
     return { area: dadosSalvos, chaves: [], areaDefinida: true }
@@ -56,13 +64,20 @@ export async function getDadosIniciais(): Promise<DadosIniciais> {
 export async function salvarDados(area: string, chaves: ChaveLuta[]): Promise<boolean> {
   try {
     localStorage.setItem("bjj_tournament_area_nome", area)
-    
+
+    const dadosArea: DadosArea = {
+      id: generateUUID(),
+      area,
+      criadoEm: new Date().toISOString(),
+      chaves,
+    }
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ area, chaves })
+      body: JSON.stringify(dadosArea)
     })
-    
+
     return response.ok
   } catch (error) {
     console.error("Failed to save data:", error)
@@ -72,76 +87,120 @@ export async function salvarDados(area: string, chaves: ChaveLuta[]): Promise<bo
 
 export async function adicionarNovaLuta(area: string, chaves: ChaveLuta[], novaLuta: Luta): Promise<ChaveLuta[]> {
   let chaveManual = chaves.find(c => c.categoria === "Luta Manual")
-  
+
   if (!chaveManual) {
     chaveManual = {
+      id: generateUUID(),
       categoria: "Luta Manual",
       lutas: [],
-      status: "pendente"
+      status: "pendente",
+      totalCompetidores: 0,
     }
   }
-  
-  chaveManual.lutas.push(novaLuta)
-  
-  const chavesAtualizadas = chaves.map(c => 
-    c.categoria === "Luta Manual" ? chaveManual! : c
+
+  const chaveAtualizada: ChaveLuta = {
+    ...chaveManual,
+    lutas: [...chaveManual.lutas, novaLuta],
+    totalCompetidores: calculateTotalCompetidores([...chaveManual.lutas, novaLuta]),
+  }
+
+  const chavesAtualizadas = chaves.map(c =>
+    c.categoria === "Luta Manual" ? chaveAtualizada : c
   )
-  
+
   if (!chaves.some(c => c.categoria === "Luta Manual")) {
-    chavesAtualizadas.push(chaveManual!)
+    chavesAtualizadas.push(chaveAtualizada)
   }
 
   await salvarDados(area, chavesAtualizadas)
-  
+
   return chavesAtualizadas
 }
 
 export async function marcarLutaConcluida(
-  area: string, 
-  chaveIndex: number, 
-  lutaId: number, 
+  area: string,
+  chaveId: string,
+  lutaId: string,
   dadosResultado: DadosResultadoLuta,
   chaves: ChaveLuta[]
 ): Promise<ChaveLuta[]> {
   const chavesAtualizadas = [...chaves]
-  
-  const chave = chavesAtualizadas[chaveIndex]
+
+  const chave = chavesAtualizadas.find(c => c.id === chaveId)
+  if (!chave) return chavesAtualizadas
+
   const luta = chave.lutas.find(l => l.id === lutaId)
-  
-  if (luta && luta.resultado) {
-    luta.resultado.status = "concluida"
-    luta.resultado.pontosAtleta1 = dadosResultado.pontosAtleta1
-    luta.resultado.pontosAtleta2 = dadosResultado.pontosAtleta2
-    luta.resultado.vantagensAtleta1 = dadosResultado.vantagensAtleta1
-    luta.resultado.vantagensAtleta2 = dadosResultado.vantagensAtleta2
-    luta.resultado.penalidadesAtleta1 = dadosResultado.penalidadesAtleta1
-    luta.resultado.penalidadesAtleta2 = dadosResultado.penalidadesAtleta2
-    luta.resultado.tempoDecorrido = dadosResultado.tempoDecorrido
-    luta.resultado.finalizacaoAtleta1 = dadosResultado.finalizacaoAtleta1
-    luta.resultado.finalizacaoAtleta2 = dadosResultado.finalizacaoAtleta2
-    luta.resultado.desclassificacao = dadosResultado.desclassificacao
-    luta.resultado.tipoVitoria = dadosResultado.tipoVitoria
-    luta.resultado.vencedor = dadosResultado.vencedor
-    
-    luta.resultado.montadasAtleta1 = dadosResultado.montadasAtleta1
-    luta.resultado.montadasAtleta2 = dadosResultado.montadasAtleta2
-    luta.resultado.passagensAtleta1 = dadosResultado.passagensAtleta1
-    luta.resultado.passagensAtleta2 = dadosResultado.passagensAtleta2
-    luta.resultado.quedasAtleta1 = dadosResultado.quedasAtleta1
-    luta.resultado.quedasAtleta2 = dadosResultado.quedasAtleta2
+  if (!luta) return chavesAtualizadas
+
+  const winnerAtleta: Atleta | null = dadosResultado.vencedor === "atleta1" ? luta.atleta1 : dadosResultado.vencedor === "atleta2" ? luta.atleta2 : null
+  const loserAtleta: Atleta | null = winnerAtleta
+    ? (dadosResultado.vencedor === "atleta1" ? luta.atleta2 : luta.atleta1)
+    : null
+
+  const resultado = {
+    ...luta.resultado,
+    id: generateUUID(),
+    pontosAtleta1: dadosResultado.pontosAtleta1,
+    pontosAtleta2: dadosResultado.pontosAtleta2,
+    vantagensAtleta1: dadosResultado.vantagensAtleta1,
+    vantagensAtleta2: dadosResultado.vantagensAtleta2,
+    penalidadesAtleta1: dadosResultado.penalidadesAtleta1,
+    penalidadesAtleta2: dadosResultado.penalidadesAtleta2,
+    tempoDecorrido: dadosResultado.tempoDecorrido,
+    finalizacaoAtleta1: dadosResultado.finalizacaoAtleta1,
+    finalizacaoAtleta2: dadosResultado.finalizacaoAtleta2,
+    desclassificacao: dadosResultado.desclassificacao,
+    tipoVitoria: dadosResultado.tipoVitoria,
+    vencedor: dadosResultado.vencedor,
+    status: "concluida" as const,
+    montadasAtleta1: dadosResultado.montadasAtleta1,
+    montadasAtleta2: dadosResultado.montadasAtleta2,
+    passagensAtleta1: dadosResultado.passagensAtleta1,
+    passagensAtleta2: dadosResultado.passagensAtleta2,
+    quedasAtleta1: dadosResultado.quedasAtleta1,
+    quedasAtleta2: dadosResultado.quedasAtleta2,
+    lutaId: lutaId,
+    vencedorAtletaId: winnerAtleta?.id || null,
+    perdedorAtletaId: loserAtleta?.id || null,
+    AtletaDesclassificadoId: dadosResultado.desclassificacao
+      ? (dadosResultado.desclassificacao === "atleta1" ? luta.atleta1?.id : luta.atleta2?.id) || null
+      : null,
   }
-  
-  const temLutasPendentes = chave.lutas.some(l => l.resultado?.status !== "concluida")
-  chave.status = temLutasPendentes ? "em_andamento" : "concluida"
-  
-  await salvarDados(area, chavesAtualizadas)
-  
-  return chavesAtualizadas
+
+  const lutaAtualizada: Luta = { ...luta, resultado }
+
+  const chavesComLutaAtualizada = chavesAtualizadas.map(c => {
+    if (c.id !== chaveId) return c
+    return {
+      ...c,
+      lutas: c.lutas.map(l => l.id === lutaId ? lutaAtualizada : l)
+    }
+  })
+
+  let chaveResult = chavesComLutaAtualizada.find(c => c.id === chaveId)
+  if (chaveResult && winnerAtleta && loserAtleta) {
+    chaveResult = advanceWinner(chaveResult, lutaId, winnerAtleta, loserAtleta)
+  }
+
+  const finalChaves = chavesComLutaAtualizada.map(c => {
+    if (c.id !== chaveId) return c
+    return chaveResult
+  })
+
+  const temLutasPendentes = chaveResult.lutas.some(l => l.resultado?.status !== "concluida")
+  const chavesFinais = finalChaves.map(c => {
+    if (c.id !== chaveId) return c
+    return { ...c, status: temLutasPendentes ? "em_andamento" as const : "concluida" as const }
+  })
+
+  await salvarDados(area, chavesFinais)
+
+  return chavesFinais
 }
 
 export async function limparDados(area: string): Promise<void> {
   localStorage.removeItem("bjj_tournament_area_nome")
-  
+
   if (area) {
     try {
       await fetch(`/api/area?area=${encodeURIComponent(area)}`, {
@@ -151,4 +210,13 @@ export async function limparDados(area: string): Promise<void> {
       console.error("Erro ao limpar dados da API:", error)
     }
   }
+}
+
+function calculateTotalCompetidores(lutas: Luta[]): number {
+  const nomes = new Set<string>()
+  lutas.forEach(l => {
+    if (l.atleta1?.nome) nomes.add(l.atleta1.nome)
+    if (l.atleta2?.nome) nomes.add(l.atleta2.nome)
+  })
+  return nomes.size
 }
