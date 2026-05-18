@@ -2,53 +2,25 @@
   "area": "Area 1",
   "chaves": [
     {
+      "id": "a7c98ded-34fa-4102-a0f3-33c61e7347df",
       "categoria": "Branca Adulto - Leve",
       "lutas": [
         {
           "id": 1,
           "round": 1,
+          "position": 0,
           "atleta1": {
+            "id": "e3a27d37-43c2-4712-b6d7-585f12e16a73",
             "nome": "Carlos Silva",
             "equipe": "Team Brasil"
           },
           "atleta2": {
+            "id": "9cfc20e7-23b1-45f2-a917-9d67652bee11",
             "nome": "Pedro Santos",
             "equipe": "Academia Jiu-Jitsu"
           },
           "resultado": {
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "pontos",
-            "status": "concluida",
-            "montadasAtleta1": 0,
-            "montadasAtleta2": 0,
-            "passagensAtleta1": 0,
-            "passagensAtleta2": 0,
-            "quedasAtleta1": 0,
-            "quedasAtleta2": 0
-          }
-        },
-        {
-          "id": 2,
-          "round": 1,
-          "atleta1": {
-            "nome": "Marcos Oliveira",
-            "equipe": "Grappling Team"
-          },
-          "atleta2": {
-            "nome": "",
-            "equipe": ""
-          },
-          "resultado": {
+            "id": "1504fc0b-a875-46b7-88a2-0e563fb5eac0",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -67,27 +39,25 @@
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
-            "quedasAtleta2": 0
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
           }
-        }
-      ],
-      "status": "em_andamento"
-    },
-    {
-      "categoria": "Branca Adulto - Leve",
-      "lutas": [
+        },
         {
-          "id": 1,
+          "id": 2,
           "round": 1,
+          "position": 1,
           "atleta1": {
-            "nome": "Carlos Silva",
-            "equipe": "Team Brasil"
+            "id": "48052a4f-a133-4f82-9876-660d0d68b46d",
+            "nome": "Marcos Oliveira",
+            "equipe": "Grappling Team"
           },
-          "atleta2": {
-            "nome": "Pedro Santos",
-            "equipe": "Academia Jiu-Jitsu"
-          },
+          "atleta2": null,
           "resultado": {
+            "id": "b96f0779-4739-4bbe-b412-aa573f09b5c3",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -97,30 +67,87 @@
             "tempoDecorrido": 0,
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
-            "desclassificacao": "atleta2",
-            "vencedor": "atleta1",
-            "tipoVitoria": "desclassificacao",
-            "status": "concluida",
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
-            "quedasAtleta2": 0
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
+          }
+        }
+      ],
+      "status": "pendente",
+      "totalCompetidores": 3
+    },
+    {
+      "id": "931e33d6-9ea2-4e9e-8c36-f98b35caf53b",
+      "categoria": "Branca Adulto - Leve",
+      "lutas": [
+        {
+          "id": 1,
+          "round": 1,
+          "position": 0,
+          "atleta1": {
+            "id": "e5f7ea65-64bb-4f7f-8bea-17eae57537a6",
+            "nome": "Carlos Silva",
+            "equipe": "Team Brasil"
+          },
+          "atleta2": {
+            "id": "a59b4368-0c76-43aa-9348-12bc0eeee5e1",
+            "nome": "Pedro Santos",
+            "equipe": "Academia Jiu-Jitsu"
+          },
+          "resultado": {
+            "id": "ef0e22cb-1ded-47d9-8317-fe17b0247d0c",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
           }
         },
         {
           "id": 2,
           "round": 1,
+          "position": 1,
           "atleta1": {
+            "id": "c819e701-88e9-4822-b5e4-46605783424a",
             "nome": "Marcos Oliveira",
             "equipe": "Grappling Team"
           },
           "atleta2": {
+            "id": "314745c4-83c1-4155-85f9-9c1ff19a612b",
             "nome": "João Costa",
             "equipe": "Team Fighter"
           },
           "resultado": {
+            "id": "ed7809dd-c52a-4cc0-a29f-e117a23dd9d4",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -139,21 +166,29 @@
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
-            "quedasAtleta2": 0
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
           }
         },
         {
           "id": 3,
           "round": 2,
+          "position": 2,
           "atleta1": {
+            "id": "5fd15c47-0f98-43ab-9079-131e8eb91dc0",
             "nome": "Vencedor Luta 1",
             "equipe": ""
           },
           "atleta2": {
+            "id": "f689ca3c-d146-435c-9153-c68f6664ae19",
             "nome": "Vencedor Luta 2",
             "equipe": ""
           },
           "resultado": {
+            "id": "6eb7faf7-9305-4467-a987-4942e848ab62",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -172,13 +207,18 @@
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
-            "quedasAtleta2": 0
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
           }
         }
       ],
-      "status": "em_andamento"
+      "status": "pendente",
+      "totalCompetidores": 6
     }
   ],
-  "criadoEm": "2026-05-18T12:46:54.157Z",
-  "atualizadoEm": "2026-05-18T12:46:54.157Z"
+  "criadoEm": "2026-05-18T14:49:20.941Z",
+  "atualizadoEm": "2026-05-18T14:49:20.941Z"
 }

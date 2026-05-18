@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ChaveLuta, Luta } from "@/app/types"
 
-import { 
+import {
   ToastProvider,
   AreaCard,
   ImportacaoCard,
@@ -19,26 +19,23 @@ import {
   LutaManualData
 } from "@/app/components/setup"
 
-import { 
-  getDadosIniciais, 
-  salvarDados, 
-  limparDados 
+import {
+  getDadosIniciais,
+  salvarDados,
+  limparDados
 } from "@/app/hooks/useStorage"
 import { useImportacao } from "@/app/hooks/useImportacao"
+import { generateUUID } from "@/app/lib/uuid"
 
 interface ToastState {
   tipo: "sucesso" | "erro"
   mensagem: string
 }
 
-function gerarIdUnico(): number {
-  return Date.now() + Math.floor(Math.random() * 1000)
-}
-
 export default function ScoreboardSetupPage() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const [area, setArea] = useState("")
   const [chaves, setChaves] = useState<ChaveLuta[]>([])
   const [toast, setToast] = useState<ToastState | null>(null)
@@ -91,7 +88,7 @@ export default function ScoreboardSetupPage() {
 
   const handleImportar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const chavesImportadas = await importarArquivos(event.target.files)
-    
+
     if (chavesImportadas.length > 0) {
       const novasChaves = [...chaves, ...chavesImportadas]
       setChaves(novasChaves)
@@ -116,11 +113,13 @@ export default function ScoreboardSetupPage() {
 
   const handleSubmeterLutaManual = async (data: LutaManualData) => {
     const novaLuta: Luta = {
-      id: gerarIdUnico(),
+      id: generateUUID(),
       round: 1,
-      atleta1: { nome: data.nomeAtleta1, equipe: data.equipe1 },
-      atleta2: { nome: data.nomeAtleta2, equipe: data.equipe2 },
+      position: 0,
+      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1 },
+      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2 },
       resultado: {
+        id: generateUUID(),
         pontosAtleta1: 0,
         pontosAtleta2: 0,
         vantagensAtleta1: 0,
@@ -139,14 +138,20 @@ export default function ScoreboardSetupPage() {
         passagensAtleta1: 0,
         passagensAtleta2: 0,
         quedasAtleta1: 0,
-        quedasAtleta2: 0
+        quedasAtleta2: 0,
+        lutaId: null,
+        vencedorAtletaId: null,
+        perdedorAtletaId: null,
+        AtletaDesclassificadoId: null,
       }
     }
 
     const novaChave: ChaveLuta = {
+      id: generateUUID(),
       categoria: "Luta Manual",
       lutas: [novaLuta],
-      status: "pendente"
+      status: "pendente",
+      totalCompetidores: 2,
     }
 
     const novasChaves = [...chaves, novaChave]
@@ -175,7 +180,7 @@ export default function ScoreboardSetupPage() {
     <div className="min-h-screen bg-[#0A0A0A] p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <Cabecalho onLimpar={handleLimparDados} />
-        
+
         <h1 className="text-4xl font-bold text-white">Setup de Área</h1>
         <p className="text-gray-400">Configure a área e importe as chaves de luta</p>
 
@@ -235,16 +240,16 @@ export default function ScoreboardSetupPage() {
 function Cabecalho({ onLimpar }: { onLimpar: () => void }) {
   return (
     <div className="flex items-center justify-between">
-      <Link 
-        href="/" 
+      <Link
+        href="/"
         className="text-[#D4AF37] hover:text-[#f0c844] transition-colors"
       >
         ← Voltar ao Início
       </Link>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={onLimpar} 
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onLimpar}
         className="text-red-400 hover:text-red-300"
       >
         Limpar Dados

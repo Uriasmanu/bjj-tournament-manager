@@ -242,11 +242,11 @@ function SeletorLutas({ chaves, onSelecionarLuta }: SeletorLutasProps) {
                       <div className="flex items-center gap-4">
                         <span className="text-gray-500 text-sm">Luta {lutaIndex + 1}</span>
                         <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
-                          {luta.atleta1.nome}
+                          {luta.atleta1?.nome || "BYE"}
                         </span>
                         <span className="text-gray-500">vs</span>
                         <span className={`font-medium ${isConcluida ? "text-green-400" : "text-white"}`}>
-                          {luta.atleta2.nome}
+                          {luta.atleta2?.nome || "BYE"}
                         </span>
                         {isConcluida && (
                           <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">

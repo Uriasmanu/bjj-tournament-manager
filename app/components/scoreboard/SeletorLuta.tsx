@@ -22,22 +22,22 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
     const nomes = new Set<string>()
     chaveAtual.lutas.forEach((luta) => {
       if (luta.resultado?.status !== "concluida") {
-        nomes.add(luta.atleta1.nome)
-        nomes.add(luta.atleta2.nome)
+        if (luta.atleta1?.nome) nomes.add(luta.atleta1.nome)
+        if (luta.atleta2?.nome) nomes.add(luta.atleta2.nome)
       }
     })
 
     return Array.from(nomes).map((nome) => {
       const luta = chaveAtual.lutas.find(
-        (l) => l.atleta1.nome === nome || l.atleta2.nome === nome
+        (l) => l.atleta1?.nome === nome || l.atleta2?.nome === nome
       )
       return {
         nome,
         equipe:
-          luta?.atleta1.nome === nome
-            ? luta.atleta1.equipe
-            : luta?.atleta2.equipe || "",
-        faixa: luta?.atleta1.nome === nome ? luta.atleta1.faixa : luta?.atleta2.faixa,
+          luta?.atleta1?.nome === nome
+            ? (luta.atleta1?.equipe || "")
+            : (luta?.atleta2?.equipe || ""),
+        faixa: luta?.atleta1?.nome === nome ? luta.atleta1?.faixa : luta?.atleta2?.faixa,
       }
     })
   }, [chaveAtual])
