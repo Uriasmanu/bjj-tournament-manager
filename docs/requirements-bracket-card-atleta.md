@@ -15,25 +15,31 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ## 2. Requisito Funcional
 
-### RF-001: Exibir Ambos Atletas na Luta
+### RF-001: Cada Atleta Ocupa um Card Separado
 
-**Descrição:** Cada card de luta deve exibir ambos os atletas (`atleta1` e `atleta2`) claramente visíveis.
+**Descrição:** Cada luta deve renderizar DOIS cards - um para cada atleta.
 
 **Comportamento Atual:**
-- Cada `CompetitorCard` exibe apenas `luta.atleta1`
-- `atleta2` não é renderizado no card
+- Cada par de lutas (ex: Round1Pair) renderiza 4 cards
+- Cada card exibe apenas `luta.atleta1`
+- `atleta2` não é renderizado/visível
 
 **Comportamento Esperado:**
-- Manter a estrutura de 2 cards por par de lutas (já existe)
-- Modificar o `CompetitorCard` para exibir:
-  - Card 1: `luta.atleta1`
-  - Card 2: `luta.atleta2`
-- Ambos os nomes devem ser visíveis no bracket
+- Cada par de lutas deve renderizar 8 cards (2 por luta):
+  - Card 1: `luta[0].atleta1`
+  - Card 2: `luta[0].atleta2`
+  - Card 3: `luta[1].atleta1`
+  - Card 4: `luta[1].atleta2`
+  - ...e assim sucessivamente
+- Ambos os atletas de cada luta devem ser visíveis
+
+**Nota:** A estrutura visual do bracket (grid de 7 colunas) está correta - apenas adicionar cards para `atleta2`.
 
 **Implementação:**
-- No `CompetitorCard`, adicionar um parâmetro para indicar se deve renderizar `atleta1` ou `atleta2`
-- Passar `atletaIndex: 1 | 2` para controlar qual atleta exibir
-- Alternativamente: criar um segundo card para `atleta2` em cada par
+- Duplicar os cards em cada par de lutas
+- No primeiro card renderizar `atleta1`, no segundo card renderizar `atleta2`
+- Ajustar `nodeId` para serem únicos (ex: `node-L-1-0-a1` e `node-L-1-0-a2`)
+
 
 ---
 
@@ -83,11 +89,11 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ## 5. Critérios de Aceitação
 
-- [ ] Cada card exibe o atleta correto (atleta1 OU atleta2, não apenas atleta1)
-- [ ] Ambos os nomes de cada luta são visíveis no bracket
-- [ ] Estrutura de cards existente preservada (mantém o formato visual)
+- [ ] Cada luta exibe DOIS cards (atleta 1 e atleta 2)
+- [ ] Ambos os nomes são visíveis simultaneamente no bracket
 - [ ] Efeito de piscar (`animate-pulse`) removido dos cards
 - [ ] Modal de campeão (`ChampionModal`) completamente removido
+- [ ] Layout do bracket permanece visualmente idêntico (grid 7 colunas)
 - [ ] Conexões SVG entre nodes continuam funcionando
 - [ ] Comportamento de clique nas lutas permanece inalterado
 
