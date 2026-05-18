@@ -41,6 +41,7 @@ interface ChaveItemProps {
 
 function ChaveItem({ chave, chaveIndex, onExcluirChave }: ChaveItemProps) {
   const lutasConcluidas = chave.lutas.filter(l => l.resultado?.status === "concluida").length
+  const chavePodeSerDeletada = !chave.lutas.some(l => l.resultado?.status === "concluida")
 
   return (
     <div className="border border-zinc-700 rounded-lg overflow-hidden">
@@ -58,14 +59,16 @@ function ChaveItem({ chave, chaveIndex, onExcluirChave }: ChaveItemProps) {
             {lutasConcluidas}/{chave.lutas.length}
           </span>
           <StatusBadge status={chave.status} />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onExcluirChave(chaveIndex)}
-            className="text-red-400 hover:text-red-300 p-1 h-8"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {chavePodeSerDeletada && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onExcluirChave(chaveIndex)}
+              className="text-red-400 hover:text-red-300 p-1 h-8"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 

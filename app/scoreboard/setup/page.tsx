@@ -116,8 +116,8 @@ export default function ScoreboardSetupPage() {
       id: generateUUID(),
       round: 1,
       position: 0,
-      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1 },
-      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2 },
+      atleta1: { id: generateUUID(), nome: data.nomeAtleta1, equipe: data.equipe1, faixa: data.faixa1 || undefined },
+      atleta2: { id: generateUUID(), nome: data.nomeAtleta2, equipe: data.equipe2, faixa: data.faixa2 || undefined },
       resultado: {
         id: generateUUID(),
         pontosAtleta1: 0,
@@ -176,10 +176,12 @@ export default function ScoreboardSetupPage() {
     return null
   }
 
+  const chavesProtegidas = chaves.some(c => c.lutas.some(l => l.resultado?.status === "concluida"))
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <Cabecalho onLimpar={handleLimparDados} />
+        <Cabecalho onLimpar={handleLimparDados} habilitado={!chavesProtegidas} />
 
         <h1 className="text-4xl font-bold text-white">Setup de Área</h1>
         <p className="text-gray-400">Configure a área e importe as chaves de luta</p>
@@ -237,7 +239,7 @@ export default function ScoreboardSetupPage() {
   )
 }
 
-function Cabecalho({ onLimpar }: { onLimpar: () => void }) {
+function Cabecalho({ onLimpar, habilitado = true }: { onLimpar: () => void; habilitado?: boolean }) {
   return (
     <div className="flex items-center justify-between">
       <Link
@@ -246,14 +248,16 @@ function Cabecalho({ onLimpar }: { onLimpar: () => void }) {
       >
         ← Voltar ao Início
       </Link>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onLimpar}
-        className="text-red-400 hover:text-red-300"
-      >
-        Limpar Dados
-      </Button>
+      {habilitado && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onLimpar}
+          className="text-red-400 hover:text-red-300"
+        >
+          Limpar Dados
+        </Button>
+      )}
     </div>
   )
 }

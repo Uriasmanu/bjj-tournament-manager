@@ -45,6 +45,35 @@ export interface Luta {
   previousMatchIds?: string[]
 }
 
+export interface ClassificacaoFinal {
+  chaveId: string
+  campeao?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  vice?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  terceiroA?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  terceiroB?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  dataAtualizacao: string
+}
+
 export interface ChaveLuta {
   id: string
   categoria: string
@@ -53,6 +82,7 @@ export interface ChaveLuta {
   vencedorAtletaId?: string
   status: "pendente" | "em_andamento" | "concluida"
   totalCompetidores: number
+  classificacaoFinal?: ClassificacaoFinal
 }
 
 export interface DadosArea {
@@ -61,6 +91,7 @@ export interface DadosArea {
   criadoEm: string
   atualizadoEm?: string
   chaves: ChaveLuta[]
+  classificacoes?: ClassificacaoFinal[]
 }
 
 export const FAIXAS = ["Branca", "Azul", "Roxa", "Marrom", "Preta"] as const

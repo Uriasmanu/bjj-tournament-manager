@@ -477,3 +477,181 @@ if (chave.status === "concluida" && chave.vencedorAtletaId) {
 - [ ] CA7: Cards mostram número de posição (1, 2, 3...)
 - [ ] CA8: Texto do pódio é legível (claro sobre escuro)
 - [ ] CA9: Classificação final persistida no JSON
+
+---
+
+# ROADMAP DE IMPLEMENTAÇÃO
+
+## FASE 1: Estrutura Base (Tasks 1-2)
+
+### Task 1.1: Proteger chaves iniciadas na lista
+**Arquivos:** `app/components/setup/ChaveList.tsx`
+**Dependências:** Nenhuma
+**Descrição:**
+- [ ] 1.1.1 Ler o arquivo ChaveList.tsx e entender a estrutura atual
+- [ ] 1.1.2 Identificar onde os botões de deletar/limpar são renderizados
+- [ ] 1.1.3 Criar função `chavePodeSerDeletada(chave)` que retorna false se alguma luta tiver `resultado.status === "concluida"`
+- [ ] 1.1.4 Ocultar botão deletar usando renderização condicional
+- [ ] 1.1.5 Ocultar botão "Limpar Dados" quando a chave estiver protegida
+
+### Task 1.2: Proteger chaves na página de setup
+**Arquivos:** `app/scoreboard/setup/page.tsx`
+**Dependências:** Task 1.1
+**Descrição:**
+- [ ] 1.2.1 Ler o arquivo setup/page.tsx
+- [ ] 1.2.2 Aplicar a mesma lógica de proteção usada em ChaveList.tsx
+- [ ] 1.2.3 Verificar se há outros botões de ação que precisam ser protegidos
+
+---
+
+## FASE 2: Formulário de Lutas (Tasks 2)
+
+### Task 2.1: Corrigir formulário de criação de lutas manuais
+**Arquivos:** `app/components/scoreboard/AdicionarLutaModal.tsx`
+**Dependências:** Nenhuma
+**Descrição:**
+- [ ] 2.1.1 Ler o arquivo AdicionarLutaModal.tsx
+- [ ] 2.1.2 Identificar o botão "Cancelar" e alterar classes para texto visível (text-gray-700 bg-gray-200)
+- [ ] 2.1.3 Adicionar campo select para "Faixa Atleta 1" (Branca, Azul, Roxa, Marrom, Preta)
+- [ ] 2.1.4 Adicionar campo select para "Faixa Atleta 2" com as mesmas opções
+- [ ] 2.1.5 Garantir que os campos de faixa façam parte do state `data`
+- [ ] 2.1.6 Testar visualmente o modal após as alterações
+
+---
+
+## FASE 3: Visualização da Chave (Tasks 3-8)
+
+### Task 3.1: Remover animação de pulse dos cards
+**Arquivos:** `app/components/bracket/BracketLayout.tsx`
+**Dependências:** Nenhuma
+**Descrição:**
+- [ ] 3.1.1 Ler o arquivo BracketLayout.tsx
+- [ ] 3.1.2 Buscar todos os lugares onde `animate-pulse` é usado
+- [ ] 3.1.3 Remover a classe `animate-pulse` mantendo o `ring-2 ring-amber-400` para destaque
+- [ ] 3.1.4 Verificar se há outros componentes com animate-pulse que precisam ser limpos
+
+### Task 4.1: Implementar posicionamento alternado dos atletas
+**Arquivos:** `app/components/bracket/BracketLayout.tsx`
+**Dependências:** Task 3.1
+**Descrição:**
+- [ ] 4.1.1 Localizar a função `Round1Pair` no arquivo
+- [ ] 4.1.2 Modificar o layout para organizar em pares horizontais (flex-row)
+- [ ] 4.1.3 Implementar alternância: posição 0 = direita, 1 = esquerda, 2 = direita, 3 = esquerda
+- [ ] 4.1.4 Criar wrapper `<div className="flex flex-row gap-3 py-2">` para cada par
+- [ ] 4.1.5 Aplicar mesma lógica para `Round1PairRight` se existir
+
+### Task 5.1: Bloquear lutas com atleta vazio
+**Arquivos:** `app/lib/bracket-utils.ts`, `app/components/bracket/BracketLayout.tsx`
+**Dependências:** Task 4.1
+**Descrição:**
+- [ ] 5.1.1 Ler o arquivo bracket-utils.ts
+- [ ] 5.1.2 Verificar se existe função `podeIniciarLuta` ou criar
+- [ ] 5.1.3 Implementar verificação: retorna false se `atleta1.id` ou `atleta2.id` forem null
+- [ ] 5.1.4 Verificar dependências (lutas anteriores devem estar concluídas)
+- [ ] 5.1.5 No componente CompetitorCard, usar `podeIniciarLuta` para controlar click
+- [ ] 5.1.6 Aplicar estilo `cursor-not-allowed opacity-50` quando não clicável
+
+### Task 6.1: Separar cards para cada atleta
+**Arquivos:** `app/components/bracket/BracketLayout.tsx`
+**Dependências:** Task 5.1
+**Descrição:**
+- [ ] 6.1.1 Localizar componente que renderiza o card do atleta
+- [ ] 6.1.2 Modificar para renderizar DOIS cards (atleta1 e atleta2) em vez de um
+- [ ] 6.1.3 Adicionar divisor entre os cards com "VS" ou "X" (se concluída)
+- [ ] 6.1.4 Aplicar estilo diferente para card vazio (border-dashed, bg-gray-100)
+- [ ] 6.1.5 Exibir nome e equipe de cada atleta no seu respectivos card
+
+### Task 7.1: Adicionar número do card e lógica de avanço
+**Arquivos:** `app/components/bracket/BracketLayout.tsx`, `app/hooks/useStorage.ts`
+**Dependências:** Task 6.1
+**Descrição:**
+- [ ] 7.1.1 Adicionar badge com número no canto superior esquerdo de cada card
+- [ ] 7.1.2 Usar `<span className="absolute top-0 left-0 bg-slate-900 text-white text-[10px] px-1 rounded-br">`
+- [ ] 7.1.3 Passar prop `position` para o componente do card
+- [ ] 7.1.4 Em useStorage.ts, na função `marcarLutaConcluida`, adicionar chamada a `advanceWinner`
+- [ ] 7.1.5 Garantir que o vencedor seja inserido no próximo card (prox fights)
+
+### Task 8.1: Corrigir cor do texto do pódio
+**Arquivos:** `app/components/bracket/BracketLayout.tsx`
+**Dependências:** Task 7.1
+**Descrição:**
+- [ ] 8.1.1 Localizar função `PodiumLine` no arquivo
+- [ ] 8.1.2 Alterar cor do texto de `text-slate-900` para `text-gray-200` quando houver valor
+- [ ] 8.1.3 Manter `text-gray-400 italic` quando o valor for "--" (sem valor)
+
+---
+
+## FASE 4: Dados e Persistência (Tasks 9)
+
+### Task 9.1: Adicionar classificação final aos tipos e persistência
+**Arquivos:** `app/types/index.ts`, `app/hooks/useStorage.ts`
+**Dependências:** Task 8.1
+**Descrição:**
+- [ ] 9.1.1 Ler o arquivo types/index.ts
+- [ ] 9.1.2 Adicionar interface `ClassificacaoFinal` com campos: chaveId, campeao, vice, terceiroA, terceiroB, dataAtualizacao
+- [ ] 9.1.3 Adicionar campo opcional `classificacaoFinal?: ClassificacaoFinal` na interface `ChaveLuta`
+- [ ] 9.1.4 Em useStorage.ts, identificar função de conclusão de chave
+- [ ] 9.1.5 Ao marcar luta como concluída, verificar se chave terminó (última luta)
+- [ ] 9.1.6 Se chave terminou, calcular e salvar classificação no JSON da área (não da chave)
+- [ ] 9.1.7 Criar função auxiliar `calcularClassificacao(chave)` se necessário
+
+---
+
+## FASE 5: Integração e Testes (Task 10)
+
+### Task 10.1: Teste integrado de todas as correções
+**Arquivos:** Múltiplos
+**Dependências:** Tasks 1-9
+**Descrição:**
+- [ ] 10.1.1 Executar `npm run build` para verificar erros de Typescript
+- [ ] 10.1.2 Executar `npm run lint` se existir
+- [ ] 10.1.3 Testar manualmente cada critério de aceitação:
+  - CA1: Criar chave, iniciar luta, verificar que botão delete sumiu
+  - CA2: Abrir modal de adicionar luta, verificar faixa e botão cancelar
+  - CA3: Visualizar chave, verificar que não pulsa
+  - CA4: Verificar alternância direita/esquerda nos cards
+  - CA5: Tentar clicar em luta com BYE, verificar que não clica
+  - CA6: Verificar dois cards por luta (atleta1 e atleta2)
+  - CA7: Verificar números nos cantos dos cards
+  - CA8: Verificar pódio com texto claro
+  - CA9: Finalizar chave completa, verificar JSON da área
+
+---
+
+## ORDEM DE IMPLEMENTAÇÃO RECOMENDADA
+
+```
+FASE 1 (Estrutura Base)
+├── Task 1.1: Proteger chaves em ChaveList.tsx
+└── Task 1.2: Proteger chaves em setup/page.tsx
+
+FASE 2 (Formulário)
+└── Task 2.1: Corrigir AdicionarLutaModal.tsx
+
+FASE 3 (Visualização)
+├── Task 3.1: Remover animate-pulse
+├── Task 4.1: Posicionamento alternado
+├── Task 5.1: Bloquear lutas vazias
+├── Task 6.1: Cards separados
+├── Task 7.1: Números + avanço
+└── Task 8.1: Corrigir pódio
+
+FASE 4 (Dados)
+└── Task 9.1: Classificação final
+
+FASE 5 (Testes)
+└── Task 10.1: Testes integrados
+```
+
+---
+
+## ESTIMATIVA DE TEMPO
+
+| Fase | Tasks | Complexidade | Tempo Estimado |
+|------|-------|--------------|----------------|
+| Fase 1 | 2 | Baixa | 1-2 horas |
+| Fase 2 | 1 | Média | 1 hora |
+| Fase 3 | 6 | Alta | 4-6 horas |
+| Fase 4 | 1 | Média | 1-2 horas |
+| Fase 5 | 1 | Média | 1-2 horas |
+| **TOTAL** | **11** | - | **8-13 horas**
