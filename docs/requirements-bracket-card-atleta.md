@@ -9,7 +9,7 @@
 
 ## 1. Objetivo
 
-Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card separado, removendo o efeito visual de piscar e o modal de vencedor.
+Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card separado, removendo o efeito visual de piscar e o modal de vencedor. O posicionamento dos cards deve seguir a ordem de distribuição conforme a numeração dos cards.
 
 ---
 
@@ -39,6 +39,42 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 - Se `atletaIndex === 2`: renderizar `luta.atleta2`
 - Em cada par de lutas, renderizar DOIS cards por luta
 - Ajustar `nodeId` para ser único por card (ex: `node-L-1-0-1` e `node-L-1-0-2`)
+
+### RF-002: Ordem de Distribuição dos Nomes nos Cards
+
+**Descrição:** A ordem de distribuição dos nomes nos cards deve seguir a sequência de pairing do bracket.
+
+**Ordem de Distribuição:**
+A distribuição dos nomes deve seguir a ordem de numeração conformeexample:
+
+| Posição do Card | Luta (par) |
+|----------------|------------|
+| 1 (cardPosition 0) | Atleta 1 (luta 1) |
+| 2 (cardPosition 1) | Atleta 2 (luta 1) |
+| 3 (cardPosition 2) | Atleta 3 (luta 3) |
+| 4 (cardPosition 3) | Atleta 4 (luta 3) |
+| 5 (cardPosition 4) | Atleta 5 (luta 5) |
+| 6 (cardPosition 5) | Atleta 6 (luta 5) |
+| 7 (cardPosition 6) | Atleta 7 (luta 7) |
+| 8 (cardPosition 7) | Atleta 8 (luta 7) |
+| 9 (cardPosition 8) | Atleta 9 (luta 2) |
+| 10 (cardPosition 9) | Atleta 10 (luta 2) |
+| 11 (cardPosition 10) | Atleta 11 (luta 4) |
+| 12 (cardPosition 11) | Atleta 12 (luta 4) |
+| ... | ... |
+
+**Sequência de pairing:**
+- 1x2 (luta 1) → cards 1 e 2
+- 9x10 (luta 2) → cards 9 e 10
+- 3x4 (luta 3) → cards 3 e 4
+- 11x12 (luta 4) → cards 11 e 12
+- 5x6 (luta 5) → cards 5 e 6
+- 13x14 (luta 6) → cards 13 e 14
+- 7x8 (luta 7) → cards 7 e 8
+- 15x16 (luta 8) → cards 15 e 16
+- E assim sucessivamente
+
+**Nota:** A ordem de distribuição não segue a sequência natural (1, 2, 3, 4...), mas sim a sequência de pairing do bracket de eliminatórias.
 
 
 ---
@@ -119,6 +155,7 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 - [x] Layout do bracket permanece visualmente idêntico
 - [x] Conexões SVG entre nodes continuam funcionando
 - [x] Comportamento de clique nas lutas permanece inalterado
+- [] Ordem de distribuição segue a sequência de pairing (1x2, 9x10, 3x4, 11x12...)
 
 ---
 
