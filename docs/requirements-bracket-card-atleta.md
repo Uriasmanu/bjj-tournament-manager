@@ -17,7 +17,7 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ### RF-001: Cada Atleta em um Card Separado
 
-**Descrição:** Cada atleta deve occupar seu próprio card. Cada luta gera DOIS cards.
+**Descrição:** Cada atleta deve ocupar seu próprio card. Cada luta gera DOIS cards.
 
 **Comportamento Atual:**
 - Cada card exibe `atleta1` da luta
@@ -42,10 +42,10 @@ Corrigir o componente `BracketLayout.tsx` para exibir cada atleta em um card sep
 
 ### RF-002: Ordem de Distribuição dos Nomes nos Cards
 
-**Descrição:** A ordem de distribuição dos nomes nos cards deve seguir a sequência de pairing do bracket.
+**Descrição:** A ordem de distribuição dos nomes nos cards deve seguir a sequência de pairing do bracket. Leve em consideração que os cards têm numeração fixa. Isso não vai mudar, porém os atletas irán preencher ambos os lados. Sem mudar o formato atual, apenas a distribuição das lutas. Repito: em hipótese alguma mude a ordem dos números dos cards, apenas ajuste para a distribuição correta.
 
 **Ordem de Distribuição:**
-A distribuição dos nomes deve seguir a ordem de numeração conformeexample:
+A distribuição dos nomes deve seguir a ordem de numeração conforme o exemplo:
 
 | Posição do Card | Luta (par) |
 |----------------|------------|

@@ -50,27 +50,48 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }
 
   const leftRound1 = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 1 && l.position < 4)
+    const r1Lutas = chave.lutas.filter(l => l.round === 1)
+    return [
+      r1Lutas.find(l => l.position === 0),
+      r1Lutas.find(l => l.position === 2),
+      r1Lutas.find(l => l.position === 4),
+      r1Lutas.find(l => l.position === 6),
+    ].filter(Boolean) as Luta[]
   }, [chave.lutas])
-  
+ 
   const rightRound1 = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 1 && l.position >= 4)
+    const r1Lutas = chave.lutas.filter(l => l.round === 1)
+    return [
+      r1Lutas.find(l => l.position === 1),
+      r1Lutas.find(l => l.position === 3),
+      r1Lutas.find(l => l.position === 5),
+      r1Lutas.find(l => l.position === 7),
+    ].filter(Boolean) as Luta[]
   }, [chave.lutas])
-  
+ 
   const leftRound2 = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 2 && l.position < 2)
+    const r2Lutas = chave.lutas.filter(l => l.round === 2)
+    return [
+      r2Lutas.find(l => l.position === 0),
+      r2Lutas.find(l => l.position === 1),
+    ].filter(Boolean) as Luta[]
   }, [chave.lutas])
-  
+ 
   const rightRound2 = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 2 && l.position >= 2)
+    const r2Lutas = chave.lutas.filter(l => l.round === 2)
+    return [
+      r2Lutas.find(l => l.position === 2),
+      r2Lutas.find(l => l.position === 3),
+    ].filter(Boolean) as Luta[]
   }, [chave.lutas])
   
+ 
   const leftSemi = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 3 && l.position < 1)
+    return chave.lutas.filter(l => l.round === 3 && l.position === 0)
   }, [chave.lutas])
   
   const rightSemi = useMemo(() => {
-    return chave.lutas.filter(l => l.round === 3 && l.position >= 1)
+    return chave.lutas.filter(l => l.round === 3 && l.position === 1)
   }, [chave.lutas])
   
   const maxRound = useMemo(() => Math.max(...chave.lutas.map(l => l.round)), [chave.lutas])
@@ -79,7 +100,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [chave.lutas, maxRound])
 
   const winnerLeft = useMemo(() => {
-    const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position < 1)
+    const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
       return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId 
         ? leftSemiLuta.atleta1 
@@ -89,7 +110,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [chave.lutas])
 
   const winnerRight = useMemo(() => {
-    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position >= 1)
+    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
       return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId 
         ? rightSemiLuta.atleta1 
@@ -109,7 +130,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [finalLutas, champion])
 
   const thirdPlaceLeft = useMemo(() => {
-    const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position < 1)
+    const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
       return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId 
         ? leftSemiLuta.atleta2 
@@ -119,7 +140,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [chave.lutas])
 
   const thirdPlaceRight = useMemo(() => {
-    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position >= 1)
+    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
       return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId 
         ? rightSemiLuta.atleta2 
@@ -305,7 +326,7 @@ function CompetitorCard({
   isFinalist = false,
   mode = "live",
   cardPosition,
- atletaIndex = 1
+  atletaIndex = 1
 }: { 
   luta?: Luta
   nodeId: string
@@ -315,7 +336,7 @@ function CompetitorCard({
   isFinalist?: boolean
   mode?: "live" | "readonly"
   cardPosition?: number
- atletaIndex?: 1 | 2
+  atletaIndex?: 1 | 2
 }) {
   const atleta = atletaIndex === 1 ? luta?.atleta1 : luta?.atleta2
   const temAtleta = atleta?.id
@@ -389,7 +410,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
           cardPosition={baseIndex * 2}
           atletaIndex={1}
@@ -399,7 +420,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex}-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
           cardPosition={baseIndex * 2 + 1}
           atletaIndex={2}
@@ -411,7 +432,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 1) * 2}
           atletaIndex={1}
@@ -421,7 +442,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 1) * 2 + 1}
           atletaIndex={2}
@@ -433,7 +454,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 2) * 2}
           atletaIndex={1}
@@ -443,7 +464,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 2) * 2 + 1}
           atletaIndex={2}
@@ -455,7 +476,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 3) * 2}
           atletaIndex={1}
@@ -465,7 +486,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 3) * 2 + 1}
           atletaIndex={2}
@@ -492,7 +513,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
           cardPosition={baseIndex * 2}
           atletaIndex={1}
@@ -502,7 +523,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex}-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
           cardPosition={baseIndex * 2 + 1}
           atletaIndex={2}
@@ -514,7 +535,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 1) * 2}
           atletaIndex={1}
@@ -524,7 +545,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 1) * 2 + 1}
           atletaIndex={2}
@@ -536,7 +557,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 2) * 2}
           atletaIndex={1}
@@ -546,7 +567,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida"}
+          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 2) * 2 + 1}
           atletaIndex={2}
@@ -558,7 +579,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta1?.id}
           mode={mode}
           cardPosition={(baseIndex + 3) * 2}
           atletaIndex={1}
@@ -568,7 +589,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida"}
+          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta2?.id}
           mode={mode}
           cardPosition={(baseIndex + 3) * 2 + 1}
           atletaIndex={2}
@@ -594,7 +615,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-0-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
           cardPosition={0}
           atletaIndex={1}
@@ -604,7 +625,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-0-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
           cardPosition={1}
           atletaIndex={2}
@@ -616,7 +637,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-1-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
           cardPosition={2}
           atletaIndex={1}
@@ -626,7 +647,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-1-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
           cardPosition={3}
           atletaIndex={2}
@@ -652,7 +673,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-2-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
           cardPosition={4}
           atletaIndex={1}
@@ -662,7 +683,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-2-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
-          isCompleted={lutas[0]?.resultado?.status === "concluida"}
+          isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
           cardPosition={5}
           atletaIndex={2}
@@ -674,7 +695,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-3-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
           cardPosition={6}
           atletaIndex={1}
@@ -684,7 +705,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           nodeId={`node-${side}-${round}-3-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida"}
+          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
           cardPosition={7}
           atletaIndex={2}
@@ -710,7 +731,7 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
         nodeId={`node-${side}-${round}-${position}-1`}
         onClick={luta ? () => onClick?.(luta) : undefined}
         isActive={activeFightId === luta?.id}
-        isCompleted={luta?.resultado?.status === "concluida"}
+        isCompleted={luta?.resultado?.status === "concluida" && luta?.resultado?.vencedorAtletaId === luta?.atleta1?.id}
         mode={mode}
         cardPosition={position * 2}
         atletaIndex={1}
@@ -720,7 +741,7 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
         nodeId={`node-${side}-${round}-${position}-2`}
         onClick={luta ? () => onClick?.(luta) : undefined}
         isActive={activeFightId === luta?.id}
-        isCompleted={luta?.resultado?.status === "concluida"}
+        isCompleted={luta?.resultado?.status === "concluida" && luta?.resultado?.vencedorAtletaId === luta?.atleta2?.id}
         mode={mode}
         cardPosition={position * 2 + 1}
         atletaIndex={2}
