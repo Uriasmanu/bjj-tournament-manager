@@ -2,27 +2,28 @@
   "area": "Area 1",
   "chaves": [
     {
-      "id": "1f50e510-a2dd-4d41-b04c-a5da5f29f441",
-      "categoria": "Azul Masculino Adulto - Leve (70kg)",
+      "id": "chave-5-atletas-001",
+      "categoria": "Roxa Adulto Masculino - 75kg",
       "lutas": [
         {
-          "id": "9d8edac2-47c8-44d9-b5fa-2921cb76c6dd",
+          "id": "luta-5-r1-001",
           "round": 1,
           "position": 0,
+          "nextMatchId": "luta-5-r1-004",
           "atleta1": {
-            "id": "51798403-e440-4944-8ada-d07809514475",
-            "nome": "Marcos Souza",
+            "id": "atleta-008",
+            "nome": "Daniel Ferreira",
             "equipe": "Team Alpha",
-            "faixa": "Azul"
+            "faixa": "Roxa"
           },
           "atleta2": {
-            "id": "5213716f-9339-42fc-9206-2582101e5c6e",
-            "nome": "Felipe Rocha",
-            "equipe": " Gracie Barra",
-            "faixa": "Azul"
+            "id": "atleta-009",
+            "nome": "Igor Matos",
+            "equipe": "Team Beta",
+            "faixa": "Roxa"
           },
           "resultado": {
-            "id": "bef55293-b2a2-4476-ba15-cd0ff339c5f6",
+            "id": "e8864d85-5c77-471a-8e74-583d4700ce88",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -49,23 +50,62 @@
           }
         },
         {
-          "id": "99f9c14a-f1a9-417d-a077-1009fa40d354",
+          "id": "luta-5-r1-002",
           "round": 1,
           "position": 1,
+          "nextMatchId": "luta-5-r1-004",
           "atleta1": {
-            "id": "5d2ac2cc-761c-45e1-8d32-66a8f3e8ea82",
-            "nome": "Bruno Mendes",
-            "equipe": "ATOS JJ",
-            "faixa": "Azul"
+            "id": "atleta-010",
+            "nome": "Leonardo Gomes",
+            "equipe": "Team Gamma",
+            "faixa": "Roxa"
           },
           "atleta2": {
-            "id": "c18166fd-f55b-4478-bf6c-deaccbac286b",
-            "nome": "Thiago Nunes",
-            "equipe": "Alliance",
-            "faixa": "Azul"
+            "id": "atleta-011",
+            "nome": "Bruno Costa",
+            "equipe": "Team Delta",
+            "faixa": "Roxa"
           },
           "resultado": {
-            "id": "93c37d59-a0d8-4c12-ab99-d32379587a85",
+            "id": "12bbed05-c5a7-48f2-9783-e4fc556a9491",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
+          }
+        },
+        {
+          "id": "luta-5-r1-003",
+          "round": 2,
+          "position": 2,
+          "atleta1": {
+            "id": "atleta-012",
+            "nome": "Thiago Nunes",
+            "equipe": "Team Epsilon",
+            "faixa": "Roxa"
+          },
+          "atleta2": null,
+          "resultado": {
+            "id": "c90deecf-046b-4aed-b896-c00c1aeeebe9",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -93,30 +133,31 @@
         }
       ],
       "status": "pendente",
-      "totalCompetidores": 4
+      "totalCompetidores": 5
     },
     {
-      "id": "b7e5e322-26a4-4f47-9356-739853d0c0cd",
-      "categoria": "Branca Masculino Adulto - Pluma (57kg)",
+      "id": "chave-3-atletas-001",
+      "categoria": "Branca Adulto Masculino - 65kg",
       "lutas": [
         {
-          "id": "6c641a13-6d58-49ec-aa1b-47cebca0c1d9",
+          "id": "luta-3-r1-001",
           "round": 1,
           "position": 0,
+          "nextMatchId": "luta-3-r1-002",
           "atleta1": {
-            "id": "6f0e5466-b01d-4869-a840-27b071d794bd",
-            "nome": "Carlos Silva",
+            "id": "atleta-001",
+            "nome": "João Silva",
             "equipe": "Team Alpha",
             "faixa": "Branca"
           },
           "atleta2": {
-            "id": "24c482af-c298-4e49-985c-d5179a9341e9",
-            "nome": "Pedro Santos",
-            "equipe": " Gracie Barra",
+            "id": "atleta-002",
+            "nome": "Carlos Santos",
+            "equipe": "Team Beta",
             "faixa": "Branca"
           },
           "resultado": {
-            "id": "8c8f6a6e-56cb-415c-bca2-f942990e8467",
+            "id": "de21a423-09e1-4899-9a69-f261de47ab6b",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -143,18 +184,21 @@
           }
         },
         {
-          "id": "b1601980-ee13-4af6-a72c-3ecd56e4687d",
+          "id": "luta-3-r1-002",
           "round": 2,
-          "position": 2,
-          "atleta1": {
-            "id": "d5353543-dbfe-4fdb-afea-96e3b8e98e85",
-            "nome": "Rafael Lima",
-            "equipe": "Checkmat",
+          "position": 1,
+          "previousMatchIds": [
+            "luta-3-r1-001"
+          ],
+          "atleta1": null,
+          "atleta2": {
+            "id": "atleta-003",
+            "nome": "Pedro Lima",
+            "equipe": "Team Gamma",
             "faixa": "Branca"
           },
-          "atleta2": null,
           "resultado": {
-            "id": "4487faeb-e7f0-44a1-ade9-227e95fd098e",
+            "id": "9c0d02eb-4808-449f-bc1b-7cb832798024",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -185,27 +229,28 @@
       "totalCompetidores": 3
     },
     {
-      "id": "3cfb67b3-a207-4024-95b8-44e8f4366f50",
-      "categoria": "Roxa Masculino Adulto - Medio (82kg)",
+      "id": "chave-4-atletas-001",
+      "categoria": "Azul Adulto Masculino - 70kg",
       "lutas": [
         {
-          "id": "2e7633f0-c4f9-4165-9855-848d3416c76b",
+          "id": "luta-4-r1-001",
           "round": 1,
           "position": 0,
+          "nextMatchId": "luta-4-r1-003",
           "atleta1": {
-            "id": "58acd9c1-94b4-47a5-9091-7b1fb8927b0d",
-            "nome": "João Pereira",
+            "id": "atleta-004",
+            "nome": "Marcos Paulo",
             "equipe": "Team Alpha",
-            "faixa": "Roxa"
+            "faixa": "Azul"
           },
           "atleta2": {
-            "id": "633fef65-4863-49c6-b0ed-3f1e9b929679",
-            "nome": "Leandro Borges",
-            "equipe": " Gracie Barra",
-            "faixa": "Roxa"
+            "id": "atleta-005",
+            "nome": "Felipe Dias",
+            "equipe": "Team Beta",
+            "faixa": "Azul"
           },
           "resultado": {
-            "id": "0c0e4398-7598-4049-a586-19a0a553f49e",
+            "id": "f972a416-f219-4745-8eb3-cc3ede44fd70",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -232,61 +277,24 @@
           }
         },
         {
-          "id": "1ed4d5ad-4805-49fd-8f62-120ff9e15122",
+          "id": "luta-4-r1-002",
           "round": 1,
           "position": 1,
+          "nextMatchId": "luta-4-r1-003",
           "atleta1": {
-            "id": "576ec095-fb0a-485d-aa51-cef28b3cffc3",
-            "nome": "Marcelo Filho",
-            "equipe": "ATOS JJ",
-            "faixa": "Roxa"
-          },
-          "atleta2": null,
-          "resultado": {
-            "id": "35439ce4-2271-4d11-938e-73f5b9e20edc",
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
-            "montadasAtleta1": 0,
-            "montadasAtleta2": 0,
-            "passagensAtleta1": 0,
-            "passagensAtleta2": 0,
-            "quedasAtleta1": 0,
-            "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
-            "AtletaDesclassificadoId": null
-          }
-        },
-        {
-          "id": "bc76af17-c08f-4cce-91b7-937e53678197",
-          "round": 1,
-          "position": 2,
-          "atleta1": {
-            "id": "81646271-4dda-47ff-9f41-53e771416a47",
-            "nome": "Paulo Henrique",
-            "equipe": "Alliance",
-            "faixa": "Roxa"
+            "id": "atleta-006",
+            "nome": "Guilherme Reis",
+            "equipe": "Team Gamma",
+            "faixa": "Azul"
           },
           "atleta2": {
-            "id": "a9d7f933-f7b4-4b5e-8b5f-4b0d669af65c",
-            "nome": "Renato Silva",
-            "equipe": "Checkmat",
-            "faixa": "Roxa"
+            "id": "atleta-007",
+            "nome": "Henrique Bastos",
+            "equipe": "Team Delta",
+            "faixa": "Azul"
           },
           "resultado": {
-            "id": "40cb6d93-3e92-4666-8378-a3a332e64728",
+            "id": "55c42382-2c71-47e3-9e8f-85f031ab5f9f",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -314,9 +322,9 @@
         }
       ],
       "status": "pendente",
-      "totalCompetidores": 5
+      "totalCompetidores": 4
     }
   ],
-  "criadoEm": "2026-05-19T02:53:10.925Z",
-  "atualizadoEm": "2026-05-19T02:53:10.925Z"
+  "criadoEm": "2026-05-19T03:18:55.064Z",
+  "atualizadoEm": "2026-05-19T03:18:55.064Z"
 }
