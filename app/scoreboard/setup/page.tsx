@@ -90,7 +90,17 @@ export default function ScoreboardSetupPage() {
     const chavesImportadas = await importarArquivos(event.target.files)
 
     if (chavesImportadas.length > 0) {
-      const novasChaves = [...chaves, ...chavesImportadas]
+      const chavesAtualizadas = chavesImportadas.map(chave => ({
+        ...chave,
+        lutas: chave.lutas.map(luta => {
+          if (luta.atleta1 === null || luta.atleta2 === null) {
+            return { ...luta, round: 2 }
+          }
+          return luta
+        })
+      }))
+
+      const novasChaves = [...chaves, ...chavesAtualizadas]
       setChaves(novasChaves)
       await salvarDados(area, novasChaves)
     }
