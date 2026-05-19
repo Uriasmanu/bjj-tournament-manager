@@ -31,7 +31,7 @@
 | `DadosArea` | `id: string` | `uuid-v4` |
 | `ResultadoLuta` | `id: string` | `uuid-v4` |
 
-> **IMPORTANTE:** Campos numéricos como `round` e `seed` **não são IDs** — estes permanecem como `number`. O campo `position` foi removido; a posição é determinada automaticamente pela ordem no array.
+> **IMPORTANTE:** Campos numéricos como `round` e `seed` **não são IDs** — estes permanecem como `number`. O campo `position` é usado para posicionamento no layout do bracket.
 
 ### 2.2 Componentes UI
 - **OBRIGATÓRIO**: Usar sempre componentes do **Shadcn UI** nas implementações
@@ -132,16 +132,17 @@ interface ResultadoLuta {
 interface Luta {
   id: string                  // UUID v4 — identificador único da luta
   round: number              // 1, 2, 3, 4 (não é ID, é posição na chave)
-  // position removido — a posição é determinada automaticamente pela ordem no array de lutas
+  position: number           // Posição da luta no bracket (usado para visualização)
   atleta1: Atleta             // Inclui id UUID
   atleta2: Atleta             // Inclui id UUID
   resultado?: ResultadoLuta   // Inclui id UUID
   arbitro?: string
   dataLuta?: string
+  tags?: string[]            // Tags como ["AVANÇOU"] para BYE
 
   // Referências de chaveamento (por UUID)
-  nextMatchId?: string       // UUID da próxima luta na chave (obsoleto)
-  previousMatchIds?: string[] // UUIDs das lutas anteriores (obsoleto)
+  nextMatchId?: string       // UUID da próxima luta na chave
+  previousMatchIds?: string[] // UUIDs das lutas anteriores (usado para BYE)
 }
 
 // Chave de Luta
@@ -712,8 +713,8 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 | Pontos + Vantagens | Critério de desempate após finalização |
 | Status da Luta | pendente → em_andamento → concluida |
 | Status da Chave | pendente → em_andamento → concluida |
-| `nextMatchId` | UUID da próxima luta na chave que o vencedor avança (obsoleto) |
-| `previousMatchIds` | Array de UUIDs das lutas que alimentam esta luta (obsoleto) |
+| `nextMatchId` | UUID da próxima luta na chave que o vencedor avança |
+| `previousMatchIds` | Array de UUIDs das lutas anteriores (usado para追踪 BYE e fluxo do bracket) |
 | round | Número do round na chave (1, 2, 3, 4) — **não é ID** |
 | BYE | Atleta1 x null (atleta2 vazio); o atleta presente avança automaticamente para próxima fase |
 
@@ -750,6 +751,8 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 | Função | Descrição |
 |--------|------------|
 | `buildBracketFromChaveLuta()` | Converte ChaveLuta em array de BracketRound para visualização |
+| `generatePosition()` | Calcula posições automaticamente considerando fluxo visual e BYE |
+| `calculateByePosition()` | Função auxiliar para calcular posição de atleta que avança por BYE |
 | `advanceWinner()` | Move automaticamente o vencedor para a próxima luta |
 | `getFighterTags()` | Retorna tags de resultado (VENCEU, PERDEU, DESCLASS., FINALIZOU) |
 | `getFighterStatus()` | Retorna status do resultado |
@@ -758,6 +761,8 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 | `getLutaById()` | Busca luta por ID na chave |
 | `findAtletaById()` | Busca atleta por ID na chave |
 | `podeIniciarLuta()` | Verifica se a luta pode ser iniciada (lutas anteriores concluídas) |
+| `canInteract()` | Verifica se a luta pode ser interagida |
+| `getUnicoAtleta()` | Retorna único atleta em chaves com 1 competidor |
 
 ---
 
@@ -798,8 +803,57 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 ---
 
+## 20. Correção de Posicionamento de BYE no Bracket
+
+### 20.1 Problema
+
+Ao utilizar chaves com número ímpar de atletas (ex: 3 atletas), ocorre um BYE automaticamente no Round 1. O atleta que avança por ter o oponente null (BYE) estava sendo posicionado incorretamente no Round 2, resultando em uma exibição visual incorreta no bracket.
+
+**Exemplo do problema:**
+- 3 atletas: posições 0 e 1 no Round 1
+- Posição 1 (BYE no lado direito) deveria ir para posição 3 no Round 2
+- Mas estava sendo calculada como `Math.floor(1/2) = 0` (incorreto!)
+
+### 20.2 Arquivos Modificados
+
+| Arquivo | Modificação |
+|---------|-------------|
+| `app/scoreboard/setup/page.tsx` | Função `handleImportar` - cálculo de posição para BYE |
+| `app/lib/bracket-utils.ts` | Função `generatePosition` e `calculateByePosition` |
+| `app/hooks/useImportacao.ts` | 调用 `generatePosition` no fluxo de importação |
+
+### 20.3 Lógica de Correção
+
+**Em `app/scoreboard/setup/page.tsx:handleImportar`:**
+
+```typescript
+// Lógica corrigida para calcular posição do BYE no Round 2
+let positionRound2: number
+if (luta.position % 2 === 1) {
+  // BYE no lado direito (posição ímpar) → posição 3 no Round 2
+  positionRound2 = 3
+} else {
+  // BYE no lado esquerdo (posição par) → posição 1 no Round 2
+  positionRound2 = 1
+}
+```
+
+### 20.4 Comportamento Esperado
+
+| Cenário | Round 1 | Round 2 |
+|---------|---------|---------|
+| 3 atletas (BYE pos 1) | posições 0,1 | posição 3 (direito) |
+| 5 atletas (BYE pos 2) | posições 0,1,2 | posição 1 (esquerdo) |
+| 4 atletas (normal) | posições 0,1 | posições 0,1 (esq), 2,3 (dir) |
+
+### 20.5 Referência
+
+- Documento detalhado: `docs/requisitos-correcao-position.md`
+
+---
+
 *Documento atualizado em: 2026-05-19*
-*Versão: 7.2*
+*Versão: 7.3*
 *Mudanças principais:*
 *- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
 *- Removido troféu central "Disputa de Ouro" do layout*
@@ -809,3 +863,4 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 *- Renumeradas seções subsequentes*
 *- Adicionada seção 9.6 com numeração dos cards (0-28)*
 *- FinalistCard agora aceita prop cardPosition*
+*- Adicionada seção 20 - Correção de Posicionamento de BYE no Bracket*
