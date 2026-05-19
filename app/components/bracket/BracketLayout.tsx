@@ -412,7 +412,6 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
       </div>
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard
-          lutas={lutas[1]}
           luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
