@@ -332,6 +332,87 @@ export function advanceWinner(
     }
   }
 
+  const isDesclassificacao = completed.resultado?.tipoVitoria === "desclassificacao"
+
+  if (isDesclassificacao && round === 1) {
+    const byeLuta = chave.lutas.find(l => 
+      l.round === 1 && (!l.atleta1?.id || !l.atleta2?.id)
+    )
+    
+    if (byeLuta) {
+      const round2ByeLuta = chave.lutas.find(l => 
+        l.round === 2 && l.previousMatchIds?.includes(byeLuta.id)
+      )
+      
+      if (round2ByeLuta) {
+        const lutaRound3Pos0: Luta = {
+          id: crypto.randomUUID(),
+          round: 3,
+          position: 0,
+          previousMatchIds: [completed.id],
+          atleta1: winner,
+          atleta2: round2ByeLuta.atleta1,
+          resultado: { status: "pendente" } as ResultadoLuta
+        }
+        
+        const lutaRound3Pos1: Luta = {
+          id: crypto.randomUUID(),
+          round: 3,
+          position: 1,
+          previousMatchIds: [round2ByeLuta.id],
+          atleta1: round2ByeLuta.atleta1,
+          atleta2: winner,
+          resultado: { status: "pendente" } as ResultadoLuta
+        }
+        
+        const novoResultado: ResultadoLuta = {
+          id: crypto.randomUUID(),
+          pontosAtleta1: completed.resultado?.pontosAtleta1 || 0,
+          pontosAtleta2: completed.resultado?.pontosAtleta2 || 0,
+          montadasAtleta1: completed.resultado?.montadasAtleta1 || 0,
+          montadasAtleta2: completed.resultado?.montadasAtleta2 || 0,
+          passagensAtleta1: completed.resultado?.passagensAtleta1 || 0,
+          passagensAtleta2: completed.resultado?.passagensAtleta2 || 0,
+          quedasAtleta1: completed.resultado?.quedasAtleta1 || 0,
+          quedasAtleta2: completed.resultado?.quedasAtleta2 || 0,
+          vantagensAtleta1: completed.resultado?.vantagensAtleta1 || 0,
+          vantagensAtleta2: completed.resultado?.vantagensAtleta2 || 0,
+          penalidadesAtleta1: completed.resultado?.penalidadesAtleta1 || 0,
+          penalidadesAtleta2: completed.resultado?.penalidadesAtleta2 || 0,
+          tempoDecorrido: completed.resultado?.tempoDecorrido || 0,
+          finalizacaoAtleta1: completed.resultado?.finalizacaoAtleta1 || false,
+          finalizacaoAtleta2: completed.resultado?.finalizacaoAtleta2 || false,
+          desclassificacao: completed.resultado?.desclassificacao || null,
+          vencedor: completed.resultado?.vencedor || null,
+          tipoVitoria: completed.resultado?.tipoVitoria || "desclassificacao",
+          status: "concluida",
+          lutaId: completed.id,
+          vencedorAtletaId: winner.id,
+          perdedorAtletaId: loser.id,
+          AtletaDesclassificadoId: null,
+        }
+
+        return {
+          ...chave,
+          status: "em_andamento",
+          lutas: [
+            ...chave.lutas.map(luta => {
+              if (luta.id === completedFightId) {
+                return { ...luta, resultado: novoResultado }
+              }
+              if (luta.id === round2ByeLuta.id) {
+                return { ...luta, tags: ["AVANÇOU"] }
+              }
+              return luta
+}),
+            lutaRound3Pos0,
+            lutaRound3Pos1
+          ]
+        }
+      }
+    }
+  }
+
   // Determinar a próxima posição
   // Verificar se o vencedor era o atleta1 ou atleta2 da luta
   const isWinnerAtleta1 = completed.atleta1?.id === winner.id

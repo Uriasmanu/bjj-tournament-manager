@@ -53,10 +53,10 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const leftRound1 = useMemo(() => {
     const r1Lutas = chave.lutas.filter(l => l.round === 1)
     return [
-      r1Lutas.find(l => l.position === 0), // alimenta card 17 (index 16)
-      r1Lutas.find(l => l.position === 2), // alimenta card 17 (index 17)
-      r1Lutas.find(l => l.position === 4), // alimenta card 18 (index 18)
-      r1Lutas.find(l => l.position === 6), // alimenta card 18 (index 19)
+      r1Lutas.find(l => l.position === 0),
+      r1Lutas.find(l => l.position === 2),
+      r1Lutas.find(l => l.position === 4),
+      r1Lutas.find(l => l.position === 6),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
 
@@ -74,8 +74,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const leftRound2 = useMemo(() => {
     const r2Lutas = chave.lutas.filter(l => l.round === 2)
     return [
-      r2Lutas.find(l => l.position === 0), // Luta que define os cards 17 e 18
-      r2Lutas.find(l => l.position === 1), // Luta que define os cards 19 e 20
+      r2Lutas.find(l => l.position === 0),
+      r2Lutas.find(l => l.position === 1),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
 
@@ -106,16 +106,6 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
         ? leftSemiLuta.atleta1
         : leftSemiLuta.atleta2
-    }
-    return undefined
-  }, [chave.lutas])
-
-  const winnerRight = useMemo(() => {
-    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
-    if (rightSemiLuta?.resultado?.status === "concluida") {
-      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId
-        ? rightSemiLuta.atleta1
-        : rightSemiLuta.atleta2
     }
     return undefined
   }, [chave.lutas])
@@ -166,18 +156,11 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
     const pairs = [
       { from: "L-1-0", to: "L-1-1", toCol: "node-L-2-0" },
       { from: "L-1-2", to: "L-1-3", toCol: "node-L-2-0" },
-      { from: "L-1-4", to: "L-1-5", toCol: "node-L-2-1" },
-      { from: "L-1-6", to: "L-1-7", toCol: "node-L-2-1" },
       { from: "L-2-0", to: "L-2-1", toCol: "node-L-3-0" },
-      { from: "L-2-2", to: "L-2-3", toCol: "node-L-3-1" },
       { from: "R-1-0", to: "R-1-1", toCol: "node-R-2-0" },
       { from: "R-1-2", to: "R-1-3", toCol: "node-R-2-0" },
-      { from: "R-1-4", to: "R-1-5", toCol: "node-R-2-1" },
-      { from: "R-1-6", to: "R-1-7", toCol: "node-R-2-1" },
       { from: "R-2-0", to: "R-2-1", toCol: "node-R-3-0" },
-      { from: "R-2-2", to: "R-2-3", toCol: "node-R-3-1" },
       { from: "L-3-0", to: "L-3-1", toCol: "node-F-0" },
-      { from: "R-3-0", to: "R-3-1", toCol: "node-F-1" },
     ]
 
     pairs.forEach(({ from, to, toCol }) => {
@@ -225,48 +208,45 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
           {/* ================= LADO ESQUERDO ================= */}
 
           {/* Round 1 - Oitavas Esquerda */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <Round1Pair lutas={leftRound1} side="L" round={1} baseIndex={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
           </div>
 
           {/* Round 2 - Quartas Esquerda */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <Round2Pair lutas={leftRound2} side="L" round={2} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
           </div>
 
           {/* Round 3 - Semifinal Esquerda */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
-            <div className="flex flex-col gap-36 py-2">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
+            <div className="flex flex-col gap-20 py-2">
               <SemiFinalCard luta={leftSemi[0]} side="L" round={3} position={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
-              <SemiFinalCard luta={leftSemi[1]} side="L" round={3} position={1} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
             </div>
           </div>
 
           {/* ================= PAINEL CENTRAL ================= */}
-          <div className="col-span-1 flex flex-col justify-center items-center gap-8 min-h-[480px]">
-
-            {/* Finalista Esquerdo */}
+          <div className="col-span-1 flex flex-col justify-center items-center min-h-[320px]">
+            {/* Campeao*/}
             <div className="flex flex-col items-center w-full">
-              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Finalista</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Campeão</span>
               <FinalistCard atleta={winnerLeft || undefined} position={0} cardPosition={28} />
             </div>
           </div>
 
           {/* Round 3 - Semifinal Direita */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
-            <div className="flex flex-col gap-36 py-2">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
+            <div className="flex flex-col gap-20 py-2">
               <SemiFinalCard luta={rightSemi[0]} side="R" round={3} position={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
-              <SemiFinalCard luta={rightSemi[1]} side="R" round={3} position={1} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
             </div>
           </div>
 
           {/* Round 2 - Quartas Direita */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <Round2PairRight lutas={rightRound2} side="R" round={2} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
           </div>
 
           {/* Round 1 - Oitavas Direita */}
-          <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
+          <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <Round1PairRight lutas={rightRound1} side="R" round={1} baseIndex={4} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
           </div>
         </div>
@@ -329,18 +309,19 @@ function CompetitorCard({
   const temAtleta = !!atleta?.id
   const borderClass = isFinalist ? "border-yellow-500 shadow-md" : "border-slate-950 shadow-sm"
   const opponentIsNull = atletaIndex === 1 ? !luta?.atleta2?.id : !luta?.atleta1?.id
-  const showAdvanceTag = temAtleta && opponentIsNull && luta?.round === 1
-  
-  const isDesclassificado = temAtleta && luta?.resultado?.status === "concluida" && 
+  const hasAdvanceTag = luta?.tags?.includes("AVANÇOU") || false
+  const showAdvanceTag = temAtleta && (hasAdvanceTag || (opponentIsNull && luta?.round === 1))
+
+  const isDesclassificado = temAtleta && luta?.resultado?.status === "concluida" &&
     ((atletaIndex === 1 && luta.resultado.desclassificacao === "atleta1") ||
-     (atletaIndex === 2 && luta.resultado.desclassificacao === "atleta2"))
+      (atletaIndex === 2 && luta.resultado.desclassificacao === "atleta2"))
 
   return (
     <div
       id={nodeId}
       onClick={onClick}
       className={cn(
-        "bg-white p-2 text-xs flex flex-col justify-center min-h-[52px] border-2 relative transition-all duration-200",
+        "bg-white p-3 text-xs flex flex-col justify-center min-h-[64px] border-2 relative transition-all duration-200",
         borderClass,
         !temAtleta && "bg-slate-50",
         isCompleted && "bg-slate-100",
@@ -350,39 +331,39 @@ function CompetitorCard({
     >
       {temAtleta ? (
         <>
-          <div className={cn("font-bold uppercase truncate pr-8", isDesclassificado ? "text-red-600 line-through" : "text-slate-900")}>
+          <div className={cn("font-bold uppercase truncate pr-8 text-[13px]", isDesclassificado ? "text-red-600 line-through" : "text-slate-900")}>
             {atleta?.nome || "-- Vazio --"}
           </div>
-          <div className="text-[10px] text-slate-500 uppercase truncate">
+          <div className="text-[10px] text-slate-500 uppercase truncate mt-0.5">
             {atleta?.equipe || "Equipe"}
           </div>
+          {cardPosition !== undefined && (
+            <span className="absolute right-1 top-1 text-[10px] font-bold text-slate-400">
+              {cardPosition}
+            </span>
+          )}
           {showAdvanceTag && (
-            <span className="absolute right-1 top-1 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded font-bold">
+            <span className="absolute right-1 bottom-1 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded font-bold">
               AVANÇOU
             </span>
           )}
           {isDesclassificado && (
-            <span className="absolute right-1 top-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+            <span className="absolute right-1 bottom-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
               DESCLASSIFICADO
             </span>
           )}
           {isCompleted && !showAdvanceTag && !isDesclassificado && (
-            <span className="absolute right-1 top-1 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+            <span className="absolute right-1 bottom-1 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
               VENCEU
-            </span>
-          )}
-          {cardPosition !== undefined && (
-            <span className={cn("absolute right-1 bottom-1 text-[10px] font-bold text-slate-400", (showAdvanceTag || isDesclassificado) && "bottom-8")}>
-              {cardPosition}
             </span>
           )}
         </>
       ) : (
         <>
-          <div className="font-bold uppercase truncate pr-8 text-slate-400 italic">
+          <div className="font-bold uppercase truncate pr-8 text-slate-400 italic text-[13px]">
             -- Vazio --
           </div>
-          <div className="text-[10px] text-slate-400 uppercase truncate">
+          <div className="text-[10px] text-slate-400 uppercase truncate mt-0.5">
             Equipe
           </div>
           {cardPosition !== undefined && (
@@ -431,6 +412,7 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
       </div>
       <div className="flex flex-col gap-3 py-2">
         <CompetitorCard
+          lutas={lutas[1]}
           luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
@@ -448,50 +430,6 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
           cardPosition={4}
-          atletaIndex={2}
-        />
-      </div>
-      <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard
-          luta={lutas[2]}
-          nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
-          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
-          isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta1?.id}
-          mode={mode}
-          cardPosition={5}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[2]}
-          nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
-          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
-          isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta2?.id}
-          mode={mode}
-          cardPosition={6}
-          atletaIndex={2}
-        />
-      </div>
-      <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard
-          luta={lutas[3]}
-          nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
-          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
-          isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta1?.id}
-          mode={mode}
-          cardPosition={7}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[3]}
-          nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
-          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
-          isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta2?.id}
-          mode={mode}
-          cardPosition={8}
           atletaIndex={2}
         />
       </div>
@@ -554,50 +492,6 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           atletaIndex={2}
         />
       </div>
-      <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard
-          luta={lutas[2]}
-          nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
-          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
-          isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta1?.id}
-          mode={mode}
-          cardPosition={13}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[2]}
-          nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
-          onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
-          isActive={activeFightId === lutas[2]?.id}
-          isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta2?.id}
-          mode={mode}
-          cardPosition={14}
-          atletaIndex={2}
-        />
-      </div>
-      <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard
-          luta={lutas[3]}
-          nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
-          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
-          isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta1?.id}
-          mode={mode}
-          cardPosition={15}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[3]}
-          nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
-          onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
-          isActive={activeFightId === lutas[3]?.id}
-          isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta2?.id}
-          mode={mode}
-          cardPosition={16}
-          atletaIndex={2}
-        />
-      </div>
     </>
   )
 }
@@ -613,7 +507,6 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
   return (
     <>
       <div className="flex flex-col gap-16 py-2">
-        {/* Vencedor de 1x2 avança para cá (Card 17) */}
         <CompetitorCard
           luta={lutas[0]}
           nodeId={`node-${side}-${round}-0-1`}
@@ -622,9 +515,8 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
           cardPosition={17}
-          atletaIndex={1} 
+          atletaIndex={1}
         />
-        {/* Vencedor de 3x4 avança para cá (Card 18) */}
         <CompetitorCard
           luta={lutas[0]}
           nodeId={`node-${side}-${round}-0-2`}
@@ -633,28 +525,6 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
           cardPosition={18}
-          atletaIndex={2} 
-        />
-      </div>
-      <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard
-          luta={lutas[1]}
-          nodeId={`node-${side}-${round}-1-1`}
-          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
-          isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
-          mode={mode}
-          cardPosition={19}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[1]}
-          nodeId={`node-${side}-${round}-1-2`}
-          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
-          isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
-          mode={mode}
-          cardPosition={20}
           atletaIndex={2}
         />
       </div>
@@ -694,33 +564,11 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           atletaIndex={2}
         />
       </div>
-      <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard
-          luta={lutas[1]}
-          nodeId={`node-${side}-${round}-3-1`}
-          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
-          isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
-          mode={mode}
-          cardPosition={27}
-          atletaIndex={1}
-        />
-        <CompetitorCard
-          luta={lutas[1]}
-          nodeId={`node-${side}-${round}-3-2`}
-          onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
-          isActive={activeFightId === lutas[1]?.id}
-          isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
-          mode={mode}
-          cardPosition={28}
-          atletaIndex={2}
-        />
-      </div>
     </>
   )
 }
 
-function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mode }: {
+function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mode, forceAtletaIndex }: {
   luta?: Luta
   side: "L" | "R"
   round: number
@@ -728,8 +576,11 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
   onClick?: (luta: Luta) => void
   activeFightId?: string
   mode?: "live" | "readonly"
+  forceAtletaIndex?: 1 | 2
 }) {
   const cardPosition = side === "L" ? 21 + position : 23 + position
+  const isDirectFinal = !!luta?.atleta1?.id && !!luta?.atleta2?.id
+  const athleteIndex = forceAtletaIndex || (isDirectFinal && position === 1 ? 2 : 1)
   return (
     <div className="flex flex-col gap-3">
       <CompetitorCard
@@ -737,10 +588,11 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
         nodeId={`node-${side}-${round}-${position}-1`}
         onClick={luta ? () => onClick?.(luta) : undefined}
         isActive={activeFightId === luta?.id}
-        isCompleted={luta?.resultado?.status === "concluida" && luta?.resultado?.vencedorAtletaId === luta?.atleta1?.id}
+        isCompleted={luta?.resultado?.status === "concluida" && 
+          (athleteIndex === 1 ? luta?.resultado?.vencedorAtletaId === luta?.atleta1?.id : luta?.resultado?.vencedorAtletaId === luta?.atleta2?.id)}
         mode={mode}
         cardPosition={cardPosition}
-        atletaIndex={1}
+        atletaIndex={athleteIndex}
       />
     </div>
   )
@@ -755,14 +607,14 @@ function FinalistCard({ atleta, position, cardPosition, onClick }: {
   return (
     <div
       id={`node-F-${position}`}
-      className="competitor-card border-2 border-yellow-500 bg-white p-2 text-xs flex flex-col justify-center min-h-[52px] w-full shadow-md relative transition-all duration-200"
+      className="competitor-card border-2 border-yellow-500 bg-white p-3 text-xs flex flex-col justify-center min-h-[64px] w-full shadow-md relative transition-all duration-200"
     >
       {atleta?.id ? (
         <>
-          <div className="font-bold uppercase truncate pr-5 text-slate-900">
+          <div className="font-bold uppercase truncate pr-5 text-slate-900 text-[13px]">
             {atleta.nome}
           </div>
-          <div className="text-[10px] text-slate-500 uppercase truncate">
+          <div className="text-[10px] text-slate-500 uppercase truncate mt-0.5">
             {atleta.equipe}
           </div>
           {cardPosition !== undefined && (
@@ -773,10 +625,10 @@ function FinalistCard({ atleta, position, cardPosition, onClick }: {
         </>
       ) : (
         <>
-          <div className="font-bold uppercase truncate pr-5 text-slate-400 italic">
+          <div className="font-bold uppercase truncate pr-5 text-slate-400 italic text-[13px]">
             -- Vazio --
           </div>
-          <div className="text-[10px] text-slate-400 uppercase truncate">
+          <div className="text-[10px] text-slate-400 uppercase truncate mt-0.5">
             Equipe
           </div>
           {cardPosition !== undefined && (
