@@ -43,6 +43,7 @@ export interface Luta {
   dataLuta?: string
   nextMatchId?: string
   previousMatchIds?: string[]
+  tags?: string[]
 }
 
 export interface ClassificacaoFinal {

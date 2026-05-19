@@ -90,15 +90,43 @@ export default function ScoreboardSetupPage() {
     const chavesImportadas = await importarArquivos(event.target.files)
 
     if (chavesImportadas.length > 0) {
-      const chavesAtualizadas = chavesImportadas.map(chave => ({
-        ...chave,
-        lutas: chave.lutas.map(luta => {
-          if (luta.atleta1 === null || luta.atleta2 === null) {
-            return { ...luta, round: 2 }
+      const chavesAtualizadas = chavesImportadas.map(chave => {
+        const novasLutas: Luta[] = []
+
+        chave.lutas.forEach(luta => {
+          const temAtletaNull = luta.atleta1 === null || luta.atleta2 === null
+
+          if (temAtletaNull) {
+            const positionRound2 = Math.floor(luta.position / 2)
+            const idRound2 = generateUUID()
+
+            const lutaRound1: Luta = {
+              ...luta,
+              id: generateUUID(),
+              round: 1,
+              tags: ["AVANÇOU"],
+              nextMatchId: idRound2
+            }
+            novasLutas.push(lutaRound1)
+
+            const lutaRound2: Luta = {
+              ...luta,
+              id: idRound2,
+              round: 2,
+              position: positionRound2,
+              previousMatchIds: [lutaRound1.id]
+            }
+            novasLutas.push(lutaRound2)
+          } else {
+            novasLutas.push(luta)
           }
-          return luta
         })
-      }))
+
+        return {
+          ...chave,
+          lutas: novasLutas
+        }
+      })
 
       const novasChaves = [...chaves, ...chavesAtualizadas]
       setChaves(novasChaves)

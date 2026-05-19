@@ -62,6 +62,7 @@ export function BracketMatchupCard({ luta, onClick, isActive, side, mode = "live
         fighter="atleta1"
         status={getFighterStatus(luta.resultado, "atleta1")}
         tags={getFighterTags(luta.resultado, "atleta1")}
+        advanceTag={luta.tags?.includes("AVANÇOU")}
       />
 
       <div className="bg-gray-200 text-gray-500 text-xs font-bold text-center py-1 border-y border-gray-300">
@@ -74,6 +75,7 @@ export function BracketMatchupCard({ luta, onClick, isActive, side, mode = "live
         fighter="atleta2"
         status={getFighterStatus(luta.resultado, "atleta2")}
         tags={getFighterTags(luta.resultado, "atleta2")}
+        advanceTag={luta.tags?.includes("AVANÇOU")}
       />
     </div>
   )
@@ -85,9 +87,10 @@ interface FighterRowProps {
   fighter: "atleta1" | "atleta2"
   status: ReturnType<typeof getFighterStatus>
   tags: ReturnType<typeof getFighterTags>
+  advanceTag?: boolean
 }
 
-function FighterRow({ atleta, status, tags }: FighterRowProps) {
+function FighterRow({ atleta, status, tags, advanceTag }: FighterRowProps) {
   const isBye = !atleta?.id
 
   if (isBye) {
@@ -103,6 +106,11 @@ function FighterRow({ atleta, status, tags }: FighterRowProps) {
     <div className="px-3 py-2">
       <p className="font-semibold text-gray-900 text-sm truncate">{atleta.nome}</p>
       <p className="text-gray-500 text-xs truncate">{atleta.equipe}</p>
+      {advanceTag && (
+        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded font-medium">
+          AVANÇOU
+        </span>
+      )}
       <ResultBadgeList tags={tags} />
     </div>
   )
