@@ -1,6 +1,6 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 7.0
+**Versão:** 7.1
 **Data:** 2026-05-18
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
@@ -562,6 +562,39 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
+### HU-012: Lutas com Atleta Ausente (BYE)
+
+**Critérios de Aceitação:**
+- [x] Lutas onde `atleta2` é `null` ou não possui `id` devem ser tratadas como "BYE"
+- [x] O botão/card de iniciar luta deve ficar **desabilitado** para lutas com BYE
+- [x] Lutas com BYE devem ser marcadas com status visual específico (cor cinza)
+- [x] O sistema deve exibir "BYE" + "Avanca" no lugar do nome do atleta ausente
+- [x] Sistema deve garantir que apenas lutas com ambos atletas definidos possam iniciar
+
+**Implementação:**
+
+1. **BracketMatchupCard.tsx** (linha 43):
+   ```typescript
+   const podeClicar = mode === "live" && 
+                      status !== "completed" && 
+                      status !== "bye" && 
+                      !!luta.atleta1?.id && 
+                      !!luta.atleta2?.id
+   ```
+   - Função `isBye(luta)` retorna `true` quando atleta não possui `id`
+   - Status "bye" = cor cinza (bg-gray-300)
+
+2. **scoreboard/page.tsx** (linha 248-261):
+   ```typescript
+   const podeSelecionar = !!luta.atleta1?.id && !!luta.atleta2?.id
+   onClick={() => !isConcluida && podeSelecionar && onSelecionarLuta(chaveAtiva, luta)}
+   ```
+   - Estilo visual: `opacity-50 cursor-not-allowed` para lutas com BYE
+
+**Referência:** Ver `docs/requisito-luta-sem-atleta.md` para detalhes completos
+
+---
+
 ## 11. Estrutura do JSON de Importação
 
 ```json
@@ -619,6 +652,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 | `previousMatchIds` | Array de UUIDs das lutas que alimentam esta luta |
 | round | Número do round na chave (1, 2, 3, 4) — **não é ID** |
 | position | Posição vertical do matchup dentro do round — **não é ID** |
+| BYE | Luta onde um dos atletas está ausente (null ou sem ID); o atleta presente avança automaticamente |
 
 ---
 
@@ -702,9 +736,8 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 ---
 
 *Documento atualizado em: 2026-05-18*
-*Versão: 7.0*
+*Versão: 7.1*
 *Mudanças principais:*
-*- Adicionados tipos ClassificacaoFinal, BracketRound, BracketMatchup, FighterSlot*
-*- Adicionadas histórias HU-009 (Bracket), HU-010 (Migração), HU-011 (Avanço automático)*
-*- Documentados utilitários de bracket e hooks personalizados*
-*- Documentada API DELETE para limpeza de dados*
+*- Adicionado HU-012 (Lutas com Atleta Ausente / BYE)*
+*- Adicionado termo "BYE" ao glossário*
+*- Documentada implementação de validação de BYE nos componentes BracketMatchupCard e scoreboard/page*

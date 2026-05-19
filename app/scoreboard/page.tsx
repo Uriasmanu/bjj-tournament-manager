@@ -247,13 +247,16 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
             </h2>
             {chaveAtiva.lutas.map((luta, idx) => {
               const isConcluida = luta.resultado?.status === "concluida"
+              const podeSelecionar = !!luta.atleta1?.id && !!luta.atleta2?.id
               return (
                 <div
                   key={luta.id || idx}
-                  onClick={() => !isConcluida && onSelecionarLuta(chaveAtiva, luta)}
+                  onClick={() => !isConcluida && podeSelecionar && onSelecionarLuta(chaveAtiva, luta)}
                   className={`flex items-center justify-between px-5 py-3 rounded-lg transition-colors ${
                     isConcluida
                       ? "bg-green-900/20 border border-green-800/50"
+                      : !podeSelecionar
+                      ? "bg-zinc-800/30 border border-zinc-700 opacity-50 cursor-not-allowed"
                       : luta.id === lutaAtivaId
                       ? "bg-amber-900/20 border border-amber-600 cursor-pointer"
                       : "bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
