@@ -334,7 +334,7 @@
             "faixa": "Roxa"
           },
           "resultado": {
-            "id": "27a01b22-ad5a-452b-a716-ab9b89a5ab43",
+            "id": "014c2470-722b-421d-aac3-1975687be077",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -342,21 +342,21 @@
             "penalidadesAtleta1": 0,
             "penalidadesAtleta2": 0,
             "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta1": true,
             "finalizacaoAtleta2": false,
             "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
+            "vencedor": "atleta1",
+            "tipoVitoria": "finalizacao",
+            "status": "concluida",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
+            "lutaId": "099ec990-1e1e-4799-86fa-38af733db171",
+            "vencedorAtletaId": "fbafc945-4072-4ec0-947a-7903cab771a7",
+            "perdedorAtletaId": "3ab5d8c2-0df0-4415-8296-fb7f810edd6e",
             "AtletaDesclassificadoId": null
           }
         },
@@ -415,7 +415,7 @@
             "faixa": "Roxa"
           },
           "resultado": {
-            "id": "140362c7-3ba0-4a4f-ba53-574566ada886",
+            "id": "7ae28178-1022-42b1-8935-cef814ecaf35",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -425,25 +425,26 @@
             "tempoDecorrido": 0,
             "finalizacaoAtleta1": false,
             "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
+            "desclassificacao": "atleta2",
+            "vencedor": "atleta1",
+            "tipoVitoria": "desclassificacao",
+            "status": "concluida",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
-            "AtletaDesclassificadoId": null
+            "lutaId": "6bd9c9f4-ad65-4588-8b9b-8bbbae6a6611",
+            "vencedorAtletaId": "7ac9544a-59db-4854-8f1c-5f53bfad1c8f",
+            "perdedorAtletaId": "bdb777e8-896b-4c46-8503-64bdbd193682",
+            "AtletaDesclassificadoId": "bdb777e8-896b-4c46-8503-64bdbd193682"
           }
         }
       ],
-      "status": "pendente",
-      "totalCompetidores": 5
+      "status": "em_andamento",
+      "totalCompetidores": 5,
+      "vencedorAtletaId": "7ac9544a-59db-4854-8f1c-5f53bfad1c8f"
     },
     {
       "id": "fb020a5b-9c0c-4905-ba78-7cf97dc36be5",
@@ -497,6 +498,6 @@
       "totalCompetidores": 2
     }
   ],
-  "criadoEm": "2026-05-18T20:04:23.594Z",
-  "atualizadoEm": "2026-05-18T20:04:23.594Z"
+  "criadoEm": "2026-05-19T01:47:02.835Z",
+  "atualizadoEm": "2026-05-19T01:47:02.835Z"
 }
