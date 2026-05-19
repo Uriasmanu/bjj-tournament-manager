@@ -1,7 +1,7 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 7.1
-**Data:** 2026-05-18
+**Versão:** 7.2
+**Data:** 2026-05-19
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
 ---
@@ -392,7 +392,58 @@ docs/
 
 ---
 
-## 9. Dados Salvos no Resultado
+## 9. BracketLayout - Visualização de Chave
+
+O componente `BracketLayout.tsx` exibe a chave de luta em formato visual com as seguintes características:
+
+### 9.1 Estrutura do Layout
+
+- **Grid de 7 colunas**: Oitavas Esquerda → Quartas Esquerda → Semifinal Esquerda → Painel Central → Semifinal Direita → Quartas Direita → Oitavas Direita
+- **Conexões SVG**: Linhas que conectam os nodes das lutas automaticamente
+- **Modo de exibição**: Suporta `mode="live"` (interativo) ou `mode="readonly"` (somente leitura)
+
+### 9.2 Componentes do Bracket
+
+| Componente | Descrição |
+|------------|-----------|
+| `CompetitorCard` | Card individual de competidor com nome, equipe, resultado |
+| `Round1Pair` | Par de competidores das oitavas (8 lutas por lado) |
+| `Round2Pair` | Par de competidores das quartas (2 lutas por lado) |
+| `SemiFinalCard` | Card da semifinal (apenas 1 competidor por card) |
+| `FinalistCard` | Card de finalista no painel central |
+| `PodiumLine` | Linha de classificação final (1º, 2º, 3º) |
+
+### 9.3 Painel Central
+
+O painel central exibe apenas o **Finalista**, mostrando o vencedor da semifinal esquerda quando concluída.
+
+### 9.4 Classificação Final (Pódio)
+
+O pódio é exibido abaixo do bracket com:
+- **1º Lugar**: Campeão (cor dourada)
+- **2º Lugar**: Vice-campeão (cor cinza)
+- **3º Lugar**: Dois terceiros lugares (cor âmbar)
+
+Os terceiros lugares são calculados automaticamente:
+- `thirdPlaceLeft`: Perdedor da semifinal esquerda
+- `thirdPlaceRight`: Perdedor da semifinal direita
+
+### 9.5 Estados de Exibição
+
+| Estado | Comportamento |
+|--------|---------------|
+| Em andamento | Mostra competidores nas lutas |
+| Concluída | Mostra resultado "VENCEU" no card |
+| Pending | Mostra "-- Vazio --" |
+| BYE | Não permite iniciar luta |
+
+### 9.6 Referência
+
+- Arquivo: `app/components/bracket/BracketLayout.tsx`
+
+---
+
+## 10. Dados Salvos no Resultado
 
 Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
@@ -418,7 +469,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
-## 10. Histórias de Usuário
+## 11. Histórias de Usuário
 
 ### HU-001: Tela de Seleção de Entrada
 
@@ -595,7 +646,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
-## 11. Estrutura do JSON de Importação
+## 12. Estrutura do JSON de Importação
 
 ```json
 {
@@ -633,7 +684,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
-## 12. Glossário de Termos
+## 13. Glossário de Termos
 
 | Termo | Definição |
 |-------|-----------|
@@ -656,7 +707,7 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
-## 13. Componentes Shadcn Disponíveis
+## 14. Componentes Shadcn Disponíveis
 
 O sistema utiliza os seguintes componentes do Shadcn UI:
 
@@ -672,7 +723,7 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 ---
 
-## 14. Regras de Geração de UUID
+## 15. Regras de Geração de UUID
 
 - Usar `crypto.randomUUID()` (built-in do Node.js/ browser) para gerar UUIDs v4
 - Ao importar JSON externo sem UUIDs, gerar UUIDs automaticamente para `id` de `ChaveLuta`, `Luta`, `Atleta` e `ResultadoLuta`
@@ -680,7 +731,7 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 ---
 
-## 15. Utilitários de Bracket
+## 16. Utilitários de Bracket
 
 O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 
@@ -698,7 +749,7 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 
 ---
 
-## 16. Hooks Personalizados
+## 17. Hooks Personalizados
 
 | Hook | Arquivo | Descrição |
 |------|---------|------------|
@@ -708,7 +759,7 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 
 ---
 
-## 17. Fluxo: Migração e Avanço de Vencedor
+## 18. Fluxo: Migração e Avanço de Vencedor
 
 ### 17.1 Migração de Dados
 Ao carregar dados de uma área, o sistema executa `migrateAllData()` que:
@@ -725,7 +776,7 @@ Ao finalizar uma luta com `marcarLutaConcluida()`:
 
 ---
 
-## 18. Validação de UUID
+## 19. Validação de UUID
 
 Função em `app/lib/uuid.ts`:
 - `generateUUID()`: Gera UUID v4 usando `crypto.randomUUID()`
@@ -735,9 +786,12 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 ---
 
-*Documento atualizado em: 2026-05-18*
-*Versão: 7.1*
+*Documento atualizado em: 2026-05-19*
+*Versão: 7.2*
 *Mudanças principais:*
-*- Adicionado HU-012 (Lutas com Atleta Ausente / BYE)*
-*- Adicionado termo "BYE" ao glossário*
-*- Documentada implementação de validação de BYE nos componentes BracketMatchupCard e scoreboard/page*
+*- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
+*- Removido troféu central "Disputa de Ouro" do layout*
+*- Simplificado painel central para exibir apenas Finalista Esquerdo*
+*- SemiFinalCard agora renderiza apenas um competidor (não par)*
+*- Mantido pódio com 1º, 2º e dois 3º lugares automáticos*
+*- Renumeradas seções subsequentes*

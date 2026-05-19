@@ -246,8 +246,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
 
             {/* Finalista Esquerdo */}
             <div className="flex flex-col items-center w-full">
-              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Finalista Esquerdo</span>
-              <FinalistCard atleta={winnerLeft || undefined} position={0} />
+              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Finalista</span>
+              <FinalistCard atleta={winnerLeft || undefined} position={0} cardPosition={28} />
             </div>
           </div>
 
@@ -501,7 +501,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={baseIndex * 2}
+          cardPosition={8}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -511,7 +511,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={baseIndex * 2 + 1}
+          cardPosition={9}
           atletaIndex={2}
         />
       </div>
@@ -523,7 +523,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
-          cardPosition={(baseIndex + 1) * 2}
+          cardPosition={10}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -533,7 +533,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
-          cardPosition={(baseIndex + 1) * 2 + 1}
+          cardPosition={11}
           atletaIndex={2}
         />
       </div>
@@ -545,7 +545,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[2]?.id}
           isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta1?.id}
           mode={mode}
-          cardPosition={(baseIndex + 2) * 2}
+          cardPosition={12}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -555,7 +555,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[2]?.id}
           isCompleted={lutas[2]?.resultado?.status === "concluida" && lutas[2]?.resultado?.vencedorAtletaId === lutas[2]?.atleta2?.id}
           mode={mode}
-          cardPosition={(baseIndex + 2) * 2 + 1}
+          cardPosition={13}
           atletaIndex={2}
         />
       </div>
@@ -567,7 +567,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[3]?.id}
           isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta1?.id}
           mode={mode}
-          cardPosition={(baseIndex + 3) * 2}
+          cardPosition={14}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -577,7 +577,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[3]?.id}
           isCompleted={lutas[3]?.resultado?.status === "concluida" && lutas[3]?.resultado?.vencedorAtletaId === lutas[3]?.atleta2?.id}
           mode={mode}
-          cardPosition={(baseIndex + 3) * 2 + 1}
+          cardPosition={15}
           atletaIndex={2}
         />
       </div>
@@ -603,7 +603,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={0}
+          cardPosition={16}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -613,7 +613,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={1}
+          cardPosition={17}
           atletaIndex={2}
         />
       </div>
@@ -625,7 +625,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
-          cardPosition={2}
+          cardPosition={18}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -635,7 +635,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
-          cardPosition={3}
+          cardPosition={19}
           atletaIndex={2}
         />
       </div>
@@ -661,7 +661,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={4}
+          cardPosition={24}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -671,7 +671,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={5}
+          cardPosition={25}
           atletaIndex={2}
         />
       </div>
@@ -683,7 +683,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
-          cardPosition={6}
+          cardPosition={26}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -693,7 +693,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
-          cardPosition={7}
+          cardPosition={27}
           atletaIndex={2}
         />
       </div>
@@ -710,6 +710,7 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
   activeFightId?: string
   mode?: "live" | "readonly"
 }) {
+  const cardPosition = side === "L" ? 20 + position : 22 + position
   return (
     <div className="flex flex-col gap-3">
       <CompetitorCard
@@ -719,16 +720,17 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
         isActive={activeFightId === luta?.id}
         isCompleted={luta?.resultado?.status === "concluida" && luta?.resultado?.vencedorAtletaId === luta?.atleta1?.id}
         mode={mode}
-        cardPosition={position * 2}
+        cardPosition={cardPosition}
         atletaIndex={1}
       />
     </div>
   )
 }
 
-function FinalistCard({ atleta, position, onClick }: {
+function FinalistCard({ atleta, position, cardPosition, onClick }: {
   atleta?: { id: string; nome: string; equipe: string; faixa?: string } | null
   position: number
+  cardPosition?: number
   onClick?: () => void
 }) {
   return (
@@ -744,6 +746,11 @@ function FinalistCard({ atleta, position, onClick }: {
           <div className="text-[10px] text-slate-500 uppercase truncate">
             {atleta.equipe}
           </div>
+          {cardPosition !== undefined && (
+            <span className="absolute right-1 bottom-1 text-[10px] font-bold text-slate-400">
+              {cardPosition + 1}
+            </span>
+          )}
         </>
       ) : (
         <>
@@ -753,6 +760,11 @@ function FinalistCard({ atleta, position, onClick }: {
           <div className="text-[10px] text-slate-400 uppercase truncate">
             Equipe
           </div>
+          {cardPosition !== undefined && (
+            <span className="absolute right-1 bottom-1 text-[10px] font-bold text-slate-400">
+              {cardPosition + 1}
+            </span>
+          )}
         </>
       )}
     </div>
