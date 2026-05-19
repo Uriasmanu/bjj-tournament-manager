@@ -852,8 +852,53 @@ if (luta.position % 2 === 1) {
 
 ---
 
+## 21. Tags de Status no Bracket
+
+### 21.1 Visão Geral
+
+O sistema exibe tags de status no bracket para diferentes cenários de luta:
+
+| Tag | Cor | Condição |
+|-----|-----|----------|
+| AVANÇOU | Azul | Atleta avançou por BYE (atleta2 = null no Round 1) |
+| VENCEU | Verde | Atleta venceu a luta |
+| DESCLASSIFICADO | Vermelho | Atleta foi desclassificado |
+
+### 21.2 Implementação
+
+**Arquivo:** `app/components/bracket/BracketLayout.tsx` - Componente `CompetitorCard`
+
+**Lógica de Exibição:**
+
+```typescript
+// Tag AVANÇOU (BYE)
+const showAdvanceTag = temAtleta && opponentIsNull && luta?.round === 1
+
+// Tag DESCLASSIFICADO
+const isDesclassificado = temAtleta && luta?.resultado?.status === "concluida" &&
+  ((atletaIndex === 1 && luta.resultado.desclassificacao === "atleta1") ||
+   (atletaIndex === 2 && luta.resultado.desclassificacao === "atleta2"))
+
+// Tag VENCEU (apenas se não for BYE e não for desclassificado)
+{isCompleted && !showAdvanceTag && !isDesclassificado && "VENCEU"}
+```
+
+### 21.3 Estilos Visuais
+
+| Tag | Classe CSS | Texto |
+|-----|------------|-------|
+| AVANÇOU | `bg-blue-100 text-blue-700` | AVANÇOU |
+| VENCEU | `bg-green-500 text-white` | VENCEU |
+| DESCLASSIFICADO | `bg-red-600 text-white` | DESCLASSIFICADO |
+
+Para atletas desclassificados, o nome também recebe:
+- Cor: `text-red-600`
+- Estilo: `line-through` (tachado)
+
+---
+
 *Documento atualizado em: 2026-05-19*
-*Versão: 7.3*
+*Versão: 7.4*
 *Mudanças principais:*
 *- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
 *- Removido troféu central "Disputa de Ouro" do layout*
@@ -864,3 +909,4 @@ if (luta.position % 2 === 1) {
 *- Adicionada seção 9.6 com numeração dos cards (0-28)*
 *- FinalistCard agora aceita prop cardPosition*
 *- Adicionada seção 20 - Correção de Posicionamento de BYE no Bracket*
+*- Adicionada seção 21 - Tags de Status no Bracket (AVANÇOU, VENCEU, DESCLASSIFICADO)*
