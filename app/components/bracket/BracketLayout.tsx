@@ -21,8 +21,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const svgRef = useRef<SVGSVGElement>(null)
 
   const todasLutasConcluidas = useMemo(() => {
-    return chave.lutas.every(l => 
-      l.resultado?.status === "concluida" || 
+    return chave.lutas.every(l =>
+      l.resultado?.status === "concluida" ||
       (!l.atleta1?.id || !l.atleta2?.id)
     )
   }, [chave.lutas])
@@ -58,7 +58,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       r1Lutas.find(l => l.position === 6),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
- 
+
   const rightRound1 = useMemo(() => {
     const r1Lutas = chave.lutas.filter(l => l.round === 1)
     return [
@@ -68,7 +68,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       r1Lutas.find(l => l.position === 7),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
- 
+
   const leftRound2 = useMemo(() => {
     const r2Lutas = chave.lutas.filter(l => l.round === 2)
     return [
@@ -76,7 +76,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       r2Lutas.find(l => l.position === 1),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
- 
+
   const rightRound2 = useMemo(() => {
     const r2Lutas = chave.lutas.filter(l => l.round === 2)
     return [
@@ -84,16 +84,16 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       r2Lutas.find(l => l.position === 3),
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
-  
- 
+
+
   const leftSemi = useMemo(() => {
     return chave.lutas.filter(l => l.round === 3 && l.position === 0)
   }, [chave.lutas])
-  
+
   const rightSemi = useMemo(() => {
     return chave.lutas.filter(l => l.round === 3 && l.position === 1)
   }, [chave.lutas])
-  
+
   const maxRound = useMemo(() => Math.max(...chave.lutas.map(l => l.round)), [chave.lutas])
   const finalLutas = useMemo(() => {
     return chave.lutas.filter(l => l.round === maxRound)
@@ -102,8 +102,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const winnerLeft = useMemo(() => {
     const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
-      return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId 
-        ? leftSemiLuta.atleta1 
+      return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
+        ? leftSemiLuta.atleta1
         : leftSemiLuta.atleta2
     }
     return undefined
@@ -112,8 +112,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const winnerRight = useMemo(() => {
     const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
-      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId 
-        ? rightSemiLuta.atleta1 
+      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId
+        ? rightSemiLuta.atleta1
         : rightSemiLuta.atleta2
     }
     return undefined
@@ -132,8 +132,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const thirdPlaceLeft = useMemo(() => {
     const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
-      return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId 
-        ? leftSemiLuta.atleta2 
+      return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
+        ? leftSemiLuta.atleta2
         : leftSemiLuta.atleta1
     }
     return undefined
@@ -142,8 +142,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const thirdPlaceRight = useMemo(() => {
     const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
-      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId 
-        ? rightSemiLuta.atleta2 
+      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId
+        ? rightSemiLuta.atleta2
         : rightSemiLuta.atleta1
     }
     return undefined
@@ -158,7 +158,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const drawConnections = useCallback(() => {
     if (!svgRef.current) return
     svgRef.current.innerHTML = ""
-    
+
     const container = svgRef.current.parentElement
     if (!container) return
 
@@ -213,16 +213,16 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   return (
     <>
       <div className={cn("w-full p-4 relative", className)}>
-        <svg 
+        <svg
           ref={svgRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{ zIndex: 1 }}
         />
 
         <div className="grid grid-cols-7 gap-4 items-stretch relative z-10">
-          
+
           {/* ================= LADO ESQUERDO ================= */}
-          
+
           {/* Round 1 - Oitavas Esquerda */}
           <div className="col-span-1 flex flex-col justify-around min-h-[480px]">
             <Round1Pair lutas={leftRound1} side="L" round={1} baseIndex={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
@@ -243,25 +243,11 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
 
           {/* ================= PAINEL CENTRAL ================= */}
           <div className="col-span-1 flex flex-col justify-center items-center gap-8 min-h-[480px]">
-            
+
             {/* Finalista Esquerdo */}
             <div className="flex flex-col items-center w-full">
               <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Finalista Esquerdo</span>
               <FinalistCard atleta={winnerLeft || undefined} position={0} />
-            </div>
-
-            {/* Troféu Central */}
-            <div className="flex flex-col items-center">
-              <div className="bg-yellow-500 text-slate-950 p-2 rounded-full shadow-lg">
-                <Trophy className="w-6 h-6" />
-              </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">Disputa de Ouro</span>
-            </div>
-
-            {/* Finalista Direito */}
-            <div className="flex flex-col items-center w-full">
-              <FinalistCard atleta={winnerRight || undefined} position={1} />
-              <span className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-wider">Finalista Direito</span>
             </div>
           </div>
 
@@ -289,25 +275,25 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
           <div className="w-full max-w-xl border-t-2 border-slate-300 pt-4">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 text-center">Classificação Final</h3>
             <div className="flex flex-col gap-1 text-sm font-semibold">
-              <PodiumLine 
-                label="1º" 
-                colorClass="text-amber-500" 
-                value={finalWinner ? `${finalWinner.nome} (${finalWinner.equipe})` : "-- Aguardando final --"} 
+              <PodiumLine
+                label="1º"
+                colorClass="text-amber-500"
+                value={finalWinner ? `${finalWinner.nome} (${finalWinner.equipe})` : "-- Aguardando final --"}
               />
-              <PodiumLine 
-                label="2º" 
-                colorClass="text-slate-400" 
-                value={finalRunnerUp ? `${finalRunnerUp.nome} (${finalRunnerUp.equipe})` : "-- Aguardando disputa de ouro --"} 
+              <PodiumLine
+                label="2º"
+                colorClass="text-slate-400"
+                value={finalRunnerUp ? `${finalRunnerUp.nome} (${finalRunnerUp.equipe})` : "-- Aguardando disputa de ouro --"}
               />
-              <PodiumLine 
-                label="3º" 
-                colorClass="text-amber-700" 
-                value={thirdPlaceLeft ? `${thirdPlaceLeft.nome} (${thirdPlaceLeft.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal esquerda --"} 
+              <PodiumLine
+                label="3º"
+                colorClass="text-amber-700"
+                value={thirdPlaceLeft ? `${thirdPlaceLeft.nome} (${thirdPlaceLeft.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal esquerda --"}
               />
-              <PodiumLine 
-                label="3º" 
-                colorClass="text-amber-700" 
-                value={thirdPlaceRight ? `${thirdPlaceRight.nome} (${thirdPlaceRight.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal direita --"} 
+              <PodiumLine
+                label="3º"
+                colorClass="text-amber-700"
+                value={thirdPlaceRight ? `${thirdPlaceRight.nome} (${thirdPlaceRight.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal direita --"}
               />
             </div>
           </div>
@@ -317,8 +303,8 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   )
 }
 
-function CompetitorCard({ 
-  luta, 
+function CompetitorCard({
+  luta,
   nodeId,
   onClick,
   isActive,
@@ -327,7 +313,7 @@ function CompetitorCard({
   mode = "live",
   cardPosition,
   atletaIndex = 1
-}: { 
+}: {
   luta?: Luta
   nodeId: string
   onClick?: () => void
@@ -343,7 +329,7 @@ function CompetitorCard({
   const borderClass = isFinalist ? "border-yellow-500 shadow-md" : "border-slate-950 shadow-sm"
 
   return (
-    <div 
+    <div
       id={nodeId}
       onClick={onClick}
       className={cn(
@@ -405,8 +391,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
   return (
     <>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -415,8 +401,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           cardPosition={baseIndex * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-${baseIndex}-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -427,8 +413,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -437,8 +423,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           cardPosition={(baseIndex + 1) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -449,8 +435,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[2]} 
+        <CompetitorCard
+          luta={lutas[2]}
           nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
@@ -459,8 +445,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           cardPosition={(baseIndex + 2) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[2]} 
+        <CompetitorCard
+          luta={lutas[2]}
           nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
@@ -471,8 +457,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[3]} 
+        <CompetitorCard
+          luta={lutas[3]}
           nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
@@ -481,8 +467,8 @@ function Round1Pair({ lutas, side, round, baseIndex, onClick, activeFightId, mod
           cardPosition={(baseIndex + 3) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[3]} 
+        <CompetitorCard
+          luta={lutas[3]}
           nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
@@ -508,8 +494,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
   return (
     <>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-${baseIndex}-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -518,8 +504,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           cardPosition={baseIndex * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-${baseIndex}-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -530,8 +516,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -540,8 +526,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           cardPosition={(baseIndex + 1) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-${baseIndex + 1}-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -552,8 +538,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[2]} 
+        <CompetitorCard
+          luta={lutas[2]}
           nodeId={`node-${side}-${round}-${baseIndex + 2}-1`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
@@ -562,8 +548,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           cardPosition={(baseIndex + 2) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[2]} 
+        <CompetitorCard
+          luta={lutas[2]}
           nodeId={`node-${side}-${round}-${baseIndex + 2}-2`}
           onClick={lutas[2] ? () => onClick?.(lutas[2]) : undefined}
           isActive={activeFightId === lutas[2]?.id}
@@ -574,8 +560,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
         />
       </div>
       <div className="flex flex-col gap-3 py-2">
-        <CompetitorCard 
-          luta={lutas[3]} 
+        <CompetitorCard
+          luta={lutas[3]}
           nodeId={`node-${side}-${round}-${baseIndex + 3}-1`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
@@ -584,8 +570,8 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           cardPosition={(baseIndex + 3) * 2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[3]} 
+        <CompetitorCard
+          luta={lutas[3]}
           nodeId={`node-${side}-${round}-${baseIndex + 3}-2`}
           onClick={lutas[3] ? () => onClick?.(lutas[3]) : undefined}
           isActive={activeFightId === lutas[3]?.id}
@@ -610,8 +596,8 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
   return (
     <>
       <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-0-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -620,8 +606,8 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           cardPosition={0}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-0-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -632,8 +618,8 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
         />
       </div>
       <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-1-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -642,8 +628,8 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           cardPosition={2}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-1-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -668,8 +654,8 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
   return (
     <>
       <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-2-1`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -678,8 +664,8 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           cardPosition={4}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[0]} 
+        <CompetitorCard
+          luta={lutas[0]}
           nodeId={`node-${side}-${round}-2-2`}
           onClick={lutas[0] ? () => onClick?.(lutas[0]) : undefined}
           isActive={activeFightId === lutas[0]?.id}
@@ -690,8 +676,8 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
         />
       </div>
       <div className="flex flex-col gap-16 py-2">
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-3-1`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -700,8 +686,8 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           cardPosition={6}
           atletaIndex={1}
         />
-        <CompetitorCard 
-          luta={lutas[1]} 
+        <CompetitorCard
+          luta={lutas[1]}
           nodeId={`node-${side}-${round}-3-2`}
           onClick={lutas[1] ? () => onClick?.(lutas[1]) : undefined}
           isActive={activeFightId === lutas[1]?.id}
@@ -726,8 +712,8 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <CompetitorCard 
-        luta={luta} 
+      <CompetitorCard
+        luta={luta}
         nodeId={`node-${side}-${round}-${position}-1`}
         onClick={luta ? () => onClick?.(luta) : undefined}
         isActive={activeFightId === luta?.id}
@@ -735,16 +721,6 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
         mode={mode}
         cardPosition={position * 2}
         atletaIndex={1}
-      />
-      <CompetitorCard 
-        luta={luta} 
-        nodeId={`node-${side}-${round}-${position}-2`}
-        onClick={luta ? () => onClick?.(luta) : undefined}
-        isActive={activeFightId === luta?.id}
-        isCompleted={luta?.resultado?.status === "concluida" && luta?.resultado?.vencedorAtletaId === luta?.atleta2?.id}
-        mode={mode}
-        cardPosition={position * 2 + 1}
-        atletaIndex={2}
       />
     </div>
   )
@@ -756,7 +732,7 @@ function FinalistCard({ atleta, position, onClick }: {
   onClick?: () => void
 }) {
   return (
-    <div 
+    <div
       id={`node-F-${position}`}
       className="competitor-card border-2 border-yellow-500 bg-white p-2 text-xs flex flex-col justify-center min-h-[52px] w-full shadow-md relative transition-all duration-200"
     >
