@@ -63,6 +63,8 @@ export function BracketMatchupCard({ luta, onClick, isActive, side, mode = "live
         status={getFighterStatus(luta.resultado, "atleta1")}
         tags={getFighterTags(luta.resultado, "atleta1")}
         advanceTag={luta.tags?.includes("AVANÇOU")}
+        round={luta.round}
+        opponentIsNull={!luta.atleta2?.id}
       />
 
       <div className="bg-gray-200 text-gray-500 text-xs font-bold text-center py-1 border-y border-gray-300">
@@ -76,6 +78,8 @@ export function BracketMatchupCard({ luta, onClick, isActive, side, mode = "live
         status={getFighterStatus(luta.resultado, "atleta2")}
         tags={getFighterTags(luta.resultado, "atleta2")}
         advanceTag={luta.tags?.includes("AVANÇOU")}
+        round={luta.round}
+        opponentIsNull={!luta.atleta1?.id}
       />
     </div>
   )
@@ -88,16 +92,19 @@ interface FighterRowProps {
   status: ReturnType<typeof getFighterStatus>
   tags: ReturnType<typeof getFighterTags>
   advanceTag?: boolean
+  round?: number
+  opponentIsNull?: boolean
 }
 
-function FighterRow({ atleta, status, tags, advanceTag }: FighterRowProps) {
+function FighterRow({ atleta, status, tags, advanceTag, round, opponentIsNull }: FighterRowProps) {
   const isBye = !atleta?.id
+  const showAdvanceTag = opponentIsNull && round === 1
 
   if (isBye) {
     return (
       <div className="bg-gray-200 px-3 py-2">
         <span className="text-gray-500 text-sm font-medium">BYE</span>
-        <span className="text-gray-400 text-xs block">Avanca</span>
+        {!showAdvanceTag && <span className="text-gray-400 text-xs block">Avanca</span>}
       </div>
     )
   }
@@ -106,7 +113,12 @@ function FighterRow({ atleta, status, tags, advanceTag }: FighterRowProps) {
     <div className="px-3 py-2">
       <p className="font-semibold text-gray-900 text-sm truncate">{atleta.nome}</p>
       <p className="text-gray-500 text-xs truncate">{atleta.equipe}</p>
-      {advanceTag && (
+      {showAdvanceTag && (
+        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded font-medium">
+          AVANÇOU
+        </span>
+      )}
+      {advanceTag && !showAdvanceTag && (
         <span className="inline-block bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded font-medium">
           AVANÇOU
         </span>

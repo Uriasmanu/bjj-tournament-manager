@@ -3,6 +3,7 @@ export interface Atleta {
   nome: string
   equipe: string
   faixa?: string
+  avancou?: boolean
 }
 
 export interface ResultadoLuta {
@@ -35,7 +36,7 @@ export interface ResultadoLuta {
 export interface Luta {
   id: string
   round: number
-  position: number
+  position: number // preenchido automaticamente na importação baseado na ordem do array
   atleta1: Atleta | null
   atleta2: Atleta | null
   resultado?: ResultadoLuta

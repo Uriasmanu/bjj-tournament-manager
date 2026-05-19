@@ -97,7 +97,18 @@ export default function ScoreboardSetupPage() {
           const temAtletaNull = luta.atleta1 === null || luta.atleta2 === null
 
           if (temAtletaNull) {
-            const positionRound2 = Math.floor(luta.position / 2)
+            // CORREÇÃO: Calcular posição correta para BYE
+            let positionRound2: number
+
+            // Se é BYE (atleta2 null) e está na posição ímpar (lado direito do bracket)
+            if (luta.position % 2 === 1) {
+              // BYE no lado direito deve ir para posição 3 no Round 2
+              positionRound2 = 3
+            } else {
+              // BYE no lado esquerdo iria para posição 1 (mas não é seu caso)
+              positionRound2 = 1
+            }
+
             const idRound2 = generateUUID()
 
             const lutaRound1: Luta = {
@@ -113,7 +124,7 @@ export default function ScoreboardSetupPage() {
               ...luta,
               id: idRound2,
               round: 2,
-              position: positionRound2,
+              position: positionRound2,  // Agora será 3 para seu caso
               previousMatchIds: [lutaRound1.id]
             }
             novasLutas.push(lutaRound2)

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react"
 import { ChaveLuta, Luta } from "@/app/types"
 import { generateUUID } from "@/app/lib/uuid"
+import { generatePosition } from "@/app/lib/bracket-utils"
 
 export interface ResultadoImportacao {
   nomeArquivo: string
@@ -87,8 +88,10 @@ function processarChave(data: ChaveRaw): ChaveLuta {
     }
   }))
 
+  const lutasComPosicoesCorretas = generatePosition(lutas)
+
   const nomes = new Set<string>()
-  lutas.forEach(l => {
+  lutasComPosicoesCorretas.forEach(l => {
     if (l.atleta1?.nome) nomes.add(l.atleta1.nome)
     if (l.atleta2?.nome) nomes.add(l.atleta2.nome)
   })
@@ -96,7 +99,7 @@ function processarChave(data: ChaveRaw): ChaveLuta {
   return {
     id: data.id || generateUUID(),
     categoria: data.categoria,
-    lutas,
+    lutas: lutasComPosicoesCorretas,
     status: "pendente",
     totalCompetidores: nomes.size,
   }

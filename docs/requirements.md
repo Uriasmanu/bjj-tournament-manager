@@ -31,7 +31,7 @@
 | `DadosArea` | `id: string` | `uuid-v4` |
 | `ResultadoLuta` | `id: string` | `uuid-v4` |
 
-> **IMPORTANTE:** Campos numéricos como `round`, `position` e `seed` **não são IDs** — estes permanecem como `number`.
+> **IMPORTANTE:** Campos numéricos como `round` e `seed` **não são IDs** — estes permanecem como `number`. O campo `position` foi removido; a posição é determinada automaticamente pela ordem no array.
 
 ### 2.2 Componentes UI
 - **OBRIGATÓRIO**: Usar sempre componentes do **Shadcn UI** nas implementações
@@ -132,7 +132,7 @@ interface ResultadoLuta {
 interface Luta {
   id: string                  // UUID v4 — identificador único da luta
   round: number              // 1, 2, 3, 4 (não é ID, é posição na chave)
-  position: number           // Posição dentro do round (não é ID)
+  // position removido — a posição é determinada automaticamente pela ordem no array de lutas
   atleta1: Atleta             // Inclui id UUID
   atleta2: Atleta             // Inclui id UUID
   resultado?: ResultadoLuta   // Inclui id UUID
@@ -140,8 +140,8 @@ interface Luta {
   dataLuta?: string
 
   // Referências de chaveamento (por UUID)
-  nextMatchId?: string       // UUID da próxima luta na chave
-  previousMatchIds?: string[] // UUIDs das lutas anteriores que alimentam esta
+  nextMatchId?: string       // UUID da próxima luta na chave (obsoleto)
+  previousMatchIds?: string[] // UUIDs das lutas anteriores (obsoleto)
 }
 
 // Chave de Luta
@@ -437,7 +437,21 @@ Os terceiros lugares são calculados automaticamente:
 | Pending | Mostra "-- Vazio --" |
 | BYE | Não permite iniciar luta |
 
-### 9.6 Referência
+### 9.6 Numeração dos Cards
+
+Cada card de competidor exibe um número de posição (cardPosition + 1) para identificação:
+
+| Fase | Lado | Posições |
+|------|------|-----------|
+| Oitavas | Esquerdo | 0-7 |
+| Oitavas | Direito | 8-15 |
+| Quartas | Esquerdo | 16-19 |
+| Quartas | Direito | 24-27 |
+| Semifinal | Esquerdo | 20, 21 |
+| Semifinal | Direito | 22, 23 |
+| Finalista | Central | 29 |
+
+### 9.7 Referência
 
 - Arquivo: `app/components/bracket/BracketLayout.tsx`
 
@@ -657,7 +671,6 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
     {
       "id": "550e8400-e29b-41d4-a716-446655440001",
       "round": 1,
-      "position": 0,
       "atleta1": {
         "id": "550e8400-e29b-41d4-a716-446655440011",
         "nome": "João Silva",
@@ -699,11 +712,10 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 | Pontos + Vantagens | Critério de desempate após finalização |
 | Status da Luta | pendente → em_andamento → concluida |
 | Status da Chave | pendente → em_andamento → concluida |
-| `nextMatchId` | UUID da próxima luta na chave que o vencedor avança |
-| `previousMatchIds` | Array de UUIDs das lutas que alimentam esta luta |
+| `nextMatchId` | UUID da próxima luta na chave que o vencedor avança (obsoleto) |
+| `previousMatchIds` | Array de UUIDs das lutas que alimentam esta luta (obsoleto) |
 | round | Número do round na chave (1, 2, 3, 4) — **não é ID** |
-| position | Posição vertical do matchup dentro do round — **não é ID** |
-| BYE | Luta onde um dos atletas está ausente (null ou sem ID); o atleta presente avança automaticamente |
+| BYE | Atleta1 x null (atleta2 vazio); o atleta presente avança automaticamente para próxima fase |
 
 ---
 
@@ -791,7 +803,9 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 *Mudanças principais:*
 *- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
 *- Removido troféu central "Disputa de Ouro" do layout*
-*- Simplificado painel central para exibir apenas Finalista Esquerdo*
+*- Simplificado painel central para exibir apenas Finalista*
 *- SemiFinalCard agora renderiza apenas um competidor (não par)*
 *- Mantido pódio com 1º, 2º e dois 3º lugares automáticos*
 *- Renumeradas seções subsequentes*
+*- Adicionada seção 9.6 com numeração dos cards (0-28)*
+*- FinalistCard agora aceita prop cardPosition*

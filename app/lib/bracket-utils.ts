@@ -102,6 +102,178 @@ function getMatchupStatus(luta: Luta): MatchupStatus {
 }
 
 // ============================================================
+// generatePosition - Gera position automaticamente baseado na ordem do array
+// round 1: usa lógica interleaved (1,9,3,11,5,13,7,15 para cards 1-16)
+// round 2: posições 0,1 (esq), 2,3 (dir)
+// round 3: posições 0 (esq), 1 (dir)
+// CORREÇÃO: Considera fluxo visual e tratamento de BYE
+// ============================================================
+export function generatePosition(lutas: Luta[]): Luta[] {
+  const rounds = new Map<number, Luta[]>()
+  
+  // Agrupar por round
+  lutas.forEach(luta => {
+    const existing = rounds.get(luta.round) || []
+    existing.push(luta)
+    rounds.set(luta.round, existing)
+  })
+
+  return lutas.map(luta => {
+    const roundLutas = rounds.get(luta.round) || []
+    const indexInRound = roundLutas.findIndex(l => l.id === luta.id)
+
+    let position: number
+
+    if (luta.round === 1) {
+      // Round 1 - mantém lógica atual
+      position = indexInRound
+    } else {
+      // Rounds 2+: Verificar se veio de BYE
+      const prevMatchIds = luta.previousMatchIds || []
+      
+      const hasByeOrigin = prevMatchIds.some(prevId => {
+        const prevLuta = lutas.find(l => l.id === prevId)
+        return prevLuta && (!prevLuta.atleta1?.id || !prevLuta.atleta2?.id)
+      })
+
+      if (hasByeOrigin && prevMatchIds.length > 0) {
+        // Luta veio de BYE - calcular posição baseada na luta de origem
+        const sourceLuta = lutas.find(l => l.id === prevMatchIds[0])
+        position = calculateByePosition(sourceLuta, indexInRound, lutas)
+      } else {
+        // Luta normal - usar índice
+        position = indexInRound
+      }
+    }
+
+    return { ...luta, position }
+  })
+}
+
+function calculateByePosition(sourceLuta: Luta | undefined, fallbackIndex: number, lutas: Luta[]): number {
+  if (!sourceLuta) return fallbackIndex
+  
+  const sourcePosition = sourceLuta.position
+  const sourceRound = sourceLuta.round
+  
+  // Lado direito: posições ímpares (1,3,5,7)
+  // Lado esquerdo: posições pares (0,2,4,6)
+  const isRightSide = sourcePosition % 2 === 1
+  
+  if (sourceRound === 1) {
+    // Para Round 2: manter o lado do Round 1
+    // Right side (pos 1,3,5,7) -> Round 2: posições 2,3
+    // Left side (pos 0,2,4,6) -> Round 2: posições 0,1
+    if (isRightSide) {
+      const rightSideLutas = lutas.filter(l => l.round === 2 && l.position >= 2)
+      if (rightSideLutas.length > 0) {
+        return 3
+      }
+      return 2
+    } else {
+      const leftSideLutas = lutas.filter(l => l.round === 2 && l.position < 2)
+      if (leftSideLutas.length > 0) {
+        return 1
+      }
+      return 0
+    }
+  }
+  
+  if (sourceRound === 2) {
+    // Se veio do Round 2 (Quartas), mapear para semifinal
+    // Right side: position 2,3 -> semifinal position 1
+    // Left side: position 0,1 -> semifinal position 0
+    if (sourcePosition >= 2) {
+      return 1
+    }
+    return 0
+  }
+  
+  return fallbackIndex
+}
+
+// ============================================================
+// getCardNumber - Retorna o número do card baseado no round, índice e lado
+// round: 1, 2, 3
+// indexInRound: índice da luta dentro do round (0, 1, 2, ...)
+// isLeftSide: true = lado esquerdo, false = lado direito
+// isAtleta1: true = retorna card do atleta1, false = card do atleta2
+// ============================================================
+export function getCardNumber(round: number, indexInRound: number, isLeftSide: boolean, isAtleta1: boolean): number {
+  // Round 1 (Oitavas) - 4 lutas por lado
+  if (round === 1) {
+    if (isLeftSide) {
+      // Lado esquerdo: índice 0→1,2 | 1→3,4 | 2→5,6 | 3→7,8
+      return isAtleta1 ? indexInRound * 2 + 1 : indexInRound * 2 + 2
+    } else {
+      // Lado direito: índice 0→9,10 | 1→11,12 | 2→13,14 | 3→15,16
+      return isAtleta1 ? indexInRound * 2 + 9 : indexInRound * 2 + 10
+    }
+  }
+
+  // Round 2 (Quartas) - 2 lutas por lado
+  if (round === 2) {
+    if (isLeftSide) {
+      // Lado esquerdo: índice 0→17,18 | 1→19,20
+      return isAtleta1 ? 17 + indexInRound * 2 : 18 + indexInRound * 2
+    } else {
+      // Lado direito: índice 0→25,26 | 1→27,28
+      return isAtleta1 ? 25 + indexInRound * 2 : 26 + indexInRound * 2
+    }
+  }
+
+  // Round 3 (Semifinal) - 1 luta por lado
+  if (round === 3) {
+    if (isLeftSide) {
+      // Lado esquerdo: índice 0→21,22
+      return isAtleta1 ? 21 + indexInRound * 2 : 22 + indexInRound * 2
+    } else {
+      // Lado direito: índice 0→23,24
+      return isAtleta1 ? 23 + indexInRound * 2 : 24 + indexInRound * 2
+    }
+  }
+
+  return 0
+}
+
+// ============================================================
+// getNextPosition - Determina a próxima posição baseado em round/position fixos
+// Retorna: { round, position, useAtleta1 }
+// ============================================================
+function getNextPosition(round: number, position: number, isWinnerAtleta1: boolean): { round: number; position: number; useAtleta1: boolean } | null {
+  // Round 1 (Oitavas) - Lado Esquerdo
+  // position 0 (card 1-2) -> round 2, position 0 (cards 17-18) - impar vai para atleta1, par para atleta2
+  if (round === 1 && position === 0) return { round: 2, position: 0, useAtleta1: true }
+  if (round === 1 && position === 1) return { round: 2, position: 0, useAtleta1: false }
+  // position 2 (card 3-4) -> round 2, position 1 (cards 19-20)
+  if (round === 1 && position === 2) return { round: 2, position: 1, useAtleta1: true }
+  if (round === 1 && position === 3) return { round: 2, position: 1, useAtleta1: false }
+
+  // Round 1 (Oitavas) - Lado Direito
+  // position 4 (card 9-10) -> round 2, position 2 (cards 25-26)
+  if (round === 1 && position === 4) return { round: 2, position: 2, useAtleta1: true }
+  if (round === 1 && position === 5) return { round: 2, position: 2, useAtleta1: false }
+  // position 6 (card 11-12) -> round 2, position 3 (cards 27-28)
+  if (round === 1 && position === 6) return { round: 2, position: 3, useAtleta1: true }
+  if (round === 1 && position === 7) return { round: 2, position: 3, useAtleta1: false }
+
+  // Round 2 (Quartas) - Lado Esquerdo
+  // position 0 (cards 17-18) -> round 3, position 0 (cards 21-22)
+  if (round === 2 && position === 0) return { round: 3, position: 0, useAtleta1: true }
+  if (round === 2 && position === 1) return { round: 3, position: 0, useAtleta1: false }
+
+  // Round 2 (Quartas) - Lado Direito
+  // position 2 (cards 25-26) -> round 3, position 1 (cards 23-24)
+  if (round === 2 && position === 2) return { round: 3, position: 1, useAtleta1: true }
+  if (round === 2 && position === 3) return { round: 3, position: 1, useAtleta1: false }
+
+  // Round 3 (Semifinal) - Final
+  if (round === 3) return null
+
+  return null
+}
+
+// ============================================================
 // advanceWinner
 // ============================================================
 export function advanceWinner(
@@ -113,9 +285,58 @@ export function advanceWinner(
   const completed = chave.lutas.find(l => l.id === completedFightId)
   if (!completed) return chave
 
-  const nextId = completed.nextMatchId
+  const round = completed.round
+  const position = completed.position
 
-  if (!nextId) {
+  // Verificar se é a final (round 3)
+  const maxRound = Math.max(...chave.lutas.map(l => l.round))
+  const isFinal = round === maxRound
+
+  if (isFinal) {
+    const novoResultado: ResultadoLuta = {
+      id: crypto.randomUUID(),
+      pontosAtleta1: completed.resultado?.pontosAtleta1 || 0,
+      pontosAtleta2: completed.resultado?.pontosAtleta2 || 0,
+      montadasAtleta1: completed.resultado?.montadasAtleta1 || 0,
+      montadasAtleta2: completed.resultado?.montadasAtleta2 || 0,
+      passagensAtleta1: completed.resultado?.passagensAtleta1 || 0,
+      passagensAtleta2: completed.resultado?.passagensAtleta2 || 0,
+      quedasAtleta1: completed.resultado?.quedasAtleta1 || 0,
+      quedasAtleta2: completed.resultado?.quedasAtleta2 || 0,
+      vantagensAtleta1: completed.resultado?.vantagensAtleta1 || 0,
+      vantagensAtleta2: completed.resultado?.vantagensAtleta2 || 0,
+      penalidadesAtleta1: completed.resultado?.penalidadesAtleta1 || 0,
+      penalidadesAtleta2: completed.resultado?.penalidadesAtleta2 || 0,
+      tempoDecorrido: completed.resultado?.tempoDecorrido || 0,
+      finalizacaoAtleta1: completed.resultado?.finalizacaoAtleta1 || false,
+      finalizacaoAtleta2: completed.resultado?.finalizacaoAtleta2 || false,
+      desclassificacao: completed.resultado?.desclassificacao || null,
+      vencedor: completed.resultado?.vencedor || null,
+      tipoVitoria: completed.resultado?.tipoVitoria || "pontos",
+      status: "concluida",
+      lutaId: completed.id,
+      vencedorAtletaId: winner.id,
+      perdedorAtletaId: loser.id,
+      AtletaDesclassificadoId: null,
+    }
+    return {
+      ...chave,
+      status: "concluida",
+      vencedorAtletaId: winner.id,
+      lutas: chave.lutas.map(luta => {
+        if (luta.id === completedFightId) {
+          return { ...luta, resultado: novoResultado }
+        }
+        return luta
+      })
+    }
+  }
+
+  // Determinar a próxima posição
+  // Verificar se o vencedor era o atleta1 ou atleta2 da luta
+  const isWinnerAtleta1 = completed.atleta1?.id === winner.id
+  const nextPos = getNextPosition(round, position, isWinnerAtleta1)
+  if (!nextPos) {
     return {
       ...chave,
       status: "concluida",
@@ -123,19 +344,58 @@ export function advanceWinner(
     }
   }
 
-  const next = chave.lutas.find(l => l.id === nextId)
-  if (!next) return chave
+  // Buscar a próxima luta
+  const nextLuta = chave.lutas.find(l =>
+    l.round === nextPos.round && l.position === nextPos.position
+  )
+
+  if (!nextLuta) {
+    return {
+      ...chave,
+      status: "concluida",
+      vencedorAtletaId: winner.id,
+    }
+  }
 
   const updatedLutas = chave.lutas.map(luta => {
-    if (luta.id !== nextId) return luta
+    // Atualizar luta concluída
+    if (luta.id === completedFightId) {
+      const novoResultado: ResultadoLuta = {
+        id: crypto.randomUUID(),
+        pontosAtleta1: luta.resultado?.pontosAtleta1 || 0,
+        pontosAtleta2: luta.resultado?.pontosAtleta2 || 0,
+        montadasAtleta1: luta.resultado?.montadasAtleta1 || 0,
+        montadasAtleta2: luta.resultado?.montadasAtleta2 || 0,
+        passagensAtleta1: luta.resultado?.passagensAtleta1 || 0,
+        passagensAtleta2: luta.resultado?.passagensAtleta2 || 0,
+        quedasAtleta1: luta.resultado?.quedasAtleta1 || 0,
+        quedasAtleta2: luta.resultado?.quedasAtleta2 || 0,
+        vantagensAtleta1: luta.resultado?.vantagensAtleta1 || 0,
+        vantagensAtleta2: luta.resultado?.vantagensAtleta2 || 0,
+        penalidadesAtleta1: luta.resultado?.penalidadesAtleta1 || 0,
+        penalidadesAtleta2: luta.resultado?.penalidadesAtleta2 || 0,
+        tempoDecorrido: luta.resultado?.tempoDecorrido || 0,
+        finalizacaoAtleta1: luta.resultado?.finalizacaoAtleta1 || false,
+        finalizacaoAtleta2: luta.resultado?.finalizacaoAtleta2 || false,
+        desclassificacao: luta.resultado?.desclassificacao || null,
+        vencedor: luta.resultado?.vencedor || null,
+        tipoVitoria: luta.resultado?.tipoVitoria || "pontos",
+        status: "concluida",
+        lutaId: luta.id,
+        vencedorAtletaId: winner.id,
+        perdedorAtletaId: loser.id,
+        AtletaDesclassificadoId: null,
+      }
+      return { ...luta, resultado: novoResultado }
+    }
 
-    const prevIds = luta.previousMatchIds || []
-    const idx = prevIds.indexOf(completedFightId)
-
-    if (idx === 0 || (idx === -1 && !luta.atleta1?.id)) {
-      return { ...luta, atleta1: winner }
-    } else if (idx === 1 || (idx === -1 && !luta.atleta2?.id)) {
-      return { ...luta, atleta2: winner }
+    // Atualizar próxima luta com o vencedor usando a posição correta
+    if (luta.id === nextLuta.id) {
+      if (nextPos.useAtleta1) {
+        return { ...luta, atleta1: winner }
+      } else {
+        return { ...luta, atleta2: winner }
+      }
     }
 
     return luta
