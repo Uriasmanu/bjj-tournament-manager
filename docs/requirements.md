@@ -1,6 +1,6 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 6.0
+**Versão:** 7.0
 **Data:** 2026-05-18
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
@@ -72,7 +72,7 @@ O sistema expõe uma API para manipulação de dados:
 | GET | `/api/area?area=NOME` | Retorna dados de uma área pelo nome (busca em todos os arquivos) |
 | POST | `/api/area` | Cria/sobrescreve dados de uma área |
 | PUT | `/api/area` | Atualiza dados de uma área (mantém existentes) |
-| DELETE | `/api/area?id=UUID` | Remove arquivo da área pelo UUID |
+| DELETE | `/api/area?area=NOME` | Remove arquivo da área pelo nome |
 
 ---
 
@@ -155,6 +155,36 @@ interface ChaveLuta {
   totalCompetidores: number   // Quantidade de competidores na chave
 }
 
+// Classificação Final (Pódio)
+interface ClassificacaoFinal {
+  chaveId: string
+  campeao?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  vice?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  terceiroA?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  terceiroB?: {
+    id: string
+    nome: string
+    equipe: string
+    faixa?: string
+  }
+  dataAtualizacao: string
+}
+
 // Dados da Área
 interface DadosArea {
   id: string                  // UUID v4 — identificador único da área
@@ -162,6 +192,49 @@ interface DadosArea {
   criadoEm: string
   atualizadoEm?: string
   chaves: ChaveLuta[]
+  classificacoes?: ClassificacaoFinal[]
+}
+
+// Tipos para Visualização de Bracket
+type MatchupStatus = "pending" | "bye" | "live" | "completed"
+
+interface FighterSlot {
+  athlete?: Atleta | null
+  sourceMatchId?: string
+  seed?: number
+  isBye: boolean
+  resultStatus: "winner" | "loser" | "disqualified" | null
+}
+
+interface BracketMatchup {
+  id: string
+  round: number
+  position: number
+  fighter1?: FighterSlot
+  fighter2?: FighterSlot
+  result?: ResultadoLuta
+  status: MatchupStatus
+  label: string
+  nextMatchId?: string
+  previousMatchIds?: string[]
+}
+
+interface BracketRound {
+  label: string
+  matchups: BracketMatchup[]
+  side: "left" | "right" | "center"
+}
+
+// Constantes de Faixas
+const FAIXAS = ["Branca", "Azul", "Roxa", "Marrom", "Preta"] as const
+type Faixa = typeof FAIXAS[number]
+
+const CORES_FAIXA: Record<Faixa, string> = {
+  "Branca": "bg-white text-black border-2 border-gray-300",
+  "Azul": "bg-blue-700 text-white",
+  "Roxa": "bg-purple-700 text-white",
+  "Marrom": "bg-amber-900 text-white",
+  "Preta": "bg-black text-white border-2 border-gray-500",
 }
 ```
 
@@ -204,40 +277,65 @@ app/
 │   └── index.ts             # Interfaces e tipos (UUID para todos os ids)
 ├── hooks/                    # Hooks personalizados
 │   ├── useStorage.ts         # Persistência (API)
-│   └── useImportacao.ts     # Importação de JSONs
+│   ├── useImportacao.ts     # Importação de JSONs
+│   └── useBracket.ts        # Hook para visualização de bracket
 ├── api/                      # Rotas de API
 │   └── area/
 │       └── route.ts         # API REST de área
 ├── admin/                    # Painel administrativo
 │   ├── page.tsx             # Dashboard admin
-│   ├── layout.tsx           # Layout admin
+│   ├── layout.tsx           # Layout admin (com sidebar)
 │   └── matches/             # Controle de lutas
 │       └── page.tsx         # Página de pontuação
 ├── scoreboard/              # Interface de placar
 │   ├── setup/               # Pré-placar (importação de chaves)
 │   │   └── page.tsx         # Configuração de área
-│   ├── page.tsx             # Placar principal
+│   ├── page.tsx             # Placar principal + seletor de lutas
 │   └── layout.tsx           # Layout scoreboard
+├── lib/                     # Utilitários
+│   ├── uuid.ts              # Geração e validação de UUIDs
+│   ├── migrate-ids.ts       # Migração de IDs antigos para UUID
+│   ├── bracket-utils.ts     # Utilitários para bracket
+│   ├── mock-bracket-data.ts # Dados mock para teste
+│   └── utils.ts             # Funções utilitárias
 └── components/
     ├── ui/                  # Componentes Shadcn
     │   ├── button.tsx
     │   ├── card.tsx
+    │   ├── badge.tsx
     │   ├── dialog.tsx
     │   ├── input.tsx
     │   └── ...
     ├── Timer.tsx            # Componente de cronômetro
-    └── scoreboard/          # Componentes do placar
-        ├── AtletaCard.tsx
-        ├── ScoreHeader.tsx
-        ├── ScoreButton.tsx
-        ├── VantagemPunicao.tsx
-        ├── AdicionarLutaModal.tsx
-        └── ...
+    ├── scoreboard/          # Componentes do placar
+    │   ├── AtletaCard.tsx
+    │   ├── ScoreHeader.tsx
+    │   ├── ScoreButton.tsx
+    │   ├── VantagemPunicao.tsx
+    │   ├── AdicionarLutaModal.tsx
+    │   ├── TotalScore.tsx
+    │   ├── SeletorLuta.tsx
+    │   ├── BracketPanel.tsx
+    │   ├── BadgeFaixa.tsx
+    │   └── useScoreSound.ts
+    ├── bracket/             # Componentes de visualização de bracket
+    │   ├── BracketVisualizer.tsx
+    │   ├── BracketLayout.tsx
+    │   ├── BracketColumn.tsx
+    │   ├── BracketMatchupCard.tsx
+    │   ├── BracketChampion.tsx
+    │   ├── BracketEmptyState.tsx
+    │   ├── ChampionModal.tsx
+    │   ├── ResultBadge.tsx
+    │   └── index.ts
     └── setup/               # Componentes do setup
         ├── AreaCard.tsx
         ├── ImportacaoCard.tsx
         ├── ChaveList.tsx
-        └── ...
+        ├── ActionButtons.tsx
+        ├── LutaManualForm.tsx
+        ├── ResultadoImportacaoCard.tsx
+        └── Toast.tsx
 
 data/                        # Dados persistidos (JSON)
 └── [uuid-da-area].json      # Arquivos de área nomeados por UUID
@@ -432,6 +530,38 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 
 ---
 
+### HU-009: Visualização de Bracket
+
+**Critérios de Aceitação:**
+- [x] Visualização gráfica da chave de luta em formato de árvore
+- [x] Aba para mostrar/ocultar o bracket
+- [x] Indicação visual de lutas concluídas (resultado)
+- [x] Indicação visual de lutas ativas/pendentes
+- [x] Suporte a byes (lutas com apenas um atleta)
+- [x] Posicionamento dinâmico baseado no round (Round 1, Quartas, Semifinal, Final)
+
+---
+
+### HU-010: Migração de Dados para UUID
+
+**Critérios de Aceitação:**
+- [x] Ao carregar dados JSON sem UUID, gerar automaticamente
+- [x] Gerar UUIDs para: `Atleta.id`, `Luta.id`, `ChaveLuta.id`, `ResultadoLuta.id`
+- [x] Manter UUIDs existentes em dados já migrados
+- [x] Função `migrateAllData()` executada ao carregar dados da API
+
+---
+
+### HU-011: Avanço Automático de Vencedor
+
+**Critérios de Aceitação:**
+- [x] Ao finalizar luta, automaticamente mover vencedor para próxima luta
+- [x] `nextMatchId` indica para qual luta o vencedor avança
+- [x] `previousMatchIds` indica de quais lutas vêm os competidores
+- [x] Atualizar automaticamente o status da chave (pendente → em_andamento → concluida)
+
+---
+
 ## 11. Estrutura do JSON de Importação
 
 ```json
@@ -504,6 +634,7 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 | Input | `@/components/ui/input` | Campos de texto |
 | Select | `@/components/ui/select` | Dropdowns |
 | Toast | `@/components/ui/toast` | Notificações |
+| Badge | `@/components/ui/badge` | Labels e badges de status |
 
 ---
 
@@ -515,6 +646,65 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 ---
 
+## 15. Utilitários de Bracket
+
+O sistema possui utilitários em `app/lib/bracket-utils.ts`:
+
+| Função | Descrição |
+|--------|------------|
+| `buildBracketFromChaveLuta()` | Converte ChaveLuta em array de BracketRound para visualização |
+| `advanceWinner()` | Move automaticamente o vencedor para a próxima luta |
+| `getFighterTags()` | Retorna tags de resultado (VENCEU, PERDEU, DESCLASS., FINALIZOU) |
+| `getFighterStatus()` | Retorna status do resultado |
+| `getRoundLabel()` | Retorna label do round (Round 1, Quartas, Semifinal, Final) |
+| `isByeSlot()` | Verifica se a luta é um bye |
+| `getLutaById()` | Busca luta por ID na chave |
+| `findAtletaById()` | Busca atleta por ID na chave |
+| `podeIniciarLuta()` | Verifica se a luta pode ser iniciada (lutas anteriores concluídas) |
+
+---
+
+## 16. Hooks Personalizados
+
+| Hook | Arquivo | Descrição |
+|------|---------|------------|
+| `useStorage` | `app/hooks/useStorage.ts` | Gerenciamento de dados (salvar, carregar, finalizar luta) |
+| `useImportacao` | `app/hooks/useImportacao.ts` | Importação de arquivos JSON |
+| `useBracket` | `app/hooks/useBracket.ts` | Hook para visualização de bracket |
+
+---
+
+## 17. Fluxo: Migração e Avanço de Vencedor
+
+### 17.1 Migração de Dados
+Ao carregar dados de uma área, o sistema executa `migrateAllData()` que:
+1. Verifica se cada entidade tem UUID válido
+2. Gera novos UUIDs para entidades sem ID válido
+3. Preserva todos os dados existentes durante a migração
+
+### 17.2 Avanço Automático de Vencedor
+Ao finalizar uma luta com `marcarLutaConcluida()`:
+1. Cria `ResultadoLuta` com UUID próprio
+2. Identifica o vencedor e perdedor
+3. Se `nextMatchId` existir na luta atualizada, move o vencedor para a próxima luta
+4. Atualiza o status da chave automaticamente
+
+---
+
+## 18. Validação de UUID
+
+Função em `app/lib/uuid.ts`:
+- `generateUUID()`: Gera UUID v4 usando `crypto.randomUUID()`
+- `isValidUUID(value)`: Valida se uma string é um UUID v4 válido
+
+Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`
+
+---
+
 *Documento atualizado em: 2026-05-18*
-*Versão: 6.0*
-*Mudança principal: Todos os IDs agora são UUIDs v4 (antes: IDs numéricos)*
+*Versão: 7.0*
+*Mudanças principais:*
+*- Adicionados tipos ClassificacaoFinal, BracketRound, BracketMatchup, FighterSlot*
+*- Adicionadas histórias HU-009 (Bracket), HU-010 (Migração), HU-011 (Avanço automático)*
+*- Documentados utilitários de bracket e hooks personalizados*
+*- Documentada API DELETE para limpeza de dados*
