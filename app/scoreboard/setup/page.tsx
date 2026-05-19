@@ -92,20 +92,20 @@ export default function ScoreboardSetupPage() {
     if (chavesImportadas.length > 0) {
       const chavesAtualizadas = chavesImportadas.map(chave => {
         const novasLutas: Luta[] = []
+        const isThreeCompetitors = chave.totalCompetidores === 3
+        const lutasParaImportar = isThreeCompetitors
+          ? chave.lutas.filter(luta => luta.round <= 2)
+          : chave.lutas
 
-        chave.lutas.forEach(luta => {
+        lutasParaImportar.forEach(luta => {
           const temAtletaNull = luta.atleta1 === null || luta.atleta2 === null
 
-          if (temAtletaNull) {
-            // CORREÇÃO: Calcular posição correta para BYE
+          if (luta.round === 1 && temAtletaNull) {
             let positionRound2: number
 
-            // Se é BYE (atleta2 null) e está na posição ímpar (lado direito do bracket)
             if (luta.position % 2 === 1) {
-              // BYE no lado direito deve ir para posição 3 no Round 2
               positionRound2 = 3
             } else {
-              // BYE no lado esquerdo iria para posição 1 (mas não é seu caso)
               positionRound2 = 1
             }
 
@@ -124,7 +124,7 @@ export default function ScoreboardSetupPage() {
               ...luta,
               id: idRound2,
               round: 2,
-              position: positionRound2,  // Agora será 3 para seu caso
+              position: positionRound2,
               previousMatchIds: [lutaRound1.id]
             }
             novasLutas.push(lutaRound2)

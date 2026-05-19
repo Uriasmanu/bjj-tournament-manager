@@ -10,6 +10,13 @@ import {
 } from "@/app/types"
 
 // ============================================================
+// Helper para detectar chave com 3 competidores
+// ============================================================
+export function isThreeCompetitorsChave(chave: ChaveLuta): boolean {
+  return chave.totalCompetidores === 3
+}
+
+// ============================================================
 // buildBracketFromChaveLuta
 // ============================================================
 export function buildBracketFromChaveLuta(chave: ChaveLuta): BracketRound[] {
@@ -39,9 +46,11 @@ export function buildBracketFromChaveLuta(chave: ChaveLuta): BracketRound[] {
 
   const round3Lutas = rounds.get(3) || []
   if (round3Lutas.length > 0) {
+    const isThreeCompetitors = isThreeCompetitorsChave(chave)
+    const label = isThreeCompetitors ? "Final" : "Semifinal"
     result.push({
-      label: "Semifinal",
-      matchups: round3Lutas.map(l => toMatchup(l, "Semifinal")),
+      label,
+      matchups: round3Lutas.map(l => toMatchup(l, label)),
       side: "center",
     })
   }
@@ -273,6 +282,16 @@ function getNextPosition(round: number, position: number, isWinnerAtleta1: boole
   return null
 }
 
+function isRealFight(luta: Luta): boolean {
+  return !!luta.atleta1?.id && !!luta.atleta2?.id
+}
+
+function areAllRound1FightsCompleted(chave: ChaveLuta): boolean {
+  return chave.lutas
+    .filter(l => l.round === 1)
+    .every(l => isByeSlot(l) || l.resultado?.status === "concluida")
+}
+
 // ============================================================
 // advanceWinner
 // ============================================================
@@ -334,37 +353,19 @@ export function advanceWinner(
 
   const isDesclassificacao = completed.resultado?.tipoVitoria === "desclassificacao"
 
-  if (isDesclassificacao && round === 1) {
-    const byeLuta = chave.lutas.find(l => 
+  const isThreeCompetitors = isThreeCompetitorsChave(chave)
+
+  if (isDesclassificacao && round === 1 && isRealFight(completed)) {
+    const byeLuta = chave.lutas.find(l =>
       l.round === 1 && (!l.atleta1?.id || !l.atleta2?.id)
     )
-    
+
     if (byeLuta) {
-      const round2ByeLuta = chave.lutas.find(l => 
+      const round2ByeLuta = chave.lutas.find(l =>
         l.round === 2 && l.previousMatchIds?.includes(byeLuta.id)
       )
-      
+
       if (round2ByeLuta) {
-        const lutaRound3Pos0: Luta = {
-          id: crypto.randomUUID(),
-          round: 3,
-          position: 0,
-          previousMatchIds: [completed.id],
-          atleta1: winner,
-          atleta2: round2ByeLuta.atleta1,
-          resultado: { status: "pendente" } as ResultadoLuta
-        }
-        
-        const lutaRound3Pos1: Luta = {
-          id: crypto.randomUUID(),
-          round: 3,
-          position: 1,
-          previousMatchIds: [round2ByeLuta.id],
-          atleta1: round2ByeLuta.atleta1,
-          atleta2: winner,
-          resultado: { status: "pendente" } as ResultadoLuta
-        }
-        
         const novoResultado: ResultadoLuta = {
           id: crypto.randomUUID(),
           pontosAtleta1: completed.resultado?.pontosAtleta1 || 0,
@@ -392,31 +393,70 @@ export function advanceWinner(
           AtletaDesclassificadoId: null,
         }
 
-        return {
-          ...chave,
-          status: "em_andamento",
-          lutas: [
-            ...chave.lutas.map(luta => {
-              if (luta.id === completedFightId) {
-                return { ...luta, resultado: novoResultado }
-              }
-              if (luta.id === round2ByeLuta.id) {
-                return { ...luta, tags: ["AVANÇOU"] }
-              }
-              return luta
-}),
-            lutaRound3Pos0,
-            lutaRound3Pos1
-          ]
+        if (isThreeCompetitors && areAllRound1FightsCompleted(chave)) {
+          const lutaRound3: Luta = {
+            id: crypto.randomUUID(),
+            round: 3,
+            position: 0,
+            previousMatchIds: [completed.id, round2ByeLuta.id],
+            atleta1: winner,
+            atleta2: round2ByeLuta.atleta1,
+            resultado: { status: "pendente" } as ResultadoLuta
+          }
+
+          const existingRound3 = chave.lutas.some(l => l.round === 3 && l.position === 0)
+          if (existingRound3) {
+            return {
+              ...chave,
+              status: "em_andamento",
+              lutas: chave.lutas.map(luta => {
+                if (luta.id === completedFightId) {
+                  return { ...luta, resultado: novoResultado }
+                }
+                if (luta.id === round2ByeLuta.id) {
+                  return { ...luta, tags: ["AVANÇOU"] }
+                }
+                return luta
+              })
+            }
+          }
+
+          return {
+            ...chave,
+            status: "em_andamento",
+            lutas: [
+              ...chave.lutas.map(luta => {
+                if (luta.id === completedFightId) {
+                  return { ...luta, resultado: novoResultado }
+                }
+                if (luta.id === round2ByeLuta.id) {
+                  return { ...luta, tags: ["AVANÇOU"] }
+                }
+                return luta
+              }),
+              lutaRound3
+            ]
+          }
         }
       }
     }
   }
 
-  // Determinar a próxima posição
-  // Verificar se o vencedor era o atleta1 ou atleta2 da luta
-  const isWinnerAtleta1 = completed.atleta1?.id === winner.id
-  const nextPos = getNextPosition(round, position, isWinnerAtleta1)
+  // Para chaves com 3 competidores, o vencedor do Round 1 vai direto para Round 3
+  let nextPos: { round: number; position: number; useAtleta1: boolean } | null
+
+  if (isThreeCompetitors && round === 1) {
+    const round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+    if (round3Luta) {
+      const isWinnerAtleta1 = completed.atleta1?.id === winner.id
+      nextPos = { round: 3, position: 0, useAtleta1: isWinnerAtleta1 }
+    } else {
+      nextPos = null
+    }
+  } else {
+    const isWinnerAtleta1 = completed.atleta1?.id === winner.id
+    nextPos = getNextPosition(round, position, isWinnerAtleta1)
+  }
   if (!nextPos) {
     return {
       ...chave,

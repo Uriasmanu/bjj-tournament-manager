@@ -1,6 +1,6 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 7.2
+**Versão:** 7.6
 **Data:** 2026-05-19
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
@@ -87,6 +87,7 @@ interface Atleta {
   nome: string
   equipe: string
   faixa?: string
+  avancou?: boolean           // Indica se o atleta avançou por BYE
 }
 
 // Resultado da Luta
@@ -154,6 +155,7 @@ interface ChaveLuta {
   vencedorAtletaId?: string   // UUID do campeão
   status: "pendente" | "em_andamento" | "concluida"
   totalCompetidores: number   // Quantidade de competidores na chave
+  classificacaoFinal?: ClassificacaoFinal  // Dados do pódio (1º, 2º, 3º)
 }
 
 // Classificação Final (Pódio)
@@ -324,9 +326,9 @@ app/
     │   ├── BracketLayout.tsx
     │   ├── BracketColumn.tsx
     │   ├── BracketMatchupCard.tsx
-    │   ├── BracketChampion.tsx
+    │   ├── BracketChampion.tsx      # Card compacto de campeão no bracket
     │   ├── BracketEmptyState.tsx
-    │   ├── ChampionModal.tsx
+    │   ├── ChampionModal.tsx       # Modal de exibição do campeão
     │   ├── ResultBadge.tsx
     │   └── index.ts
     └── setup/               # Componentes do setup
@@ -418,6 +420,32 @@ O componente `BracketLayout.tsx` exibe a chave de luta em formato visual com as 
 
 O painel central exibe apenas o **Finalista**, mostrando o vencedor da semifinal esquerda quando concluída.
 
+### 9.3.1 Modal de Campeão (ChampionModal)
+
+**Arquivo:** `app/components/bracket/ChampionModal.tsx`
+
+Componente modal que exibe o campeão quando a chave é concluída:
+- Fundo com gradiente dourado (amber-300 a amber-500)
+- Ícone de troféu
+- Nome do campeão
+- Equipe do campeão
+- Label "CAMPEÃO" em destaque
+- Nome da categoria
+- Botão de fechar (opcional)
+
+### 9.3.2 Card de Campeão no Bracket (BracketChampion)
+
+**Arquivo:** `app/components/bracket/BracketChampion.tsx`
+
+Componente compacte para exibir o campeão diretamente no bracket:
+- Fundo com gradiente dourado (amber-300 a amber-500)
+- Ícone de troféu pequeno
+- Nome do campeão em texto pequeno
+- Equipe do campeão
+- Badge "CAMPEÃO" com fundo amber
+- Nome da categoria abaixo
+- Estado de "Aguardando campeão..." quando não há campeão
+
 ### 9.4 Classificação Final (Pódio)
 
 O pódio é exibido abaixo do bracket com:
@@ -440,17 +468,17 @@ Os terceiros lugares são calculados automaticamente:
 
 ### 9.6 Numeração dos Cards
 
-Cada card de competidor exibe um número de posição (cardPosition + 1) para identificação:
+Cada card de competidor exibe um número de posição para identificação (cardPosition). Com 15 competidores:
 
 | Fase | Lado | Posições |
 |------|------|-----------|
-| Oitavas | Esquerdo | 0-7 |
-| Oitavas | Direito | 8-15 |
-| Quartas | Esquerdo | 16-19 |
-| Quartas | Direito | 24-27 |
-| Semifinal | Esquerdo | 20, 21 |
-| Semifinal | Direito | 22, 23 |
-| Finalista | Central | 29 |
+| Round 1 | Esquerdo | 1-4 |
+| Round 1 | Direito | 5-8 |
+| Round 2 | Esquerdo | 9-10 |
+| Round 2 | Direito | 11-12 |
+| Semifinal | Esquerdo | 13 |
+| Semifinal | Direito | 14 |
+| Final | Central | 15 |
 
 ### 9.7 Referência
 
@@ -492,6 +520,19 @@ Ao finalizar uma luta, o sistema salva os seguintes dados para auditoria:
 - [x] Dois botões grandes e claramente identificáveis
 - [x] Botão "Administração" redireciona para `/admin`
 - [x] Botão "Placar" redireciona para `/scoreboard/setup`
+
+---
+
+### HU-001b: Painel Administrativo
+
+**Critérios de Aceitação:**
+- [x] Header com título "Painel Administrativo" e descrição
+- [x] Cards de ações rápidas: Atletas, Categorias, Lutas, Relatórios
+- [x] Cards com ícone, título, descrição e contagem
+- [x] Seção de boas-vindas com instruções para começar
+- [x] Links para gerenciar cada seção
+- [x] Botão para voltar à tela inicial
+- [x] Layout responsivo com grid adaptativo
 
 ---
 
@@ -897,9 +938,83 @@ Para atletas desclassificados, o nome também recebe:
 
 ---
 
+## 22. Posicionamento de Elementos no Card do Competidor
+
+### 22.1 Visão Geral
+
+Cada card de competidor no bracket contém dois elementos posicionados nos cantos superiores/inferiores direitos:
+
+| Elemento | Posição | Descrição |
+|----------|---------|-----------|
+| **Número do Card** | Canto superior direito | Identificador numérico da posição no bracket |
+| **Tag de Status** | Canto inferior direito | Indica estado do competidor (AVANÇOU, VENCEU, DESCLASSIFICADO) |
+
+### 22.2 Regras de Posicionamento
+
+**Número do Card (cardPosition):**
+- **OBRIGATÓRIO**: Sempre no canto **superior direito** do card
+- Classe CSS: `absolute right-1 top-1`
+- Aplica-se tanto para cards com atleta quanto para cards vazios
+- Fonte: `text-[10px] font-bold text-slate-400`
+
+**Tags de Status:**
+- **OBRIGATÓRIO**: Sempre no canto **inferior direito** do card
+- Classe CSS: `absolute right-1 bottom-1`
+- Tags suportadas: AVANÇOU (azul), VENCEU (verde), DESCLASSIFICADO (vermelho)
+- Fonte: `text-[9px] px-1.5 py-0.5 rounded font-bold`
+
+### 22.3 Implementação
+
+**Arquivo:** `app/components/bracket/BracketLayout.tsx` - Componente `CompetitorCard`
+
+```typescript
+// Número do card - sempre no canto superior direito
+{cardPosition !== undefined && (
+  <span className="absolute right-1 top-1 text-[10px] font-bold text-slate-400">
+    {cardPosition}
+  </span>
+)}
+
+// Tags de status - sempre no canto inferior direito
+{showAdvanceTag && (
+  <span className="absolute right-1 bottom-1 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded font-bold">
+    AVANÇOU
+  </span>
+)}
+```
+
+### 22.4 Estados do Card
+
+| Estado | Número do Card | Tag |
+|--------|---------------|-----|
+| Com atleta, pendente | Superior direito | Nenhuma |
+| Com atleta, avançado (BYE) | Superior direito | Inferior direito (AVANÇOU) |
+| Com atleta, venceu | Superior direito | Inferior direito (VENCEU) |
+| Com atleta, desclassificado | Superior direito | Inferior direito (DESCLASSIFICADO) |
+| Sem atleta (vazio) | Superior direito | Nenhuma |
+
+---
+
 *Documento atualizado em: 2026-05-19*
-*Versão: 7.4*
+*Versão: 7.7*
 *Mudanças principais:*
+*- Adicionada seção 22 - Posicionamento de Elementos no Card do Competidor*
+*- Definida regra: número do card sempre no canto superior direito*
+*- Definida regra: tags de status sempre no canto inferior direito*
+*- Corrigido posicionamento do cardPosition em cards vazios (agora superior direito)*
+
+*Versão anterior (7.6):*
+*- Atualizada numeração dos cards (1-15) na seção 9.6*
+*- Renumerados os cards do bracket para novolayout de 15 competidores*
+*- Cards de posição 1-4: Round 1 lado esquerdo*
+*- Cards de posição 5-8: Round 1 lado direito*
+*- Cards de posição 9-10: Round 2 lado esquerdo*
+*- Cards de posição 11-12: Round 2 lado direito*
+*- Card de posição 13: Semifinal esquerda*
+*- Card de posição 14: Semifinal direita*
+*- Card de posição 15: Final*
+
+*Versão 7.5:*
 *- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
 *- Removido troféu central "Disputa de Ouro" do layout*
 *- Simplificado painel central para exibir apenas Finalista*
@@ -910,3 +1025,8 @@ Para atletas desclassificados, o nome também recebe:
 *- FinalistCard agora aceita prop cardPosition*
 *- Adicionada seção 20 - Correção de Posicionamento de BYE no Bracket*
 *- Adicionada seção 21 - Tags de Status no Bracket (AVANÇOU, VENCEU, DESCLASSIFICADO)*
+*- Adicionado campo `avancou?: boolean` na interface Atleta*
+*- Adicionado campo `classificacaoFinal?: ClassificacaoFinal` na interface ChaveLuta*
+*- Adicionada subseção 9.3.1 - ChampionModal (modal de exibição do campeão)*
+*- Adicionada subseção 9.3.2 - BracketChampion (card compacto de campeão no bracket)*
+*- Adicionada HU-001b - Painel Administrativo (admin/page.tsx)*

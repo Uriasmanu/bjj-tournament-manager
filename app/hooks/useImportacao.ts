@@ -88,20 +88,22 @@ function processarChave(data: ChaveRaw): ChaveLuta {
     }
   }))
 
-  const lutasComPosicoesCorretas = generatePosition(lutas)
-
   const nomes = new Set<string>()
-  lutasComPosicoesCorretas.forEach(l => {
+  lutas.forEach(l => {
     if (l.atleta1?.nome) nomes.add(l.atleta1.nome)
     if (l.atleta2?.nome) nomes.add(l.atleta2.nome)
   })
+
+  const totalCompetidores = nomes.size
+  const lutasNormalizadas = totalCompetidores === 3 ? lutas.filter(luta => luta.round <= 2) : lutas
+  const lutasComPosicoesCorretas = generatePosition(lutasNormalizadas)
 
   return {
     id: data.id || generateUUID(),
     categoria: data.categoria,
     lutas: lutasComPosicoesCorretas,
     status: "pendente",
-    totalCompetidores: nomes.size,
+    totalCompetidores,
   }
 }
 

@@ -87,13 +87,18 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
     ].filter(Boolean) as Luta[]
   }, [chave.lutas])
 
+  const isThreeCompetitors = chave.totalCompetidores === 3
+
   const leftSemi = useMemo(() => {
     return chave.lutas.filter(l => l.round === 3 && l.position === 0)
   }, [chave.lutas])
 
   const rightSemi = useMemo(() => {
+    if (isThreeCompetitors && leftSemi[0]?.atleta2) {
+      return [leftSemi[0]]
+    }
     return chave.lutas.filter(l => l.round === 3 && l.position === 1)
-  }, [chave.lutas])
+  }, [chave.lutas, isThreeCompetitors, leftSemi])
 
   const maxRound = useMemo(() => Math.max(...chave.lutas.map(l => l.round)), [chave.lutas])
   const finalLutas = useMemo(() => {
@@ -131,6 +136,15 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [chave.lutas])
 
   const thirdPlaceRight = useMemo(() => {
+    if (isThreeCompetitors) {
+      const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+      if (leftSemiLuta?.resultado?.status === "concluida") {
+        return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
+          ? leftSemiLuta.atleta2
+          : leftSemiLuta.atleta1
+      }
+      return undefined
+    }
     const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
       return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId
@@ -138,7 +152,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
         : rightSemiLuta.atleta1
     }
     return undefined
-  }, [chave.lutas])
+  }, [chave.lutas, isThreeCompetitors])
 
   const handleFightClick = useCallback((luta: Luta) => {
     if (mode !== "live") return
@@ -220,7 +234,16 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
           {/* Round 3 - Semifinal Esquerda */}
           <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <div className="flex flex-col gap-20 py-2">
-              <SemiFinalCard luta={leftSemi[0]} side="L" round={3} position={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
+              <SemiFinalCard 
+                luta={leftSemi[0]} 
+                side="L" 
+                round={3} 
+                position={0} 
+                onClick={handleFightClick} 
+                activeFightId={activeFightId} 
+                mode={mode} 
+                forceAtletaIndex={isThreeCompetitors ? 1 : undefined}
+              />
             </div>
           </div>
 
@@ -229,14 +252,23 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
             {/* Campeao*/}
             <div className="flex flex-col items-center w-full">
               <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Campeão</span>
-              <FinalistCard atleta={winnerLeft || undefined} position={0} cardPosition={28} />
+              <FinalistCard atleta={winnerLeft || undefined} position={0} cardPosition={15} />
             </div>
           </div>
 
           {/* Round 3 - Semifinal Direita */}
           <div className="col-span-1 flex flex-col justify-around min-h-[320px]">
             <div className="flex flex-col gap-20 py-2">
-              <SemiFinalCard luta={rightSemi[0]} side="R" round={3} position={0} onClick={handleFightClick} activeFightId={activeFightId} mode={mode} />
+              <SemiFinalCard 
+                luta={rightSemi[0]} 
+                side="R" 
+                round={3} 
+                position={0} 
+                onClick={handleFightClick} 
+                activeFightId={activeFightId} 
+                mode={mode}
+                forceAtletaIndex={isThreeCompetitors ? 2 : undefined}
+              />
             </div>
           </div>
 
@@ -367,7 +399,7 @@ function CompetitorCard({
             Equipe
           </div>
           {cardPosition !== undefined && (
-            <span className="absolute right-1 bottom-1 text-[10px] font-bold text-slate-400">
+            <span className="absolute right-1 top-1 text-[10px] font-bold text-slate-400">
               {cardPosition}
             </span>
           )}
@@ -455,7 +487,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={9}
+          cardPosition={5}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -465,7 +497,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={10}
+          cardPosition={6}
           atletaIndex={2}
         />
       </div>
@@ -477,7 +509,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta1?.id}
           mode={mode}
-          cardPosition={11}
+          cardPosition={7}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -487,7 +519,7 @@ function Round1PairRight({ lutas, side, round, baseIndex, onClick, activeFightId
           isActive={activeFightId === lutas[1]?.id}
           isCompleted={lutas[1]?.resultado?.status === "concluida" && lutas[1]?.resultado?.vencedorAtletaId === lutas[1]?.atleta2?.id}
           mode={mode}
-          cardPosition={12}
+          cardPosition={8}
           atletaIndex={2}
         />
       </div>
@@ -513,7 +545,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={17}
+          cardPosition={9}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -523,7 +555,7 @@ function Round2Pair({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={18}
+          cardPosition={10}
           atletaIndex={2}
         />
       </div>
@@ -549,7 +581,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta1?.id}
           mode={mode}
-          cardPosition={25}
+          cardPosition={11}
           atletaIndex={1}
         />
         <CompetitorCard
@@ -559,7 +591,7 @@ function Round2PairRight({ lutas, side, round, onClick, activeFightId, mode }: {
           isActive={activeFightId === lutas[0]?.id}
           isCompleted={lutas[0]?.resultado?.status === "concluida" && lutas[0]?.resultado?.vencedorAtletaId === lutas[0]?.atleta2?.id}
           mode={mode}
-          cardPosition={26}
+          cardPosition={12}
           atletaIndex={2}
         />
       </div>
@@ -577,7 +609,7 @@ function SemiFinalCard({ luta, side, round, position, onClick, activeFightId, mo
   mode?: "live" | "readonly"
   forceAtletaIndex?: 1 | 2
 }) {
-  const cardPosition = side === "L" ? 21 + position : 23 + position
+  const cardPosition = side === "L" ? 13 : 14 + position
   const isDirectFinal = !!luta?.atleta1?.id && !!luta?.atleta2?.id
   const athleteIndex = forceAtletaIndex || (isDirectFinal && position === 1 ? 2 : 1)
   return (
