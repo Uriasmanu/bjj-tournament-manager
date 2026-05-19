@@ -330,6 +330,10 @@ function CompetitorCard({
   const borderClass = isFinalist ? "border-yellow-500 shadow-md" : "border-slate-950 shadow-sm"
   const opponentIsNull = atletaIndex === 1 ? !luta?.atleta2?.id : !luta?.atleta1?.id
   const showAdvanceTag = temAtleta && opponentIsNull && luta?.round === 1
+  
+  const isDesclassificado = temAtleta && luta?.resultado?.status === "concluida" && 
+    ((atletaIndex === 1 && luta.resultado.desclassificacao === "atleta1") ||
+     (atletaIndex === 2 && luta.resultado.desclassificacao === "atleta2"))
 
   return (
     <div
@@ -346,7 +350,7 @@ function CompetitorCard({
     >
       {temAtleta ? (
         <>
-          <div className="font-bold uppercase truncate pr-8 text-slate-900">
+          <div className={cn("font-bold uppercase truncate pr-8", isDesclassificado ? "text-red-600 line-through" : "text-slate-900")}>
             {atleta?.nome || "-- Vazio --"}
           </div>
           <div className="text-[10px] text-slate-500 uppercase truncate">
@@ -357,13 +361,18 @@ function CompetitorCard({
               AVANÇOU
             </span>
           )}
-          {isCompleted && !showAdvanceTag && (
+          {isDesclassificado && (
+            <span className="absolute right-1 top-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+              DESCLASSIFICADO
+            </span>
+          )}
+          {isCompleted && !showAdvanceTag && !isDesclassificado && (
             <span className="absolute right-1 top-1 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
               VENCEU
             </span>
           )}
           {cardPosition !== undefined && (
-            <span className={cn("absolute right-1 bottom-1 text-[10px] font-bold text-slate-400", showAdvanceTag && "bottom-8")}>
+            <span className={cn("absolute right-1 bottom-1 text-[10px] font-bold text-slate-400", (showAdvanceTag || isDesclassificado) && "bottom-8")}>
               {cardPosition}
             </span>
           )}
