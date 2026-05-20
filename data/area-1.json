@@ -332,12 +332,36 @@
             "faixa": "Branca"
           },
           "resultado": {
-            "status": "pendente"
+            "id": "a7669e10-c14b-4b8a-8f12-d959871b3bca",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": "atleta1",
+            "tipoVitoria": "pontos",
+            "status": "concluida",
+            "lutaId": "dbbc8d99-b8d6-4510-b5d6-b9a2ce5c7146",
+            "vencedorAtletaId": "0a91c3ea-01b0-4ede-b121-c295e55d8e01",
+            "perdedorAtletaId": "atleta-003",
+            "AtletaDesclassificadoId": null
           }
         }
       ],
       "status": "em_andamento",
-      "totalCompetidores": 3
+      "totalCompetidores": 3,
+      "vencedorAtletaId": "0a91c3ea-01b0-4ede-b121-c295e55d8e01"
     },
     {
       "id": "e6630e1f-033c-43c1-abaf-2c213a02d402",
@@ -434,6 +458,6 @@
       "totalCompetidores": 4
     }
   ],
-  "criadoEm": "2026-05-19T18:55:33.586Z",
-  "atualizadoEm": "2026-05-19T18:55:33.586Z"
+  "criadoEm": "2026-05-20T20:16:27.264Z",
+  "atualizadoEm": "2026-05-20T20:16:27.264Z"
 }

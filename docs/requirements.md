@@ -891,6 +891,53 @@ if (luta.position % 2 === 1) {
 
 - Documento detalhado: `docs/requisitos-correcao-position.md`
 
+### 20.6 Correção de Geração de Round 3 para 3 Atletas
+
+#### 20.6.1 Problema
+
+Chaves com exatamente 3 atletas estavam criando `round 3` automaticamente durante a importação, resultando em uma final/semifinal precoce e em um estado inicial incorreto.
+
+#### 20.6.2 Regras de Negócio
+
+Para `totalCompetidores === 3`:
+- durante a importação, criar apenas `round 1` e `round 2`;
+- `round 3` não deve ser gerado durante o processo de importação;
+- `round 3` deve ser criado dinamicamente durante o torneio apenas quando todas as condições a seguir forem atendidas:
+  1. a desclassificação ocorrer em uma luta real do `round 1` (ambos atletas presentes);
+  2. todas as lutas do `round 1` estiverem concluídas;
+  3. existir um atleta que avançou por BYE em `round 2`.
+
+#### 20.6.3 Fluxo Correto
+
+1. Importação de dados
+   - criar apenas `round 1` e `round 2` para chaves de 3 atletas.
+2. Durante o torneio
+   - finalizar a luta real do `round 1` com desclassificação;
+   - verificar que todas as lutas do `round 1` estão concluídas;
+   - só então criar `round 3` com uma única luta.
+
+#### 20.6.4 Arquivos Impactados
+
+| Arquivo | Modificação |
+|---------|-------------|
+| `app/scoreboard/setup/page.tsx` | Garantir que a importação não gere `round 3` para 3 atletas |
+| `app/hooks/useImportacao.ts` | Normalizar importação e descartar rounds > 2 em chaves de 3 atletas |
+| `app/lib/bracket-utils.ts` | Criar `round 3` dinamicamente em `advanceWinner()` apenas quando todas as regras forem atendidas |
+| `app/hooks/useStorage.ts` | Usar `advanceWinner()` ao concluir luta para disparar a criação dinâmica do `round 3` |
+
+#### 20.6.5 Comportamento Esperado
+
+| Situação | Resultado |
+|----------|-----------|
+| Importação de chave com 3 atletas | apenas `round 1` e `round 2` existem |
+| Desclassificação em luta real do `round 1` com todas as lutas de `round 1` concluídas | `round 3` é criado dinamicamente |
+| Desclassificação em BYE | `round 3` não é criado |
+| Round 1 ainda pendente | `round 3` não é criado |
+
+#### 20.6.6 Observação
+
+Se o arquivo de importação já contiver lutas com `round >= 3`, essas lutas devem ser descartadas para chaves de 3 atletas, pois o bracket deve começar sem a fase final pré-gerada.
+
 ---
 
 ## 21. Tags de Status no Bracket

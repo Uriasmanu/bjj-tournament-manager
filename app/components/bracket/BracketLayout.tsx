@@ -20,16 +20,6 @@ interface BracketLayoutProps {
 export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode = "live", className }: BracketLayoutProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
-  const todasLutasConcluidas = useMemo(() => {
-    return chave.lutas.every(l =>
-      l.resultado?.status === "concluida" ||
-      (!l.atleta1?.id || !l.atleta2?.id)
-    )
-  }, [chave.lutas])
-
-  const podeExibirCampeao = chave.status === "concluida" && !!chave.vencedorAtletaId && todasLutasConcluidas
-  const champion = podeExibirCampeao ? findChampion(chave) : undefined
-
   useEffect(() => {
     const timer = setTimeout(() => drawConnections(), 100)
     return () => clearTimeout(timer)
@@ -115,41 +105,62 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
     return undefined
   }, [chave.lutas])
 
-  const finalWinner = champion
-  const finalRunnerUp = useMemo(() => {
-    if (!champion) return undefined
-    const finalLuta = finalLutas[0]
-    if (finalLuta?.resultado?.status === "concluida") {
-      return finalLuta.atleta1?.id === champion.id ? finalLuta.atleta2 : finalLuta.atleta1
+  const isFinalConcluida = finalLutas[0]?.resultado?.status === "concluida" && !!finalLutas[0]?.resultado?.vencedorAtletaId
+
+  const finalChampion = useMemo(() => {
+    if (chave.vencedorAtletaId) {
+      return findChampion(chave)
+    }
+    if (isFinalConcluida) {
+      const finalLuta = finalLutas[0]
+      if (finalLuta.atleta1?.id === finalLuta.resultado!.vencedorAtletaId) return finalLuta.atleta1
+      if (finalLuta.atleta2?.id === finalLuta.resultado!.vencedorAtletaId) return finalLuta.atleta2
     }
     return undefined
-  }, [finalLutas, champion])
+  }, [chave, isFinalConcluida, finalLutas])
+
+  const finalWinner = finalChampion
+
+  const finalRunnerUp = useMemo(() => {
+    if (!finalChampion) return undefined
+    const finalLuta = finalLutas[0]
+    if (finalLuta?.resultado?.status === "concluida") {
+      return finalLuta.atleta1?.id === finalChampion.id ? finalLuta.atleta2 : finalLuta.atleta1
+    }
+    return undefined
+  }, [finalLutas, finalChampion])
 
   const thirdPlaceLeft = useMemo(() => {
+    if (isThreeCompetitors) return undefined
     const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
-      return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
-        ? leftSemiLuta.atleta2
-        : leftSemiLuta.atleta1
+      const r = leftSemiLuta.resultado
+      if (r.desclassificacao === "atleta1") return leftSemiLuta.atleta1
+      if (r.desclassificacao === "atleta2") return leftSemiLuta.atleta2
+      return leftSemiLuta.atleta1?.id === r.vencedorAtletaId ? leftSemiLuta.atleta2 : leftSemiLuta.atleta1
+    }
+    return undefined
+  }, [chave.lutas, isThreeCompetitors])
+
+  const thirdPlaceRight = useMemo(() => {
+    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
+    if (rightSemiLuta?.resultado?.status === "concluida") {
+      const r = rightSemiLuta.resultado
+      if (r.desclassificacao === "atleta1") return rightSemiLuta.atleta1
+      if (r.desclassificacao === "atleta2") return rightSemiLuta.atleta2
+      return rightSemiLuta.atleta1?.id === r.vencedorAtletaId ? rightSemiLuta.atleta2 : rightSemiLuta.atleta1
     }
     return undefined
   }, [chave.lutas])
 
-  const thirdPlaceRight = useMemo(() => {
-    if (isThreeCompetitors) {
-      const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
-      if (leftSemiLuta?.resultado?.status === "concluida") {
-        return leftSemiLuta.atleta1?.id === leftSemiLuta.resultado?.vencedorAtletaId
-          ? leftSemiLuta.atleta2
-          : leftSemiLuta.atleta1
-      }
-      return undefined
-    }
-    const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
-    if (rightSemiLuta?.resultado?.status === "concluida") {
-      return rightSemiLuta.atleta1?.id === rightSemiLuta.resultado?.vencedorAtletaId
-        ? rightSemiLuta.atleta2
-        : rightSemiLuta.atleta1
+  const thirdPlace = useMemo(() => {
+    if (!isThreeCompetitors) return undefined
+    const round1RealFight = chave.lutas.find(l => l.round === 1 && l.atleta1?.id && l.atleta2?.id)
+    if (round1RealFight?.resultado?.status === "concluida") {
+      const r = round1RealFight.resultado
+      if (r.desclassificacao === "atleta1") return round1RealFight.atleta1
+      if (r.desclassificacao === "atleta2") return round1RealFight.atleta2
+      return round1RealFight.atleta1?.id === r.vencedorAtletaId ? round1RealFight.atleta2 : round1RealFight.atleta1
     }
     return undefined
   }, [chave.lutas, isThreeCompetitors])
@@ -298,16 +309,26 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
                 colorClass="text-slate-400"
                 value={finalRunnerUp ? `${finalRunnerUp.nome} (${finalRunnerUp.equipe})` : "-- Aguardando disputa de ouro --"}
               />
-              <PodiumLine
-                label="3º"
-                colorClass="text-amber-700"
-                value={thirdPlaceLeft ? `${thirdPlaceLeft.nome} (${thirdPlaceLeft.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal esquerda --"}
-              />
-              <PodiumLine
-                label="3º"
-                colorClass="text-amber-700"
-                value={thirdPlaceRight ? `${thirdPlaceRight.nome} (${thirdPlaceRight.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal direita --"}
-              />
+              {isThreeCompetitors ? (
+                <PodiumLine
+                  label="3º"
+                  colorClass="text-amber-700"
+                  value={thirdPlace ? `${thirdPlace.nome} (${thirdPlace.equipe})` : "-- Aguardando definição do terceiro lugar --"}
+                />
+              ) : (
+                <>
+                  <PodiumLine
+                    label="3º"
+                    colorClass="text-amber-700"
+                    value={thirdPlaceLeft ? `${thirdPlaceLeft.nome} (${thirdPlaceLeft.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal esquerda --"}
+                  />
+                  <PodiumLine
+                    label="3º"
+                    colorClass="text-amber-700"
+                    value={thirdPlaceRight ? `${thirdPlaceRight.nome} (${thirdPlaceRight.equipe})` : "-- Definido automaticamente pelo perdedor da semifinal direita --"}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -681,7 +702,7 @@ function PodiumLine({ label, colorClass, value }: { label: string; colorClass: s
         {value.includes("--") ? (
           <span className="text-slate-400 italic">{value}</span>
         ) : (
-          <span className="text-slate-900">{value}</span>
+          <span className="text-white">{value}</span>
         )}
       </div>
     </div>
