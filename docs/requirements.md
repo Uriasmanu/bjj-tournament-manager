@@ -1,7 +1,7 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 7.6
-**Data:** 2026-05-19
+**Versão:** 8.0
+**Data:** 2026-05-20
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
 ---
@@ -68,11 +68,12 @@ O sistema expõe uma API para manipulação de dados:
 
 | Método | Endpoint | Descrição |
 |--------|-----------|------------|
-| GET | `/api/area?id=UUID` | Retorna dados de uma área pelo UUID |
-| GET | `/api/area?area=NOME` | Retorna dados de uma área pelo nome (busca em todos os arquivos) |
+| GET | `/api/area?area=NOME` | Retorna dados de uma área pelo nome (lê `data/[nome].json`). Retorna estrutura vazia padrão se arquivo não existir |
 | POST | `/api/area` | Cria/sobrescreve dados de uma área |
-| PUT | `/api/area` | Atualiza dados de uma área (mantém existentes) |
-| DELETE | `/api/area?area=NOME` | Remove arquivo da área pelo nome |
+| PUT | `/api/area` | Atualiza dados de uma área (faz merge com existentes, atualiza `atualizadoEm`) |
+| DELETE | `/api/area?area=NOME` | **NÃO IMPLEMENTADO** — chamado por `limparDados()` mas a API retorna 405 |
+
+> **OBSERVAÇÃO:** A consulta por UUID (`?id=UUID`) não está implementada. Apenas consulta por nome de área é suportada. O nome do arquivo é gerado via `area.toLowerCase().replace(/[^a-z0-9]/g, "-") + ".json"`.
 
 ---
 
@@ -377,21 +378,40 @@ docs/
 4. **Editar Árbitro**: Campo editável no header para nome do árbitro
 5. **Desclassificação**: Botão discreto (30% opacity) para desclassificar atleta
 
-### 8.4 Finalização da Luta
+### 8.4 Finalização da Luta (Fluxo Normal)
 
-1. Clicar em "Finalizar Luta"
-2. Modal 1: **Selecionar Vencedor** — escolhe qual atleta venceu
-3. Modal 2: **Selecionar Tipo de Vitória** — pontos ou finalização
-4. Se DSQ: Modal 1 pergunta qual atleta, Modal 2 pede confirmação antes de salvar
-5. `ResultadoLuta` criado com UUID próprio, vinculado à `Luta.id`
-6. JSON da área é atualizado com todos os campos do resultado
+1. Clicar em "Finalizar Luta" (botão dourado no placar)
+2. Modal 1: **Selecionar Vencedor** — dois botões grandes, um para cada atleta
+3. Modal 2: **Selecionar Tipo de Vitória** — "Pontos" ou "Finalização"
+4. Sistema determina vencedor:
+   - Se finalização → vence quem finalizou
+   - Se nenhum → vence quem tiver mais pontos + vantagens
+5. `ResultadoLuta` criado com UUID próprio via `crypto.randomUUID()`, vinculado à `Luta.id`
+6. JSON da área é atualizado com todos os campos do resultado via API PUT
 7. Status da luta muda para `"concluida"`
+8. `advanceWinner()` é chamado para mover vencedor para próxima luta (se houver)
+9. Após salvar, sistema recarrega dados e retorna ao seletor de lutas
 
-### 8.5 Conclusão da Chave
+### 8.5 Fluxo de Desclassificação (DSQ)
+
+1. Botão "DSQ" discreto (30% opacity, hover 100%) no canto superior direito de cada `AtletaCard`
+2. Modal 1: **Confirmar Atleta** — pergunta "Tem certeza que deseja desclassificar [atleta]?"
+3. Modal 2: **Confirmação Final** — mostra qual atleta será declarado vencedor automaticamente, pede confirmação
+4. Regras:
+   - Se atleta1 for desclassificado → atleta2 vence automaticamente
+   - Se atleta2 for desclassificado → atleta1 vence automaticamente
+5. `tipoVitoria` salvo como `"desclassificacao"`
+6. `desclassificacao` campo salvo como `"atleta1"` ou `"atleta2"`
+7. Dados persistem via `marcarLutaConcluida()` no hook `useStorage`
+8. Atleta desclassificado recebe tag vermelha "DESCLASSIFICADO" no bracket
+
+### 8.6 Conclusão da Chave
 
 - Todas as lutas processadas
 - `ChaveLuta.vencedorAtletaId` preenchido com o UUID do campeão
 - `ChaveLuta.status` atualiza automaticamente (pendente → em_andamento → concluida)
+- Em chaves de 3 atletas: se a luta final do round 3 estiver concluída, o pódio é derivado mesmo com `chave.status === "em_andamento"`
+- `advanceWinner()` define `status: "concluida"` quando a última luta (maior round) é finalizada
 
 ---
 
@@ -409,12 +429,22 @@ O componente `BracketLayout.tsx` exibe a chave de luta em formato visual com as 
 
 | Componente | Descrição |
 |------------|-----------|
-| `CompetitorCard` | Card individual de competidor com nome, equipe, resultado |
-| `Round1Pair` | Par de competidores das oitavas (8 lutas por lado) |
-| `Round2Pair` | Par de competidores das quartas (2 lutas por lado) |
-| `SemiFinalCard` | Card da semifinal (apenas 1 competidor por card) |
-| `FinalistCard` | Card de finalista no painel central |
+| `CompetitorCard` | Card individual de competidor com nome, equipe, resultado, cardPosition (canto superior direito), tags de status (canto inferior direito) |
+| `Round1Pair` | Par de competidores das oitavas (cards posição 1-4) |
+| `Round1PairRight` | Par de competidores das oitavas lado direito (cards posição 5-8) |
+| `Round2Pair` | Par de competidores das quartas lado esquerdo (cards posição 9-10) |
+| `Round2PairRight` | Par de competidores das quartas lado direito (cards posição 11-12) |
+| `SemiFinalCard` | Card da semifinal (posição 13 ou 14), com suporte a `forceAtletaIndex` para chaves de 3 atletas |
+| `FinalistCard` | Card de finalista no painel central (posição 15) |
 | `PodiumLine` | Linha de classificação final (1º, 2º, 3º) |
+| `findChampion()` | Função auxiliar que busca o campeão pelo `chave.vencedorAtletaId` em todas as lutas |
+
+**Componentes não utilizados (legado):**
+| Componente | Arquivo | Motivo |
+|------------|---------|--------|
+| `BracketColumn` | `bracket/BracketColumn.tsx` | Substituído pelo layout de grid 7 colunas no `BracketLayout` |
+| `BracketMatchupCard` | `bracket/BracketMatchupCard.tsx` | Substituído pelo `CompetitorCard` no `BracketLayout` |
+| `ResultBadge` / `ResultBadgeList` | `bracket/ResultBadge.tsx` | Usado apenas pelo `BracketMatchupCard` (não utilizado) |
 
 ### 9.3 Painel Central
 
@@ -424,20 +454,23 @@ O painel central exibe apenas o **Finalista**, mostrando o vencedor da semifinal
 
 **Arquivo:** `app/components/bracket/ChampionModal.tsx`
 
-Componente modal que exibe o campeão quando a chave é concluída:
+Componente modal que exibe o campeão (criado mas **não integrado** a nenhum fluxo da aplicação):
 - Fundo com gradiente dourado (amber-300 a amber-500)
-- Ícone de troféu
+- Ícone de troféu grande
 - Nome do campeão
 - Equipe do campeão
 - Label "CAMPEÃO" em destaque
 - Nome da categoria
-- Botão de fechar (opcional)
+- Botão de fechar (opcional via prop `onClose`)
+- Props: `champion: Atleta`, `categoryName`, `onClose?`, `className?`
+
+> **Status:** Componente existe mas nunca é acionado. Nenhuma página ou hook dispara o modal.
 
 ### 9.3.2 Card de Campeão no Bracket (BracketChampion)
 
 **Arquivo:** `app/components/bracket/BracketChampion.tsx`
 
-Componente compacte para exibir o campeão diretamente no bracket:
+Componente compacto para exibir o campeão diretamente no bracket, usado apenas para **chaves de 1 competidor**:
 - Fundo com gradiente dourado (amber-300 a amber-500)
 - Ícone de troféu pequeno
 - Nome do campeão em texto pequeno
@@ -445,17 +478,44 @@ Componente compacte para exibir o campeão diretamente no bracket:
 - Badge "CAMPEÃO" com fundo amber
 - Nome da categoria abaixo
 - Estado de "Aguardando campeão..." quando não há campeão
+- Props: `champion?: Atleta`, `categoryName: string`
 
 ### 9.4 Classificação Final (Pódio)
 
-O pódio é exibido abaixo do bracket com:
-- **1º Lugar**: Campeão (cor dourada)
-- **2º Lugar**: Vice-campeão (cor cinza)
-- **3º Lugar**: Dois terceiros lugares (cor âmbar)
+O pódio é exibido abaixo do bracket em uma lista vertical:
 
-Os terceiros lugares são calculados automaticamente:
-- `thirdPlaceLeft`: Perdedor da semifinal esquerda
-- `thirdPlaceRight`: Perdedor da semifinal direita
+- **1º Lugar**: Campeão (cor `text-amber-500`)
+- **2º Lugar**: Vice-campeão (cor `text-slate-400`)
+- **3º Lugar**: Um ou dois terceiros lugares (cor `text-amber-700`)
+
+#### 9.4.1 Derivação do Campeão e Vice
+
+O campeão é derivado na seguinte ordem de precedência:
+1. `chave.vencedorAtletaId` — se presente, busca o atleta em todas as lutas via `findChampion()`
+2. Último combate concluído (`maxRound`) — se `isFinalConcluida` for true, o vencedor do último combate é o campeão
+
+O vice-campeão é o perdedor do último combate (final).
+
+A exibição de 1º e 2º não depende estritamente de `chave.status === "concluida"`. Se o combate final estiver concluído (`resultado.status === "concluida"`), o pódio é exibido mesmo com `chave.status === "em_andamento"`.
+
+#### 9.4.2 Derivação do Terceiro Lugar
+
+**Para chaves com 4 ou mais competidores:**
+- `thirdPlaceLeft`: Perdedor da semifinal esquerda (round 3, position 0)
+- `thirdPlaceRight`: Perdedor da semifinal direita (round 3, position 1)
+- Ambos os 3º lugares são exibidos
+
+**Para chaves com exatamente 3 competidores:**
+- `thirdPlace`: Calculado a partir da luta real do round 1 (com ambos atletas presentes)
+- O perdedor da luta do round 1 (ou o atleta desclassificado, se DSQ) é o terceiro lugar
+- Apenas **um** 3º lugar é exibido
+- O perdedor da final **não** é usado como terceiro lugar (ele é o vice-campeão)
+
+#### 9.4.3 Tratamento de Desclassificação no Pódio
+
+Em todos os cálculos de terceiro lugar, o sistema verifica `resultado.desclassificacao`:
+- Se `desclassificacao === "atleta1"` → `atleta1` é o perdedor/terceiro lugar
+- Se `desclassificacao === "atleta2"` → `atleta2` é o perdedor/terceiro lugar
 
 ### 9.5 Estados de Exibição
 
@@ -767,13 +827,12 @@ O sistema utiliza os seguintes componentes do Shadcn UI:
 
 | Componente | Localização | Uso |
 |------------|-------------|-----|
-| Button | `@/components/ui/button` | Botões principais e ações |
-| Card | `@/components/ui/card` | Containers de conteúdo |
-| Dialog | `@/components/ui/dialog` | Modais e confirmações |
-| Input | `@/components/ui/input` | Campos de texto |
-| Select | `@/components/ui/select` | Dropdowns |
-| Toast | `@/components/ui/toast` | Notificações |
-| Badge | `@/components/ui/badge` | Labels e badges de status |
+| Button | `@/components/ui/button` | Botões principais e ações. Variantes: default, outline, secondary, ghost, destructive, link. Tamanhos: default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg |
+| Card | `@/components/ui/card` | Containers de conteúdo com sub-componentes: CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter. Suporta `size="sm"` |
+| Input | `@/components/ui/input` | Campos de texto simples |
+| Badge | `@/components/ui/badge` | Labels e badges de status. Variantes: default, secondary, destructive, outline, ghost, link |
+
+> **NOTA:** `Dialog`, `Select` e `Toast` do Shadcn UI **não estão implementados**. Modais usam divs customizadas (ex: `AdicionarLutaModal`, `LutaManualForm`) ou sobreposição simples. Notificações usam componente `Toast` customizado em `components/setup/Toast.tsx`.
 
 ---
 
@@ -791,29 +850,84 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 
 | Função | Descrição |
 |--------|------------|
-| `buildBracketFromChaveLuta()` | Converte ChaveLuta em array de BracketRound para visualização |
-| `generatePosition()` | Calcula posições automaticamente considerando fluxo visual e BYE |
-| `calculateByePosition()` | Função auxiliar para calcular posição de atleta que avança por BYE |
-| `advanceWinner()` | Move automaticamente o vencedor para a próxima luta |
-| `getFighterTags()` | Retorna tags de resultado (VENCEU, PERDEU, DESCLASS., FINALIZOU) |
-| `getFighterStatus()` | Retorna status do resultado |
-| `getRoundLabel()` | Retorna label do round (Round 1, Quartas, Semifinal, Final) |
-| `isByeSlot()` | Verifica se a luta é um bye |
-| `getLutaById()` | Busca luta por ID na chave |
-| `findAtletaById()` | Busca atleta por ID na chave |
-| `podeIniciarLuta()` | Verifica se a luta pode ser iniciada (lutas anteriores concluídas) |
-| `canInteract()` | Verifica se a luta pode ser interagida |
-| `getUnicoAtleta()` | Retorna único atleta em chaves com 1 competidor |
+| `isThreeCompetitorsChave(chave)` | Verifica se `totalCompetidores === 3` |
+| `buildBracketFromChaveLuta(chave)` | Converte ChaveLuta em array de BracketRound para visualização. Round 3 vira "Semifinal" (ou "Final" para 3 competidores) |
+| `generatePosition(lutas)` | Calcula posições automaticamente considerando fluxo visual e BYE. Para rounds > 1, verifica `previousMatchIds` para determinar se veio de BYE |
+| `calculateByePosition(sourceLuta, fallbackIndex, lutas)` | Calcula posição de atleta que avança por BYE. BYE lado direito → posições ímpares (2-3 no R2), lado esquerdo → posições pares (0-1 no R2) |
+| `getCardNumber(round, indexInRound, isLeftSide, isAtleta1)` | Mapeia round/índice/lado para número de card (1-28) |
+| `getNextPosition(round, position, isWinnerAtleta1)` | Determina a próxima posição na chave (Round 1 → 2 → 3) |
+| `isRealFight(luta)` | Ambos atletas têm ID |
+| `areAllRound1FightsCompleted(chave)` | Todas as lutas do round 1 estão concluídas ou são BYE |
+| `advanceWinner(chave, completedFightId, winner, loser)` | Move automaticamente o vencedor para a próxima luta. Lógica completa: final → marca chave concluída; DSQ em R1 de 3 atletas → cria round 3 dinamicamente; normal → atualiza próxima luta com vencedor |
+| `getFighterTags(resultado, fighter)` | Retorna tags de resultado: VENCEU (verde), PERDEU (vermelho), DESCLASS. (vermelho negrito), FINALIZOU (azul) |
+| `getFighterStatus(resultado, fighter)` | Retorna "winner", "loser", "disqualified" ou null |
+| `getRoundLabel(round)` | Mapeia 1→"Round 1", 2→"Quartas", 3→"Semifinal", 4→"Final" |
+| `isByeSlot(luta)` | Verifica se a luta é um bye (atleta sem ID) |
+| `getLutaById(chave, lutaId)` | Busca luta por ID na chave |
+| `findAtletaById(chave, atletaId)` | Busca atleta por ID em todas as lutas da chave |
+| `getUnicoAtleta(chave)` | Retorna único atleta em chaves com 1 competidor (baseado em nome único) |
+| `podeIniciarLuta(luta, chave)` | Verifica se a luta pode ser iniciada: ambos atletas existem E todas as lutas anteriores estão concluídas (ou eram BYE) |
+| `canInteract(luta, chave)` | Mesma verificação que `podeIniciarLuta` |
+
+### Funções de Migração (`app/lib/migrate-ids.ts`)
+
+| Função | Descrição |
+|--------|------------|
+| `migrateAllData(dados)` | Ponto de entrada: executa migração completa de UUIDs para todos os dados |
+| `migrateDadosArea(dados)` | Migra UUID da área e de todas as chaves |
+| `migrateChaveLuta(chave)` | Migra UUID da chave e de todas as lutas |
+| `migrateLuta(luta)` | Migra UUID da luta, atletas e resultado. **ATENÇÃO**: limpa `nextMatchId` e `previousMatchIds` |
+| `migrateAtleta(atleta)` | Gera UUID se ausente |
+| `migrateResultado(resultado)` | Gera UUID se ausente. **ATENÇÃO**: limpa `lutaId`, `vencedorAtletaId`, `perdedorAtletaId`, `AtletaDesclassificadoId` |
 
 ---
 
 ## 17. Hooks Personalizados
 
+### 17.1 `useStorage` (`app/hooks/useStorage.ts`)
+
+Funções assíncronas para persistência de dados via API:
+
+| Função | Descrição |
+|--------|------------|
+| `getDadosIniciais()` | Lê `localStorage("bjj_tournament_area_nome")`, busca dados da API, executa `migrateAllData()`. Retorna `{ area, chaves, areaDefinida }` ou valores padrão |
+| `salvarDados(area, chaves)` | Salva nome da área no localStorage, faz POST para API |
+| `adicionarNovaLuta(area, chaves, novaLuta)` | Adiciona luta a bracket existente (ou cria "Luta Manual"), recalcula `totalCompetidores` |
+| `marcarLutaConcluida(area, chaveId, lutaId, dadosResultado, chaves)` | Cria `ResultadoLuta` com UUID, determina vencedor/perdedor, persiste todos os detalhes de pontuação, chama `advanceWinner()`, atualiza status da chave |
+| `limparDados(area)` | Remove chave do localStorage e chama DELETE API (não implementado no backend) |
+| `calculateTotalCompetidores(lutas)` | Conta nomes únicos de atletas |
+
+### 17.2 `useImportacao` (`app/hooks/useImportacao.ts`)
+
+| Item | Descrição |
+|------|------------|
+| Estado | `resultados: ResultadoImportacao[]`, `isLoading: boolean` |
+| `importarArquivos(files)` | Lê múltiplos JSONs via FileReader, valida estrutura, processa (`processarChave`), retorna array de resultados |
+| `limparResultados()` | Limpa lista de resultados |
+| `validarChave(data)` | Valida: deve ser objeto, `categoria` string não vazia, `lutas` array não vazio |
+| `processarChave(data)` | Gera UUIDs para IDs ausentes, cria `ResultadoLuta` pendente, conta competidores únicos, **filtra rounds > 2 para chaves de 3 atletas**, chama `generatePosition()` |
+
+### 17.3 `useBracket` (`app/hooks/useBracket.ts`)
+
+| Prop | Tipo | Descrição |
+|------|------|------------|
+| `chave` | `ChaveLuta` | Dados da chave |
+| `activeFightId?` | `string` | ID da luta ativa |
+| `onFightClick?` | `(luta: Luta) => void` | Callback de clique |
+| `mode?` | `"live" \| "readonly"` | Modo de interação |
+
+| Retorno | Descrição |
+|---------|------------|
+| `rounds` | `BracketRound[]` — rounds processados via `buildBracketFromChaveLuta` |
+| `handleFightClick` | Handler que ignora cliques em modo readonly |
+| `champion` | Atleta campeão (buscado por `findAtletaById`) |
+| `status` | `MatchupStatus` |
+
+### 17.4 Hooks não utilizados
+
 | Hook | Arquivo | Descrição |
 |------|---------|------------|
-| `useStorage` | `app/hooks/useStorage.ts` | Gerenciamento de dados (salvar, carregar, finalizar luta) |
-| `useImportacao` | `app/hooks/useImportacao.ts` | Importação de arquivos JSON |
-| `useBracket` | `app/hooks/useBracket.ts` | Hook para visualização de bracket |
+| `useScoreSound` | `app/components/scoreboard/useScoreSound.ts` | Reproduz som via Web Audio API (tom senoidal 800Hz/400Hz, 100ms). Exportado mas **não importado** por nenhum componente |
 
 ---
 
@@ -834,7 +948,155 @@ Ao finalizar uma luta com `marcarLutaConcluida()`:
 
 ---
 
-## 19. Validação de UUID
+## 19. Componente de Timer
+
+**Arquivo:** `app/components/Timer.tsx`
+**Exportado como:** `ScoreboardTimer`
+
+### Props
+
+| Prop | Tipo | Descrição |
+|------|------|------------|
+| `onTimeEnd?` | `() => void` | Callback quando o tempo chega a zero |
+| `onReset?` | `() => void` | Callback quando o timer é reiniciado |
+| `onTimeUpdate?` | `(elapsedSeconds: number) => void` | Reporta o tempo decorrido a cada tick |
+
+### Funcionalidades
+
+- **Tempos predefinidos**: Select com opções de 2min, 5min, 6min e 10min
+- **Configuração manual**: Campos de minutos e segundos (toggle via botão "Personalizar")
+- **Controles**: Iniciar/Parar e Reiniciar
+- **Estados visuais**:
+  - Normal: texto branco
+  - Alerta (\(\le\) 10s): texto vermelho
+  - Finalizado (0): texto cinza
+- **Elapsed time**: Reportado via `onTimeUpdate` para registro no resultado da luta
+- **Cleanup**: Interval é limpo no unmount do componente
+
+---
+
+## 20. Página de Admin — Controle de Lutas
+
+**Arquivo:** `app/admin/matches/page.tsx`
+
+Página standalone de teste de pontuação (NÃO integrada com dados reais):
+
+### Características
+
+- Atletas hardcoded: "João Silva" (Team Brasil) vs "Maria Santos" (Team São Paulo)
+- Botões de pontuação: +2, +3, +4 por atleta
+- Vantagem (+Vant) e Penalidade (-Pen)
+- Componente `ScoreboardTimer` incluso
+- **Sistema de Undo**: Array `HistoricoPontuacao` rastreia cada ação; `desfazer()` reverte a última ação
+- **Reset**: `resetLuta()` zera pontuações, vantagens, penalidades e histórico
+- Exibição de histórico (últimas 10 ações, ordem reversa)
+
+### Limitações
+
+- Não persiste dados (nenhuma chamada à API)
+- Botão "Finalizar Luta" apenas reseta pontuações sem salvar
+- Rota `/admin/athletes`, `/admin/categories`, `/admin/reports` não existem (links no sidebar levam a 404)
+
+---
+
+## 21. Páginas de Desenvolvimento / Teste
+
+### 21.1 Bracket Test (`/bracket-test`)
+
+**Arquivo:** `app/bracket-test/page.tsx`
+
+Página de desenvolvimento para testar o visualizador de bracket:
+- Botões para gerar chaves de 2 a 8 competidores
+- Usa `createMockChave()` de `mock-bracket-data.ts`
+- Renderiza `BracketVisualizer` em modo `"live"`
+- Clique em luta exibe alerta
+
+### 21.2 Dados Mock (`app/lib/mock-bracket-data.ts`)
+
+Funções para gerar dados de teste:
+
+| Função | Descrição |
+|--------|------------|
+| `createAtleta(id, nome, equipe)` | Cria objeto Atleta |
+| `createLuta(id, round, position, atleta1, atleta2)` | Cria objeto Luta |
+| `mockChave8Competidores` | Chave pré-definida com 8 competidores |
+| `mockChave4Competidores` | Chave pré-definida com 4 competidores |
+| `mockChave3Competidores` | Chave pré-definida com 3 competidores |
+| `mockChaveConcluida` | Chave pré-definida concluída |
+| `createMockChave(tamanho, categoria?)` | Gera chave com N competidores (lida com número ímpar criando BYE) |
+
+---
+
+## 22. Componentes Legado (Não Utilizados)
+
+Os seguintes componentes existem no código mas **não são importados ou utilizados** por nenhuma página ou componente ativo:
+
+| Componente | Arquivo | Razão |
+|------------|---------|-------|
+| `SeletorLuta` | `components/scoreboard/SeletorLuta.tsx` | Substituído por lógica inline em `scoreboard/page.tsx` |
+| `BracketPanel` | `components/scoreboard/BracketPanel.tsx` | Substituído por `BracketVisualizer` + seletor inline |
+| `BracketColumn` | `components/bracket/BracketColumn.tsx` | Substituído pelo layout grid 7 colunas em `BracketLayout` |
+| `BracketMatchupCard` | `components/bracket/BracketMatchupCard.tsx` | Substituído por `CompetitorCard` em `BracketLayout` |
+| `ResultBadge` / `ResultBadgeList` | `components/bracket/ResultBadge.tsx` | Usado apenas por `BracketMatchupCard` |
+| `useScoreSound` | `components/scoreboard/useScoreSound.ts` | Nenhum componente o importa |
+| `ChampionModal` | `components/bracket/ChampionModal.tsx` | Nenhuma página o aciona |
+
+---
+
+## 23. Padrões de Implementação
+
+### 23.1 Hydration Guard
+
+Todas as páginas com estado cliente (`"use client"`) implementam proteção de hidratação:
+
+```typescript
+const [isHydrated, setIsHydrated] = useState(false)
+useEffect(() => { setIsHydrated(true) }, [])
+if (!isHydrated) return null // ou loading state
+```
+
+### 23.2 LocalStorage
+
+Chaves utilizadas no localStorage:
+
+| Chave | Uso | Localização |
+|-------|-----|-------------|
+| `bjj_tournament_area_nome` | Nome da área ativa | `useStorage.ts`, `scoreboard/setup/page.tsx` |
+| `bjj_tournament_ultima_categoria` | Última categoria selecionada | `scoreboard/page.tsx` |
+
+### 23.3 Criação de Luta Manual
+
+Duas implementações diferentes:
+
+| Contexto | Componente | Campos |
+|----------|-----------|--------|
+| Setup (`/scoreboard/setup`) | `LutaManualForm` | nome (obrigatório), equipe (opcional), faixa (dropdown) para ambos atletas |
+| Scoreboard (`/scoreboard`) | `AdicionarLutaModal` | nome (obrigatório), equipe (opcional) para ambos atletas — **sem campo de faixa** |
+
+### 23.4 Carregamento de Dados
+
+Fluxo completo de inicialização (`scoreboard/page.tsx` e `scoreboard/setup/page.tsx`):
+1. `getDadosIniciais()` → lê localStorage + API → executa `migrateAllData()`
+2. Se dados vazios, redireciona para setup
+3. Se chaves existem, auto-seleciona chave com status `em_andamento`
+4. Guarda de hidratação evita flash de conteúdo não renderizado
+
+---
+
+## 24. Exemplos de Dados
+
+> **NOTA:** A pasta `exemplos/` mencionada na estrutura de pastas **não existe** no repositório. Os arquivos `chave-3-lutadores.json`, `chave-4-lutadores.json` e `chave-5-lutadores.json` não foram criados.
+
+Para dados de exemplo, utilize o arquivo `data/area-1.json` que contém:
+- Chave de 5 competidores (Roxa Adulto Masculino - 75kg) — pendente, com BYE
+- Chave de 3 competidores (Branca Adulto Masculino - 65kg) — em andamento, com desclassificação e final concluída
+- Chave de 4 competidores (Azul Adulto Masculino - 70kg) — pendente
+
+> **ATENÇÃO:** O arquivo `data/area-1.json` contém IDs de atleta não-UUID (`"atleta-012"`, `"atleta-003"`) que são normalizados pela migração ao carregar, mas quebram correspondência de IDs entre lutas.
+
+---
+
+## 25. Validação de UUID
 
 Função em `app/lib/uuid.ts`:
 - `generateUUID()`: Gera UUID v4 usando `crypto.randomUUID()`
@@ -844,9 +1106,9 @@ Regex: `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 ---
 
-## 20. Correção de Posicionamento de BYE no Bracket
+## 26. Correção de Posicionamento de BYE no Bracket
 
-### 20.1 Problema
+### 26.1 Problema
 
 Ao utilizar chaves com número ímpar de atletas (ex: 3 atletas), ocorre um BYE automaticamente no Round 1. O atleta que avança por ter o oponente null (BYE) estava sendo posicionado incorretamente no Round 2, resultando em uma exibição visual incorreta no bracket.
 
@@ -855,20 +1117,19 @@ Ao utilizar chaves com número ímpar de atletas (ex: 3 atletas), ocorre um BYE 
 - Posição 1 (BYE no lado direito) deveria ir para posição 3 no Round 2
 - Mas estava sendo calculada como `Math.floor(1/2) = 0` (incorreto!)
 
-### 20.2 Arquivos Modificados
+### 26.2 Arquivos Modificados
 
 | Arquivo | Modificação |
 |---------|-------------|
 | `app/scoreboard/setup/page.tsx` | Função `handleImportar` - cálculo de posição para BYE |
 | `app/lib/bracket-utils.ts` | Função `generatePosition` e `calculateByePosition` |
-| `app/hooks/useImportacao.ts` | 调用 `generatePosition` no fluxo de importação |
+| `app/hooks/useImportacao.ts` | `generatePosition` no fluxo de importação |
 
-### 20.3 Lógica de Correção
+### 26.3 Lógica de Correção
 
 **Em `app/scoreboard/setup/page.tsx:handleImportar`:**
 
 ```typescript
-// Lógica corrigida para calcular posição do BYE no Round 2
 let positionRound2: number
 if (luta.position % 2 === 1) {
   // BYE no lado direito (posição ímpar) → posição 3 no Round 2
@@ -879,7 +1140,7 @@ if (luta.position % 2 === 1) {
 }
 ```
 
-### 20.4 Comportamento Esperado
+### 26.4 Comportamento Esperado
 
 | Cenário | Round 1 | Round 2 |
 |---------|---------|---------|
@@ -887,17 +1148,17 @@ if (luta.position % 2 === 1) {
 | 5 atletas (BYE pos 2) | posições 0,1,2 | posição 1 (esquerdo) |
 | 4 atletas (normal) | posições 0,1 | posições 0,1 (esq), 2,3 (dir) |
 
-### 20.5 Referência
+### 26.5 Referência
 
 - Documento detalhado: `docs/requisitos-correcao-position.md`
 
-### 20.6 Correção de Geração de Round 3 para 3 Atletas
+### 26.6 Correção de Geração de Round 3 para 3 Atletas
 
-#### 20.6.1 Problema
+#### 26.6.1 Problema
 
 Chaves com exatamente 3 atletas estavam criando `round 3` automaticamente durante a importação, resultando em uma final/semifinal precoce e em um estado inicial incorreto.
 
-#### 20.6.2 Regras de Negócio
+#### 26.6.2 Regras de Negócio
 
 Para `totalCompetidores === 3`:
 - durante a importação, criar apenas `round 1` e `round 2`;
@@ -907,7 +1168,7 @@ Para `totalCompetidores === 3`:
   2. todas as lutas do `round 1` estiverem concluídas;
   3. existir um atleta que avançou por BYE em `round 2`.
 
-#### 20.6.3 Fluxo Correto
+#### 26.6.3 Fluxo Correto
 
 1. Importação de dados
    - criar apenas `round 1` e `round 2` para chaves de 3 atletas.
@@ -916,16 +1177,16 @@ Para `totalCompetidores === 3`:
    - verificar que todas as lutas do `round 1` estão concluídas;
    - só então criar `round 3` com uma única luta.
 
-#### 20.6.4 Arquivos Impactados
+#### 26.6.4 Arquivos Impactados
 
 | Arquivo | Modificação |
 |---------|-------------|
 | `app/scoreboard/setup/page.tsx` | Garantir que a importação não gere `round 3` para 3 atletas |
 | `app/hooks/useImportacao.ts` | Normalizar importação e descartar rounds > 2 em chaves de 3 atletas |
-| `app/lib/bracket-utils.ts` | Criar `round 3` dinamicamente em `advanceWinner()` apenas quando todas as regras forem atendidas |
-| `app/hooks/useStorage.ts` | Usar `advanceWinner()` ao concluir luta para disparar a criação dinâmica do `round 3` |
+| `app/lib/bracket-utils.ts` | Criar `round 3` dinamicamente em `advanceWinner()` |
+| `app/hooks/useStorage.ts` | Usar `advanceWinner()` ao concluir luta |
 
-#### 20.6.5 Comportamento Esperado
+#### 26.6.5 Comportamento Esperado
 
 | Situação | Resultado |
 |----------|-----------|
@@ -934,15 +1195,15 @@ Para `totalCompetidores === 3`:
 | Desclassificação em BYE | `round 3` não é criado |
 | Round 1 ainda pendente | `round 3` não é criado |
 
-#### 20.6.6 Observação
+#### 26.6.6 Observação
 
 Se o arquivo de importação já contiver lutas com `round >= 3`, essas lutas devem ser descartadas para chaves de 3 atletas, pois o bracket deve começar sem a fase final pré-gerada.
 
 ---
 
-## 21. Tags de Status no Bracket
+## 27. Tags de Status no Bracket
 
-### 21.1 Visão Geral
+### 27.1 Visão Geral
 
 O sistema exibe tags de status no bracket para diferentes cenários de luta:
 
@@ -952,26 +1213,23 @@ O sistema exibe tags de status no bracket para diferentes cenários de luta:
 | VENCEU | Verde | Atleta venceu a luta |
 | DESCLASSIFICADO | Vermelho | Atleta foi desclassificado |
 
-### 21.2 Implementação
+### 27.2 Implementação
 
 **Arquivo:** `app/components/bracket/BracketLayout.tsx` - Componente `CompetitorCard`
 
 **Lógica de Exibição:**
 
 ```typescript
-// Tag AVANÇOU (BYE)
 const showAdvanceTag = temAtleta && opponentIsNull && luta?.round === 1
 
-// Tag DESCLASSIFICADO
 const isDesclassificado = temAtleta && luta?.resultado?.status === "concluida" &&
   ((atletaIndex === 1 && luta.resultado.desclassificacao === "atleta1") ||
    (atletaIndex === 2 && luta.resultado.desclassificacao === "atleta2"))
 
-// Tag VENCEU (apenas se não for BYE e não for desclassificado)
 {isCompleted && !showAdvanceTag && !isDesclassificado && "VENCEU"}
 ```
 
-### 21.3 Estilos Visuais
+### 27.3 Estilos Visuais
 
 | Tag | Classe CSS | Texto |
 |-----|------------|-------|
@@ -985,9 +1243,9 @@ Para atletas desclassificados, o nome também recebe:
 
 ---
 
-## 22. Posicionamento de Elementos no Card do Competidor
+## 28. Posicionamento de Elementos no Card do Competidor
 
-### 22.1 Visão Geral
+### 28.1 Visão Geral
 
 Cada card de competidor no bracket contém dois elementos posicionados nos cantos superiores/inferiores direitos:
 
@@ -996,7 +1254,7 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 | **Número do Card** | Canto superior direito | Identificador numérico da posição no bracket |
 | **Tag de Status** | Canto inferior direito | Indica estado do competidor (AVANÇOU, VENCEU, DESCLASSIFICADO) |
 
-### 22.2 Regras de Posicionamento
+### 28.2 Regras de Posicionamento
 
 **Número do Card (cardPosition):**
 - **OBRIGATÓRIO**: Sempre no canto **superior direito** do card
@@ -1010,19 +1268,17 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 - Tags suportadas: AVANÇOU (azul), VENCEU (verde), DESCLASSIFICADO (vermelho)
 - Fonte: `text-[9px] px-1.5 py-0.5 rounded font-bold`
 
-### 22.3 Implementação
+### 28.3 Implementação
 
 **Arquivo:** `app/components/bracket/BracketLayout.tsx` - Componente `CompetitorCard`
 
 ```typescript
-// Número do card - sempre no canto superior direito
 {cardPosition !== undefined && (
   <span className="absolute right-1 top-1 text-[10px] font-bold text-slate-400">
     {cardPosition}
   </span>
 )}
 
-// Tags de status - sempre no canto inferior direito
 {showAdvanceTag && (
   <span className="absolute right-1 bottom-1 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded font-bold">
     AVANÇOU
@@ -1030,7 +1286,7 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 )}
 ```
 
-### 22.4 Estados do Card
+### 28.4 Estados do Card
 
 | Estado | Número do Card | Tag |
 |--------|---------------|-----|
@@ -1042,38 +1298,33 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 
 ---
 
-*Documento atualizado em: 2026-05-19*
-*Versão: 7.7*
+*Documento atualizado em: 2026-05-20*
+*Versão: 8.0*
 *Mudanças principais:*
-*- Adicionada seção 22 - Posicionamento de Elementos no Card do Competidor*
-*- Definida regra: número do card sempre no canto superior direito*
-*- Definida regra: tags de status sempre no canto inferior direito*
-*- Corrigido posicionamento do cardPosition em cards vazios (agora superior direito)*
-
-*Versão anterior (7.6):*
-*- Atualizada numeração dos cards (1-15) na seção 9.6*
-*- Renumerados os cards do bracket para novolayout de 15 competidores*
-*- Cards de posição 1-4: Round 1 lado esquerdo*
-*- Cards de posição 5-8: Round 1 lado direito*
-*- Cards de posição 9-10: Round 2 lado esquerdo*
-*- Cards de posição 11-12: Round 2 lado direito*
-*- Card de posição 13: Semifinal esquerda*
-*- Card de posição 14: Semifinal direita*
-*- Card de posição 15: Final*
-
-*Versão 7.5:*
-*- Adicionada seção 9 - BracketLayout com estrutura, componentes e classificação final*
-*- Removido troféu central "Disputa de Ouro" do layout*
-*- Simplificado painel central para exibir apenas Finalista*
-*- SemiFinalCard agora renderiza apenas um competidor (não par)*
-*- Mantido pódio com 1º, 2º e dois 3º lugares automáticos*
-*- Renumeradas seções subsequentes*
-*- Adicionada seção 9.6 com numeração dos cards (0-28)*
-*- FinalistCard agora aceita prop cardPosition*
-*- Adicionada seção 20 - Correção de Posicionamento de BYE no Bracket*
-*- Adicionada seção 21 - Tags de Status no Bracket (AVANÇOU, VENCEU, DESCLASSIFICADO)*
-*- Adicionado campo `avancou?: boolean` na interface Atleta*
-*- Adicionado campo `classificacaoFinal?: ClassificacaoFinal` na interface ChaveLuta*
-*- Adicionada subseção 9.3.1 - ChampionModal (modal de exibição do campeão)*
-*- Adicionada subseção 9.3.2 - BracketChampion (card compacto de campeão no bracket)*
-*- Adicionada HU-001b - Painel Administrativo (admin/page.tsx)*
+*- Documento reestruturado e sincronizado com o código-fonte real*
+*- Seção 8.4: Fluxo de Finalização atualizado com detalhes de 2 etapas e chamada a advanceWinner()*
+*- Seção 8.5: Novo fluxo detalhado de Desclassificação (DSQ)*
+*- Seção 9.2: Componentes do Bracket atualizados com Round1PairRight, Round2PairRight, findChampion()*
+*- Seção 9.2: Adicionada lista de componentes legado não utilizados*
+*- Seção 9.4: Classificação Final reescrita com regras completas de derivação do pódio*
+*- Seção 9.4.1: Derivação de campeão/vice (não depende de chave.status)*
+*- Seção 9.4.2: Regras de terceiro lugar para 3+ e 3 competidores*
+*- Seção 9.4.3: Tratamento de desclassificação no pódio*
+*- Seção 9.3.1: ChampionModal marcado como não integrado*
+*- Seção 9.3.2: BracketChampion esclarecido como apenas para 1 competidor*
+*- Seção 14: Componentes Shadcn corrigidos (Dialog/Select/Toast não existem)*
+*- Seção 16: Utilitários expandidos com todas as funções reais + migrate-ids*
+*- Seção 17: Hooks detalhados com API completa + hook não utilizado (useScoreSound)*
+*- Seção 19: Novo — Componente de Timer (ScoreboardTimer)*
+*- Seção 20: Novo — Admin Controle de Lutas (com undo system)*
+*- Seção 21: Novo — Páginas de Teste (bracket-test + mock data)*
+*- Seção 22: Novo — Componentes Legado (não utilizados)*
+*- Seção 23: Novo — Padrões de Implementação (hydration guard, localStorage, luta manual, carregamento)*
+*- Seção 24: Novo — Exemplos de Dados (exemplos/ não existe; usar data/area-1.json)*
+*- Seção 25: Validação de UUID (era seção 19)*
+*- Seção 26: Correção de BYE renumerada (era seção 20)*
+*- Seção 27: Tags de Status renumerada (era seção 21)*
+*- Seção 28: Posicionamento renumerada (era seção 22)*
+*- API corrigida (DELETE não implementado, GET por UUID não existe)*
+*- Adicionados padrões: hydration guard, localStorage keys, diferenças entre LutaManualForm e AdicionarLutaModal*
+*- Adicionado alerta sobre IDs não-UUID em data/area-1.json*
