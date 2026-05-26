@@ -863,7 +863,7 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 | `getNextPosition(round, position, isWinnerAtleta1)` | Determina a próxima posição na chave (Round 1 → 2 → 3) |
 | `isRealFight(luta)` | Ambos atletas têm ID |
 | `areAllRound1FightsCompleted(chave)` | Todas as lutas do round 1 estão concluídas ou são BYE |
-| `advanceWinner(chave, completedFightId, winner, loser)` | Move automaticamente o vencedor para a próxima luta. Lógica completa: final → marca chave concluída; DSQ em R1 de 3 atletas → cria round 3 dinamicamente e marca R2 como AVANÇOU; **R1 normal em 3 atletas** → coloca perdedor no Round 2 (consolação) e usa nextPos para colocar vencedor no Round 3; Round 2 em 3 atletas → nextPos mapeia vencedor para slot oposto do Round 3; normal → atualiza próxima luta com vencedor |
+| `advanceWinner(chave, completedFightId, winner, loser)` | Move automaticamente o vencedor para a próxima luta. Lógica completa: final → marca chave concluída; DSQ em R1 de 3 atletas → cria round 3 dinamicamente e marca R2 como AVANÇOU; **R1 normal em 3 atletas** → coloca perdedor no Round 2 (consolação) e usa nextPos para colocar vencedor no Round 3; Round 2 em 3 atletas → nextPos mapeia vencedor para `atleta2` do Round 3; normal → atualiza próxima luta com vencedor |
 | `getFighterTags(resultado, fighter)` | Retorna tags de resultado: VENCEU (verde), PERDEU (vermelho), DESCLASS. (vermelho negrito), FINALIZOU (azul) |
 | `getFighterStatus(resultado, fighter)` | Retorna "winner", "loser", "disqualified" ou null |
 | `getRoundLabel(round)` | Mapeia 1→"Round 1", 2→"Quartas", 3→"Semifinal", 4→"Final" |
@@ -1183,7 +1183,7 @@ Para `totalCompetidores === 3`:
 - `round 3` não deve ser gerado durante o processo de importação;
 - o Round 2 é a **luta de consolação**: o perdedor do Round 1 enfrenta o atleta que avançou por BYE;
 - o vencedor do Round 2 avança para a Final (Round 3);
-- o Round 3 (Final) é populado dinamicamente: vencedor do R1 em um slot, vencedor do R2 no outro.
+- o Round 3 (Final) é populado dinamicamente: vencedor do R1 em `atleta1`, vencedor do R2 em `atleta2`.
 
 #### 26.6.3 Dois Fluxos Possíveis
 
@@ -1197,13 +1197,14 @@ advanceWinner(R1):
   → isDesclassificacao = false
   → Coloca B (perdedor) no slot vazio do Round 2
     Round 2: [C vs B] ← agora é luta real!
-  → nextPos: vencedor A → Round 3 position 0 (slot preserve)
+  → Cria Round 3 position 0 (se não existir)
+  → nextPos: vencedor A → Round 3 position 0, useAtleta1=true (sempre atleta1)
 
 Round 2: [C vs B] → C vence
 
 advanceWinner(R2):
   → isThreeCompetitors && round === 2
-  → nextPos: vencedor C → Round 3 position 0 (slot OPOSTO ao do vencedor do R1)
+  → nextPos: vencedor C → Round 3 position 0, useAtleta1=false (sempre atleta2)
   → Round 3: [A vs C] FINAL pronta!
 ```
 
@@ -1232,10 +1233,10 @@ advanceWinner(R1):
    - Coloca o perdedor (`loser`) no slot vazio
    - O fluxo existente de `nextPos` (logo abaixo) coloca o vencedor no Round 3
 
-3. **Bloco nextPos** (linhas ~462-488, modificado): adicionado `else if (isThreeCompetitors && round === 2)`:
-   - Mapeia o vencedor do Round 2 para Round 3 position 0
-   - Usa o slot OPOSTO ao ocupado pelo vencedor do Round 1
-   - Se Round 1 ainda não concluído (fallback), usa `atleta2`
+3. **Bloco nextPos** (linhas ~462-488, modificado): ambos os rounds de 3 atletas têm regra fixa:
+   - `isThreeCompetitors && round === 1` → `useAtleta1: true` (vencedor sempre em `atleta1`)
+   - `isThreeCompetitors && round === 2` → `useAtleta1: false` (vencedor sempre em `atleta2`)
+   - A posição original do atleta em sua luta anterior é irrelevante
 
 **Em `BracketLayout.tsx` — `thirdPlace` (linhas ~156-172, modificado):**
 
@@ -1262,7 +1263,7 @@ Ordem de precedência:
 |----------|-----------|
 | Importação de chave com 3 atletas | apenas `round 1` e `round 2` existem |
 | Round 1 normal concluído | Perdedor vai para Round 2 (consolação); vencedor vai para Round 3 |
-| Round 2 (consolação) concluído | Vencedor vai para Round 3 (slot oposto); perdedor é 3º lugar |
+| Round 2 (consolação) concluído | Vencedor vai para Round 3 `atleta2`; perdedor é 3º lugar |
 | Desclassificação em Round 1 | Round 3 criado dinamicamente com vencedor vs BYE; Round 2 AVANÇOU |
 | Desclassificação em BYE | Round 3 não é criado |
 | Round 1 ainda pendente | Nada acontece |
@@ -1380,3 +1381,4 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 *- Seção 26.6: Reescrita completa — agora cobre ambos os fluxos (DSQ e consolação normal)*
 *- Seção 26.6.3: Diagramas dos dois fluxos (A: sem DSQ, B: com DSQ)*
 *- Seção 26.6.4: Detalhes de implementação dos 3 blocos modificados em advanceWinner() + thirdPlace*
+*- Seção 26.6.2/3/4/6: Regra fixa de posição (R1 winner → atleta1, R2 winner → atleta2), removida lógica dinâmica de slot*

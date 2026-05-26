@@ -110,29 +110,29 @@
             "faixa": "Branca"
           },
           "resultado": {
-            "id": "9cf734e3-5c16-4ade-bca5-db12f2a1911e",
+            "id": "510a7b8e-3b71-42ba-a904-f72a8bd0a154",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": true,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": "atleta1",
+            "tipoVitoria": "finalizacao",
+            "status": "concluida",
+            "lutaId": "5e124d09-7498-4c6d-af68-104a5b0b4009",
+            "vencedorAtletaId": "atleta-003",
+            "perdedorAtletaId": "9c819732-f096-4368-90ae-08c234b340f9",
             "AtletaDesclassificadoId": null
           }
         },
@@ -147,14 +147,43 @@
             "equipe": "Team Beta",
             "faixa": "Branca"
           },
-          "atleta2": null,
+          "atleta2": {
+            "id": "atleta-003",
+            "nome": "Pedro Lima",
+            "equipe": "Team Gamma",
+            "faixa": "Branca"
+          },
           "resultado": {
-            "status": "pendente"
+            "id": "bf8c85aa-16e6-41aa-9763-0096ace6164e",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": true,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": "atleta1",
+            "tipoVitoria": "finalizacao",
+            "status": "concluida",
+            "lutaId": "2f308b8b-12d4-4184-b75c-328fc03e6c6c",
+            "vencedorAtletaId": "4568145d-aa79-4a10-b600-cafa0667d5ba",
+            "perdedorAtletaId": "atleta-003",
+            "AtletaDesclassificadoId": null
           }
         }
       ],
       "status": "em_andamento",
-      "totalCompetidores": 3
+      "totalCompetidores": 3,
+      "vencedorAtletaId": "4568145d-aa79-4a10-b600-cafa0667d5ba"
     },
     {
       "id": "40373005-9c90-4554-8c26-826af1a08ff5",
@@ -429,5 +458,5 @@
     }
   ],
   "criadoEm": "2026-05-26T01:50:41.151Z",
-  "atualizadoEm": "2026-05-26T01:50:49.401Z"
+  "atualizadoEm": "2026-05-26T01:51:49.287Z"
 }
