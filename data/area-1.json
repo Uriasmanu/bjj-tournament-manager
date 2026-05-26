@@ -2,57 +2,57 @@
   "area": "Area 1",
   "chaves": [
     {
-      "id": "dcc5ad79-cf2b-4c2a-8b42-74dc2d894fb7",
+      "id": "5643ab37-2a5f-4b73-a664-feb2c9264b22",
       "categoria": "Branca Adulto Masculino - 65kg",
       "lutas": [
         {
-          "id": "4b18d2ae-2d77-4269-8076-ef1197326b70",
+          "id": "8011e257-4ac2-4f33-962b-73239d24ed9d",
           "round": 1,
           "position": 0,
           "atleta1": {
-            "id": "5eb8ae1a-f6a5-47a6-80f4-5ede738b8063",
+            "id": "9c819732-f096-4368-90ae-08c234b340f9",
             "nome": "João Silva",
             "equipe": "Team Alpha",
             "faixa": "Branca"
           },
           "atleta2": {
-            "id": "8b7df72b-b169-440a-8f2d-a7c6fd6574d4",
+            "id": "4568145d-aa79-4a10-b600-cafa0667d5ba",
             "nome": "Carlos Santos",
             "equipe": "Team Beta",
             "faixa": "Branca"
           },
           "resultado": {
-            "id": "e8337ecd-d8a8-47a5-a7e4-893f1d00aed3",
+            "id": "7d861aa0-6547-4584-a56e-7e8e782346ef",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": "atleta1",
-            "tipoVitoria": "pontos",
-            "status": "concluida",
             "montadasAtleta1": 0,
             "montadasAtleta2": 0,
             "passagensAtleta1": 0,
             "passagensAtleta2": 0,
             "quedasAtleta1": 0,
             "quedasAtleta2": 0,
-            "lutaId": "4b18d2ae-2d77-4269-8076-ef1197326b70",
-            "vencedorAtletaId": "5eb8ae1a-f6a5-47a6-80f4-5ede738b8063",
-            "perdedorAtletaId": "8b7df72b-b169-440a-8f2d-a7c6fd6574d4",
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": true,
+            "desclassificacao": null,
+            "vencedor": "atleta2",
+            "tipoVitoria": "finalizacao",
+            "status": "concluida",
+            "lutaId": "8011e257-4ac2-4f33-962b-73239d24ed9d",
+            "vencedorAtletaId": "4568145d-aa79-4a10-b600-cafa0667d5ba",
+            "perdedorAtletaId": "9c819732-f096-4368-90ae-08c234b340f9",
             "AtletaDesclassificadoId": null
           }
         },
         {
-          "id": "8a380094-7e8a-457f-a49d-08b3ddb11dfd",
+          "id": "8a85c4c8-6773-4006-9a7c-a32a899a904f",
           "round": 1,
           "position": 1,
-          "nextMatchId": "ca3f45ae-176b-4196-9df0-9047d8033c92",
+          "nextMatchId": "5e124d09-7498-4c6d-af68-104a5b0b4009",
           "atleta1": {
             "id": "atleta-003",
             "nome": "Pedro Lima",
@@ -61,7 +61,7 @@
           },
           "atleta2": null,
           "resultado": {
-            "id": "b3c7d01f-f046-432a-ae5a-1b7ee16d59e7",
+            "id": "9cf734e3-5c16-4ade-bca5-db12f2a1911e",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -91,11 +91,11 @@
           ]
         },
         {
-          "id": "ca3f45ae-176b-4196-9df0-9047d8033c92",
+          "id": "5e124d09-7498-4c6d-af68-104a5b0b4009",
           "round": 2,
           "position": 3,
           "previousMatchIds": [
-            "8a380094-7e8a-457f-a49d-08b3ddb11dfd"
+            "8a85c4c8-6773-4006-9a7c-a32a899a904f"
           ],
           "atleta1": {
             "id": "atleta-003",
@@ -104,65 +104,13 @@
             "faixa": "Branca"
           },
           "atleta2": {
-            "id": "8b7df72b-b169-440a-8f2d-a7c6fd6574d4",
-            "nome": "Carlos Santos",
-            "equipe": "Team Beta",
+            "id": "9c819732-f096-4368-90ae-08c234b340f9",
+            "nome": "João Silva",
+            "equipe": "Team Alpha",
             "faixa": "Branca"
           },
           "resultado": {
-            "id": "b3c7d01f-f046-432a-ae5a-1b7ee16d59e7",
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
-            "montadasAtleta1": 0,
-            "montadasAtleta2": 0,
-            "passagensAtleta1": 0,
-            "passagensAtleta2": 0,
-            "quedasAtleta1": 0,
-            "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
-            "AtletaDesclassificadoId": null
-          }
-        }
-      ],
-      "status": "em_andamento",
-      "totalCompetidores": 3,
-      "vencedorAtletaId": "5eb8ae1a-f6a5-47a6-80f4-5ede738b8063"
-    },
-    {
-      "id": "06652c91-bee7-4183-8aa1-c85a549b9123",
-      "categoria": "Azul Adulto Masculino - 70kg",
-      "lutas": [
-        {
-          "id": "0c6dfb91-698a-4c04-87ea-c6402139fda6",
-          "round": 1,
-          "position": 0,
-          "atleta1": {
-            "id": "9cf1e3fc-a3cc-4d84-9102-1de999ace56f",
-            "nome": "Marcos Paulo",
-            "equipe": "Team Alpha",
-            "faixa": "Azul"
-          },
-          "atleta2": {
-            "id": "717801d3-aca6-48b7-bbd1-7d11a876893f",
-            "nome": "Felipe Dias",
-            "equipe": "Team Beta",
-            "faixa": "Azul"
-          },
-          "resultado": {
-            "id": "8614b78c-1930-4734-b5d0-aae6c788214c",
+            "id": "9cf734e3-5c16-4ade-bca5-db12f2a1911e",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -189,74 +137,47 @@
           }
         },
         {
-          "id": "3c8db13a-16c6-4645-bc0a-5829adcad429",
-          "round": 1,
-          "position": 1,
+          "id": "2f308b8b-12d4-4184-b75c-328fc03e6c6c",
+          "round": 3,
+          "position": 0,
+          "previousMatchIds": [],
           "atleta1": {
-            "id": "a8a6fc3d-3073-4703-b633-eee005b816c9",
-            "nome": "Guilherme Reis",
-            "equipe": "Team Gamma",
-            "faixa": "Azul"
+            "id": "4568145d-aa79-4a10-b600-cafa0667d5ba",
+            "nome": "Carlos Santos",
+            "equipe": "Team Beta",
+            "faixa": "Branca"
           },
-          "atleta2": {
-            "id": "4547b93b-fd72-47ab-aad8-c5e614f8a26a",
-            "nome": "Henrique Bastos",
-            "equipe": "Team Delta",
-            "faixa": "Azul"
-          },
+          "atleta2": null,
           "resultado": {
-            "id": "1e0cca01-b066-4b7a-a630-26ef5f433336",
-            "pontosAtleta1": 0,
-            "pontosAtleta2": 0,
-            "vantagensAtleta1": 0,
-            "vantagensAtleta2": 0,
-            "penalidadesAtleta1": 0,
-            "penalidadesAtleta2": 0,
-            "tempoDecorrido": 0,
-            "finalizacaoAtleta1": false,
-            "finalizacaoAtleta2": false,
-            "desclassificacao": null,
-            "vencedor": null,
-            "tipoVitoria": "pontos",
-            "status": "pendente",
-            "montadasAtleta1": 0,
-            "montadasAtleta2": 0,
-            "passagensAtleta1": 0,
-            "passagensAtleta2": 0,
-            "quedasAtleta1": 0,
-            "quedasAtleta2": 0,
-            "lutaId": null,
-            "vencedorAtletaId": null,
-            "perdedorAtletaId": null,
-            "AtletaDesclassificadoId": null
+            "status": "pendente"
           }
         }
       ],
-      "status": "pendente",
-      "totalCompetidores": 4
+      "status": "em_andamento",
+      "totalCompetidores": 3
     },
     {
-      "id": "8aebf306-11cd-4fb8-864b-f1bc1bad8af3",
+      "id": "40373005-9c90-4554-8c26-826af1a08ff5",
       "categoria": "Roxa Adulto Masculino - 75kg",
       "lutas": [
         {
-          "id": "7aca0362-028f-4873-9b83-7d3b56ce105c",
+          "id": "82a95a1d-8056-45c1-92bd-cbe3c0ce8ee2",
           "round": 1,
           "position": 0,
           "atleta1": {
-            "id": "05967194-8229-4578-9c9a-c67dbddf7621",
+            "id": "88d04016-642c-479b-8521-70da68e6c5e9",
             "nome": "Daniel Ferreira",
             "equipe": "Team Alpha",
             "faixa": "Roxa"
           },
           "atleta2": {
-            "id": "e884e583-640b-4695-8240-3d53898ed32c",
+            "id": "9281e964-8665-462c-9f4e-6ce87c16ab2d",
             "nome": "Igor Matos",
             "equipe": "Team Beta",
             "faixa": "Roxa"
           },
           "resultado": {
-            "id": "c8f4511e-c676-4ed2-919f-4e001174f42e",
+            "id": "73eb5a5a-5491-4163-8c60-7b6da2ef6216",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -283,23 +204,23 @@
           }
         },
         {
-          "id": "9514d301-032e-4245-be43-9cd0fd4b035a",
+          "id": "a11d8a5a-da7e-4234-ae3f-7e5d91cc6525",
           "round": 1,
           "position": 1,
           "atleta1": {
-            "id": "828d4cac-0910-4035-ab65-8c94d3730f67",
+            "id": "5bca17b7-02b0-41e7-96ab-2fa1b954574a",
             "nome": "Leonardo Gomes",
             "equipe": "Team Gamma",
             "faixa": "Roxa"
           },
           "atleta2": {
-            "id": "b2288185-ae32-4fae-837e-ee41f929b7f4",
+            "id": "c49b18c6-a706-4298-97d3-07623aa80bc5",
             "nome": "Bruno Costa",
             "equipe": "Team Delta",
             "faixa": "Roxa"
           },
           "resultado": {
-            "id": "eccec093-a566-4602-84eb-fed9aca81b3b",
+            "id": "97e24383-5227-4712-a90f-1be1c8b27768",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -326,10 +247,10 @@
           }
         },
         {
-          "id": "c32cd536-2936-4b12-a3d2-8dbb5c68c86d",
+          "id": "694a652b-4e6b-4e87-be6a-8aeb1a2bfdfe",
           "round": 1,
           "position": 2,
-          "nextMatchId": "7ae94000-411f-4b1a-a802-e22ce00342f7",
+          "nextMatchId": "02fc9096-7979-466c-ba6e-7490068a01fc",
           "atleta1": {
             "id": "atleta-012",
             "nome": "Thiago Nunes",
@@ -338,7 +259,7 @@
           },
           "atleta2": null,
           "resultado": {
-            "id": "7a618827-1c48-4308-8b29-f38d9f828f60",
+            "id": "d8ea13a9-5ede-42a8-b8c0-4142f512f5aa",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -368,11 +289,11 @@
           ]
         },
         {
-          "id": "7ae94000-411f-4b1a-a802-e22ce00342f7",
+          "id": "02fc9096-7979-466c-ba6e-7490068a01fc",
           "round": 2,
           "position": 1,
           "previousMatchIds": [
-            "c32cd536-2936-4b12-a3d2-8dbb5c68c86d"
+            "694a652b-4e6b-4e87-be6a-8aeb1a2bfdfe"
           ],
           "atleta1": {
             "id": "atleta-012",
@@ -382,7 +303,7 @@
           },
           "atleta2": null,
           "resultado": {
-            "id": "7a618827-1c48-4308-8b29-f38d9f828f60",
+            "id": "d8ea13a9-5ede-42a8-b8c0-4142f512f5aa",
             "pontosAtleta1": 0,
             "pontosAtleta2": 0,
             "vantagensAtleta1": 0,
@@ -411,8 +332,102 @@
       ],
       "status": "pendente",
       "totalCompetidores": 5
+    },
+    {
+      "id": "01e93972-998f-4b0f-9995-3adf65b6bfd4",
+      "categoria": "Azul Adulto Masculino - 70kg",
+      "lutas": [
+        {
+          "id": "b24e18c7-691d-4ef6-9afb-2986495f80af",
+          "round": 1,
+          "position": 0,
+          "atleta1": {
+            "id": "75963844-6676-443e-8320-5d21c60ebac1",
+            "nome": "Marcos Paulo",
+            "equipe": "Team Alpha",
+            "faixa": "Azul"
+          },
+          "atleta2": {
+            "id": "f4cf8952-ce0c-4e46-860f-5c2dde59c834",
+            "nome": "Felipe Dias",
+            "equipe": "Team Beta",
+            "faixa": "Azul"
+          },
+          "resultado": {
+            "id": "4f029154-fcf7-4463-b99a-c476d0631077",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
+          }
+        },
+        {
+          "id": "9ef52f3c-4368-4c87-a368-38e87fe3fe89",
+          "round": 1,
+          "position": 1,
+          "atleta1": {
+            "id": "ae614495-63fc-4b2c-a07d-8b6046352da6",
+            "nome": "Guilherme Reis",
+            "equipe": "Team Gamma",
+            "faixa": "Azul"
+          },
+          "atleta2": {
+            "id": "c41f3ffe-3322-4358-8d97-bce3cb6fadce",
+            "nome": "Henrique Bastos",
+            "equipe": "Team Delta",
+            "faixa": "Azul"
+          },
+          "resultado": {
+            "id": "0953fd28-07dc-4499-97c7-5fb96ce34550",
+            "pontosAtleta1": 0,
+            "pontosAtleta2": 0,
+            "vantagensAtleta1": 0,
+            "vantagensAtleta2": 0,
+            "penalidadesAtleta1": 0,
+            "penalidadesAtleta2": 0,
+            "tempoDecorrido": 0,
+            "finalizacaoAtleta1": false,
+            "finalizacaoAtleta2": false,
+            "desclassificacao": null,
+            "vencedor": null,
+            "tipoVitoria": "pontos",
+            "status": "pendente",
+            "montadasAtleta1": 0,
+            "montadasAtleta2": 0,
+            "passagensAtleta1": 0,
+            "passagensAtleta2": 0,
+            "quedasAtleta1": 0,
+            "quedasAtleta2": 0,
+            "lutaId": null,
+            "vencedorAtletaId": null,
+            "perdedorAtletaId": null,
+            "AtletaDesclassificadoId": null
+          }
+        }
+      ],
+      "status": "pendente",
+      "totalCompetidores": 4
     }
   ],
-  "criadoEm": "2026-05-26T01:39:24.437Z",
-  "atualizadoEm": "2026-05-26T01:39:53.999Z"
+  "criadoEm": "2026-05-26T01:50:41.151Z",
+  "atualizadoEm": "2026-05-26T01:50:49.401Z"
 }

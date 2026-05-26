@@ -133,6 +133,20 @@ O código em 4.1.1 sempre faz `return { ...round2ByeLuta, atleta2: perdedor }`. 
 
 **Solução:** Verificar dinamicamente qual slot está vazio (`!round2ByeLuta.atleta1?.id` vs `!round2ByeLuta.atleta2?.id`).
 
+### Problema 4 (CRÍTICO): Round 3 não era criado para o fluxo não-DSQ
+
+O bloco de consolação colocava o perdedor no Round 2 mas não garantia a existência do Round 3. Como `processarChave` em `useImportacao.ts` filtra `round <= 2` para chaves de 3 atletas, o Round 3 **não existe** na chave. O bloco `nextPos` para `isThreeCompetitors && round === 1` então faz:
+
+```typescript
+const round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+// round3Luta = undefined!
+if (round3Luta) { ... } else { nextPos = null }
+```
+
+Com `nextPos = null`, a função cai em `if (!nextPos) return { status: "concluida", vencedorAtletaId: winner.id }`, encerrando a chave prematuramente — a chave fica "concluida" com apenas uma luta e sem Round 3.
+
+**Solução:** O bloco de consolação agora cria Round 3 position 0 se ele não existir, antes de deixar o fluxo continuar para `nextPos`.
+
 ---
 
 ## 4. Arquivos Afetados
@@ -155,25 +169,40 @@ Diferente da especificação original complexa, a implementação real é mais e
 
 ### 5.1 `app/lib/bracket-utils.ts` — Função `advanceWinner()`
 
-#### [ALTERAÇÃO 1] Consolação: colocar perdedor no Round 2
+#### [ALTERAÇÃO 1] Consolação: perdedor no Round 2 + criar Round 3
 
 **Inserido entre** o fechamento do bloco DSQ (linha 443) e o comentário `// Para chaves com 3 competidores...` (linha 461).
 
 ```typescript
   // Consolação para 3 atletas sem DSQ: perdedor do Round 1 vai para Round 2
   if (isThreeCompetitors && !isDesclassificacao && round === 1 && isRealFight(completed)) {
-    const round2ByeLuta = chave.lutas.find(l =>
+    let lutasAtualizadas = chave.lutas
+
+    const round2ByeLuta = lutasAtualizadas.find(l =>
       l.round === 2 && (!l.atleta1?.id || !l.atleta2?.id)
     )
     if (round2ByeLuta) {
       const emptySlot = !round2ByeLuta.atleta1?.id ? ("atleta1" as const) : ("atleta2" as const)
-      chave = {
-        ...chave,
-        lutas: chave.lutas.map(luta =>
-          luta.id === round2ByeLuta.id ? { ...luta, [emptySlot]: loser } : luta
-        )
-      }
+      lutasAtualizadas = lutasAtualizadas.map(luta =>
+        luta.id === round2ByeLuta.id ? { ...luta, [emptySlot]: loser } : luta
+      )
     }
+
+    // Garantir que Round 3 position 0 exista para receber o vencedor
+    if (!lutasAtualizadas.some(l => l.round === 3 && l.position === 0)) {
+      const round3Luta: Luta = {
+        id: crypto.randomUUID(),
+        round: 3,
+        position: 0,
+        previousMatchIds: [],
+        atleta1: null,
+        atleta2: null,
+        resultado: { status: "pendente" } as ResultadoLuta
+      }
+      lutasAtualizadas = [...lutasAtualizadas, round3Luta]
+    }
+
+    chave = { ...chave, lutas: lutasAtualizadas }
   }
 ```
 
@@ -181,34 +210,35 @@ Diferente da especificação original complexa, a implementação real é mais e
 1. Detecta chave de 3 atletas, Round 1, sem DSQ, luta real (não BYE)
 2. Encontra a luta do Round 2 que tem um slot vazio (BYE já ocupou o outro)
 3. Detecta qual slot está vazio (`atleta1` ou `atleta2`) — **não assume** `atleta2`
-4. Substitui a chave com o perdedor preenchido no slot vazio do Round 2
-5. O fluxo existente de `nextPos` (logo abaixo) coloca o vencedor no Round 3
+4. Coloca o perdedor no slot vazio do Round 2
+5. **Cria Round 3 position 0 se não existir** (com `atleta1: null, atleta2: null`) — essencial porque `processarChave` filtra `round <= 2` para 3 atletas
+6. O fluxo existente de `nextPos` (logo abaixo) encontra Round 3 e coloca o vencedor no slot correto
 
-#### [ALTERAÇÃO 2] `nextPos` para Round 2 em chave de 3 atletas
+#### [ALTERAÇÃO 2] `nextPos` para ambos os rounds em chave de 3 atletas
 
-**Adicionado** como `else if (isThreeCompetitors && round === 2)` no bloco `nextPos` existente.
+**Adicionado** como `else if (isThreeCompetitors && round === 2)` no bloco `nextPos` existente. O bloco de `round === 1` também foi simplificado.
 
 ```typescript
+  if (isThreeCompetitors && round === 1) {
+    const round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+    if (round3Luta) {
+      nextPos = { round: 3, position: 0, useAtleta1: true }
+    } else {
+      nextPos = null
+    }
   } else if (isThreeCompetitors && round === 2) {
     const round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (round3Luta) {
-      const r1Fight = chave.lutas.find(l => l.round === 1 && l.atleta1?.id && l.atleta2?.id)
-      if (r1Fight?.resultado?.status === "concluida") {
-        const r1WinnerInAtleta1 = r1Fight.atleta1?.id === r1Fight.resultado.vencedorAtletaId
-        nextPos = { round: 3, position: 0, useAtleta1: !r1WinnerInAtleta1 }
-      } else {
-        nextPos = { round: 3, position: 0, useAtleta1: false }
-      }
+      nextPos = { round: 3, position: 0, useAtleta1: false }
     } else {
       nextPos = null
     }
 ```
 
-**Por que `useAtleta1: !r1WinnerInAtleta1`:**
-- O vencedor do Round 1 já ocupou um slot do Round 3 (`atleta1` ou `atleta2`)
-- O vencedor do Round 2 (consolação) deve ocupar o **outro** slot
-- `r1WinnerInAtleta1` verifica em qual slot o vencedor do R1 está → nega para obter o slot oposto
-- Se R1 ainda não estiver concluído (caso improvável), usa `atleta2` como fallback
+**Regra fixa (não depende de posição original):**
+- Vencedor do Round 1 → sempre `atleta1` do Round 3
+- Vencedor do Round 2 (consolação) → sempre `atleta2` do Round 3
+- Isso garante que o JSON final tenha o vencedor do R1 em `atleta1` e o vencedor do R2 em `atleta2`, independente de qual slot cada um ocupava em suas lutas anteriores
 
 ### 5.2 `app/components/bracket/BracketLayout.tsx` — Lógica de `thirdPlace`
 
@@ -245,20 +275,23 @@ const thirdPlace = useMemo(() => {
 ## 6. Fluxo Completo (3 atletas, sem DSQ)
 
 ```
-Estado inicial:
+Estado inicial (após importação):
   R1: [Atleta A vs Atleta B]  +  [BYE: Atleta C vs null]
   R2: [Atleta C vs null]
-  R3: [null vs null]
+  R3: (não existe — processarChave filtra round <= 2)
 
 1. Usuário conclui R1 (A vence B)
    → advanceWinner(R1):
       isDesclassificacao = false
       isThreeCompetitors = true
       
-      → Altereção 1: coloca B (perdedor) no slot vazio do R2
-        R2: [Atleta C vs Atleta B]
+      → Altereção 1:
+         a. coloca B (perdedor) no slot vazio do R2
+            R2: [Atleta C vs Atleta B]
+         b. cria Round 3 position 0 (se não existir)
+            R3: [null vs null] ← criado!
       
-      → nextPos: R1 vencedor (A) → R3 position 0, useAtleta1=isWinnerAtleta1
+      → nextPos: R1 vencedor (A) → R3 position 0, useAtleta1=true (sempre atleta1)
       
       → updatedLutas:
         R1: resultado = concluida
@@ -273,8 +306,7 @@ Estado inicial:
    → advanceWinner(R2):
       isThreeCompetitors = true, round = 2
       
-      → Altereção 2: nextPos = { round:3, position:0, useAtleta1: !r1WinnerInAtleta1 }
-        (se A estava em atleta1 do R3, B vai para atleta2)
+      → Altereção 2: nextPos = { round:3, position:0, useAtleta1: false } (sempre atleta2)
       
       → updatedLutas:
         R2: resultado = concluida
@@ -302,6 +334,7 @@ Estado inicial:
 
 ### Checklist:
 - [x] `ALTERAÇÃO 1` inserida após bloco DSQ, antes de `nextPos` (linha 445)
+- [x] `ALTERAÇÃO 1` cria Round 3 position 0 se não existir (essencial para fluxo não-DSQ)
 - [x] `ALTERAÇÃO 2` adicionada como `else if` no bloco `nextPos` (linha 472)
 - [x] Usa detecção dinâmica de slot vazio (não assume `atleta2`)
 - [x] Round 2 → Round 3 usa slot oposto ao vencedor do R1
