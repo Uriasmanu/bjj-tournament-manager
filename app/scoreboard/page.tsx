@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus } from "lucide-react"
@@ -48,6 +48,7 @@ export default function ScoreboardPage() {
     setLutaSelecionada(null)
     setChaveSelecionada(null)
     setChaveId("")
+    localStorage.removeItem("bjj_tournament_ultima_categoria")
   }
 
   const handleAdicionarNovaLuta = async (data: NovaLutaData) => {
@@ -162,16 +163,23 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
   })
   const [lutaAtivaId, setLutaAtivaId] = useState<string | undefined>(undefined)
   const [mostrarBracket, setMostrarBracket] = useState(true)
+  const isManualSelection = useRef(false)
 
   const handleChangeChave = (novaChave: ChaveLuta | null) => {
     setChaveAtiva(novaChave)
     setLutaAtivaId(undefined)
+    isManualSelection.current = true
     if (novaChave) {
       localStorage.setItem("bjj_tournament_ultima_categoria", novaChave.id)
     }
   }
 
   useEffect(() => {
+    if (isManualSelection.current) {
+      isManualSelection.current = false
+      return
+    }
+
     const emAndamento = chaves.find(c => c.status === "em_andamento")
     if (emAndamento && (!chaveAtiva || chaveAtiva.status !== "em_andamento")) {
       setChaveAtiva(emAndamento)

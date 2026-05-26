@@ -1371,7 +1371,79 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 
 ---
 
-*Documento atualizado em: 2026-05-25*
+## 29. Requisito de Troca de Chave no Scoreboard
+
+### 29.1 Seleção de Chave
+
+O usuário deve poder selecionar qualquer chave disponível no dropdown do `SeletorLutas` a qualquer momento, sem que o sistema reverta ou sobrescreva sua escolha.
+
+### 29.2 Regras
+
+1. **Prioridade da escolha do usuário**: a chave selecionada manualmente pelo usuário no dropdown deve ser respeitada até que ele explicitamente escolha outra. Nenhum efeito colateral pode sobrescrevê-la.
+
+2. **Auto-seleção inicial**: ao montar o `SeletorLutas` pela primeira vez (após carregar os dados), o sistema deve:
+   - Recuperar a última chave selecionada do `localStorage` (chave `bjj_tournament_ultima_categoria`)
+   - Se não houver, selecionar a primeira chave com `status === "em_andamento"`
+   - Se não houver, selecionar a primeira chave disponível
+
+3. **Recarga de dados** (`handleTrocarChave`): ao clicar em "Nova Luta" ou finalizar uma luta:
+   - Apagar a chave `bjj_tournament_ultima_categoria` do `localStorage`
+   - Recarregar os dados da API
+   - Remontar o `SeletorLutas` para que a auto-seleção inicial ocorra novamente
+
+4. **Chave excluída**: se a chave atualmente selecionada não existir mais no array de chaves (ex: foi deletada em outro fluxo), o sistema deve selecionar automaticamente a primeira chave disponível como fallback.
+
+5. Atualização do `localStorage`:
+   - Ao selecionar uma chave manualmente: salvar o ID em `bjj_tournament_ultima_categoria`
+   - Ao trocar de chave via "Nova Luta": apagar a chave do `localStorage`
+
+### 29.3 Implementação
+
+**Arquivo:** `app/scoreboard/page.tsx`
+
+**Mecanismo:** `useRef` para distinguir alterações manuais de automáticas em `chaveAtiva`:
+
+```typescript
+const isManualSelection = useRef(false)
+
+const handleChangeChave = (novaChave: ChaveLuta | null) => {
+  setChaveAtiva(novaChave)
+  setLutaAtivaId(undefined)
+  isManualSelection.current = true
+  if (novaChave) {
+    localStorage.setItem("bjj_tournament_ultima_categoria", novaChave.id)
+  }
+}
+
+useEffect(() => {
+  if (isManualSelection.current) {
+    isManualSelection.current = false
+    return
+  }
+  // Auto-seleção apenas na montagem ou fallback
+}, [chaves, chaveAtiva])
+
+const handleTrocarChave = async () => {
+  await carregarDados()
+  setLutaSelecionada(null)
+  setChaveSelecionada(null)
+  setChaveId("")
+  localStorage.removeItem("bjj_tournament_ultima_categoria")
+}
+```
+
+### 29.4 Comportamento Esperado
+
+| Ação | Comportamento |
+|------|---------------|
+| SeletorLutas monta após carregar dados | Auto-seleciona chave `em_andamento`, ou a primeira disponível |
+| Usuário seleciona chave X no dropdown | `chaveAtiva = X` — mantida até nova escolha |
+| Usuário clica "Nova Luta" ou finaliza luta | localStorage limpo, dados recarregados, SeletorLutas remonta |
+| Chave selecionada é excluída | Fallback automático para primeira chave disponível |
+
+---
+
+*Documento atualizado em: 2026-05-26*
 *Versão: 8.1*
 *Mudanças principais:*
 *- Seção 8.5: Nota sobre consolação de 3 atletas adicionada ao fluxo DSQ*
@@ -1382,3 +1454,4 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 *- Seção 26.6.3: Diagramas dos dois fluxos (A: sem DSQ, B: com DSQ)*
 *- Seção 26.6.4: Detalhes de implementação dos 3 blocos modificados em advanceWinner() + thirdPlace*
 *- Seção 26.6.2/3/4/6: Regra fixa de posição (R1 winner → atleta1, R2 winner → atleta2), removida lógica dinâmica de slot*
+*- Seção 29: Nova regra de troca de chave no scoreboard — `useEffect` não sobrescreve seleção manual; `handleTrocarChave` limpa localStorage*
