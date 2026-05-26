@@ -390,7 +390,8 @@ docs/
 6. JSON da área é atualizado com todos os campos do resultado via API PUT
 7. Status da luta muda para `"concluida"`
 8. `advanceWinner()` é chamado para mover vencedor para próxima luta (se houver)
-9. Após salvar, sistema recarrega dados e retorna ao seletor de lutas
+9. Sistema verifica `sucesso` do retorno de `marcarLutaConcluida()` — se `false`, interrompe o fluxo e registra erro no console (não retorna ao seletor)
+10. Após salvar com sucesso, sistema recarrega dados (`await carregarDados()`) e retorna ao seletor de lutas
 
 ### 8.5 Fluxo de Desclassificação (DSQ)
 
@@ -403,7 +404,8 @@ docs/
 5. `tipoVitoria` salvo como `"desclassificacao"`
 6. `desclassificacao` campo salvo como `"atleta1"` ou `"atleta2"`
 7. Dados persistem via `marcarLutaConcluida()` no hook `useStorage`
-8. Atleta desclassificado recebe tag vermelha "DESCLASSIFICADO" no bracket
+8. `AtletaDesclassificadoId` é preservado durante `advanceWinner()` (não é mais sobrescrito com `null`)
+9. Atleta desclassificado recebe tag vermelha "DESCLASSIFICADO" no bracket
 
 ### 8.6 Conclusão da Chave
 
@@ -891,9 +893,9 @@ Funções assíncronas para persistência de dados via API:
 | Função | Descrição |
 |--------|------------|
 | `getDadosIniciais()` | Lê `localStorage("bjj_tournament_area_nome")`, busca dados da API, executa `migrateAllData()`. Retorna `{ area, chaves, areaDefinida }` ou valores padrão |
-| `salvarDados(area, chaves)` | Salva nome da área no localStorage, faz POST para API |
+| `salvarDados(area, chaves)` | Salva nome da área no localStorage, faz PUT para API (preserva `criadoEm` existente via merge) |
 | `adicionarNovaLuta(area, chaves, novaLuta)` | Adiciona luta a bracket existente (ou cria "Luta Manual"), recalcula `totalCompetidores` |
-| `marcarLutaConcluida(area, chaveId, lutaId, dadosResultado, chaves)` | Cria `ResultadoLuta` com UUID, determina vencedor/perdedor, persiste todos os detalhes de pontuação, chama `advanceWinner()`, atualiza status da chave |
+| `marcarLutaConcluida(area, chaveId, lutaId, dadosResultado, chaves)` | Cria `ResultadoLuta` com UUID, determina vencedor/perdedor, persiste todos os detalhes de pontuação, chama `advanceWinner()`, atualiza status da chave. **Retorna** `{ chaves: ChaveLuta[]; sucesso: boolean }` — `sucesso` indica se `salvarDados()` foi bem-sucedido. Early returns registram erro no console se chave/luta não for encontrada |
 | `limparDados(area)` | Remove chave do localStorage e chama DELETE API (não implementado no backend) |
 | `calculateTotalCompetidores(lutas)` | Conta nomes únicos de atletas |
 
@@ -941,10 +943,13 @@ Ao carregar dados de uma área, o sistema executa `migrateAllData()` que:
 
 ### 17.2 Avanço Automático de Vencedor
 Ao finalizar uma luta com `marcarLutaConcluida()`:
-1. Cria `ResultadoLuta` com UUID próprio
-2. Identifica o vencedor e perdedor
-3. Se `nextMatchId` existir na luta atualizada, move o vencedor para a próxima luta
-4. Atualiza o status da chave automaticamente
+1. Busca chave e luta nas `chaves` recebidas — se não encontrar, loga erro e retorna `{ chaves, sucesso: false }`
+2. Cria `ResultadoLuta` com UUID próprio, preservando `AtletaDesclassificadoId` do resultado original
+3. Identifica o vencedor e perdedor
+4. Chama `advanceWinner()` que também preserva `AtletaDesclassificadoId` (não mais hardcoded como `null`)
+5. Salva dados via `salvarDados()` usando **PUT** (preserva `criadoEm` do arquivo existente)
+6. Se `salvarDados()` falhar, retorna `{ chaves, sucesso: false }`
+7. Retorna `{ chaves: chavesFinais, sucesso: true }`
 
 ---
 
@@ -1063,6 +1068,16 @@ Chaves utilizadas no localStorage:
 |-------|-----|-------------|
 | `bjj_tournament_area_nome` | Nome da área ativa | `useStorage.ts`, `scoreboard/setup/page.tsx` |
 | `bjj_tournament_ultima_categoria` | Última categoria selecionada | `scoreboard/page.tsx` |
+
+### 23.3 Consistência de Referências no Placar
+
+Para evitar o bug em que o resultado da primeira luta não persistia (chave/luta não encontrada em `marcarLutaConcluida`):
+
+1. **PlacarCompleto** (`app/scoreboard/page.tsx`): a `luta` é derivada via `useMemo` a partir de `chaves` + `chaveId`, garantindo que ambos venham da mesma árvore de objetos. A prop `luta` original é usada como fallback e seu `id` é o valor de busca.
+
+2. **SeletorLutas**: o `useEffect` que sincroniza `chaveAtiva` com as `chaves` agora também trata o caso de a chave ativa atual não existir mais no array (ex: após recarregamento de dados), selecionando a primeira chave disponível como fallback.
+
+3. **Async safety**: `onTrocarChave()` é `await`'do em `handleConfirmarTipo` e `handleSalvarDSQ`, garantindo que `carregarDados()` complete antes da re-renderização com estado resetado.
 
 ### 23.3 Criação de Luta Manual
 
