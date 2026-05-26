@@ -282,7 +282,7 @@ function getNextPosition(round: number, position: number, isWinnerAtleta1: boole
   return null
 }
 
-function isRealFight(luta: Luta): boolean {
+export function isRealFight(luta: Luta): boolean {
   return !!luta.atleta1?.id && !!luta.atleta2?.id
 }
 

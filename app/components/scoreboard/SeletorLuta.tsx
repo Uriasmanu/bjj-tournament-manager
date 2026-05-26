@@ -74,6 +74,8 @@ export function SeletorLuta({ chaves, onIniciar }: SeletorLutaProps) {
             <option value="">Selecione uma categoria...</option>
             {chaves.map((chave) => {
               const lutasPendentes = chave.lutas.filter(
+                (l) => l.atleta1?.id && l.atleta2?.id
+              ).filter(
                 (l) => l.resultado?.status !== "concluida"
               ).length
               return (

@@ -27,7 +27,7 @@ export function BracketPanel({ chaves, activeLutaId, onFightSelect, mode = "live
           className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 text-sm"
         >
           {chaves.map((chave) => {
-            const lutasPendentes = chave.lutas.filter(l => l.resultado?.status !== "concluida").length
+            const lutasPendentes = chave.lutas.filter(l => l.atleta1?.id && l.atleta2?.id).filter(l => l.resultado?.status !== "concluida").length
             return (
               <option key={chave.id} value={chave.id}>
                 {chave.categoria} ({lutasPendentes} pendentes)

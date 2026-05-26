@@ -232,7 +232,7 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
             className="bg-gray-700 text-white px-4 py-2 rounded-lg border border-gray-600 text-sm max-w-md"
           >
             {chaves.map((chave) => {
-              const pendentes = chave.lutas.filter(l => l.resultado?.status !== "concluida").length
+              const pendentes = chave.lutas.filter(l => l.atleta1?.id && l.atleta2?.id).filter(l => l.resultado?.status !== "concluida").length
               return (
                 <option key={chave.id} value={chave.id}>
                   {chave.categoria} ({pendentes} pendentes)
