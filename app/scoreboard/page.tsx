@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus } from "lucide-react"
@@ -176,8 +176,17 @@ function SeletorLutas({ chaves, onSelecionarLuta, onAdicionar, onVoltar }: Selet
     if (emAndamento && (!chaveAtiva || chaveAtiva.status !== "em_andamento")) {
       setChaveAtiva(emAndamento)
       localStorage.setItem("bjj_tournament_ultima_categoria", emAndamento.id)
+      return
     }
-  }, [chaves])
+
+    if (chaveAtiva && !chaves.some(c => c.id === chaveAtiva.id)) {
+      const novaChave = chaves[0] || null
+      setChaveAtiva(novaChave)
+      if (novaChave) {
+        localStorage.setItem("bjj_tournament_ultima_categoria", novaChave.id)
+      }
+    }
+  }, [chaves, chaveAtiva])
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] p-4">
@@ -313,9 +322,15 @@ function PlacarCompleto({
   chaves,
   setChaves,
   chaveId,
-  luta,
+  luta: lutaProp,
   onTrocarChave
 }: PlacarCompletoProps) {
+  const luta = useMemo(() => {
+    const chave = chaves.find(c => c.id === chaveId)
+    const encontrada = chave?.lutas.find(l => l.id === lutaProp.id)
+    return encontrada || lutaProp
+  }, [chaves, chaveId, lutaProp])
+
   const [p1, setP1] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
   const [p2, setP2] = useState<AtletaState>({ montada: 0, passagem: 0, queda: 0, vantagem: 0, punicao: 0 })
   const [arbitro, setArbitro] = useState("")
@@ -400,20 +415,26 @@ function PlacarCompleto({
       quedasAtleta2: p2.queda
     }
 
-    const chavesAtualizadas = await marcarLutaConcluida(
+    const { chaves: chavesAtualizadas, sucesso } = await marcarLutaConcluida(
       area,
       chaveId,
       luta.id,
       dadosResultado,
       chaves
     )
+
+    if (!sucesso) {
+      console.error("Falha ao salvar resultado da desclassificação")
+      return
+    }
+
     setChaves(chavesAtualizadas)
 
     setShowDSQ(false)
     setAtletaDSQ(null)
     setEtapaDSQ("escolher")
 
-    onTrocarChave()
+    await onTrocarChave()
   }
 
   const handleFinalizarClick = () => {
@@ -453,20 +474,26 @@ function PlacarCompleto({
       quedasAtleta2: p2.queda
     }
 
-    const chavesAtualizadas = await marcarLutaConcluida(
+    const { chaves: chavesAtualizadas, sucesso } = await marcarLutaConcluida(
       area,
       chaveId,
       luta.id,
       dadosResultado,
       chaves
     )
+
+    if (!sucesso) {
+      console.error("Falha ao salvar resultado da luta")
+      return
+    }
+
     setChaves(chavesAtualizadas)
 
     setShowConfirmFinalizar(false)
     setEtapaConfirmacao(null)
     setVencedorSelecionado(null)
 
-    onTrocarChave()
+    await onTrocarChave()
   }
 
   return (

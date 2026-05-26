@@ -65,17 +65,10 @@ export async function salvarDados(area: string, chaves: ChaveLuta[]): Promise<bo
   try {
     localStorage.setItem("bjj_tournament_area_nome", area)
 
-    const dadosArea: DadosArea = {
-      id: generateUUID(),
-      area,
-      criadoEm: new Date().toISOString(),
-      chaves,
-    }
-
     const response = await fetch(API_URL, {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dadosArea)
+      body: JSON.stringify({ area, chaves })
     })
 
     return response.ok
@@ -123,14 +116,20 @@ export async function marcarLutaConcluida(
   lutaId: string,
   dadosResultado: DadosResultadoLuta,
   chaves: ChaveLuta[]
-): Promise<ChaveLuta[]> {
+): Promise<{ chaves: ChaveLuta[]; sucesso: boolean }> {
   const chavesAtualizadas = [...chaves]
 
   const chave = chavesAtualizadas.find(c => c.id === chaveId)
-  if (!chave) return chavesAtualizadas
+  if (!chave) {
+    console.error(`marcarLutaConcluida: Chave ${chaveId} não encontrada em ${chaves.length} chaves`)
+    return { chaves: chavesAtualizadas, sucesso: false }
+  }
 
   const luta = chave.lutas.find(l => l.id === lutaId)
-  if (!luta) return chavesAtualizadas
+  if (!luta) {
+    console.error(`marcarLutaConcluida: Luta ${lutaId} não encontrada na chave ${chaveId} (${chave.lutas.length} lutas)`)
+    return { chaves: chavesAtualizadas, sucesso: false }
+  }
 
   const winnerAtleta: Atleta | null = dadosResultado.vencedor === "atleta1" ? luta.atleta1 : dadosResultado.vencedor === "atleta2" ? luta.atleta2 : null
   const loserAtleta: Atleta | null = winnerAtleta
@@ -193,9 +192,11 @@ export async function marcarLutaConcluida(
     return { ...c, status: temLutasPendentes ? "em_andamento" as const : "concluida" as const }
   })
 
-  await salvarDados(area, chavesFinais)
-
-  return chavesFinais
+  const saveOk = await salvarDados(area, chavesFinais)
+  if (!saveOk) {
+    console.error("marcarLutaConcluida: salvarDados falhou!")
+  }
+  return { chaves: chavesFinais, sucesso: saveOk }
 }
 
 export async function limparDados(area: string): Promise<void> {

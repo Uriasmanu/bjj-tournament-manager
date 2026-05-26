@@ -336,7 +336,7 @@ export function advanceWinner(
       lutaId: completed.id,
       vencedorAtletaId: winner.id,
       perdedorAtletaId: loser.id,
-      AtletaDesclassificadoId: null,
+      AtletaDesclassificadoId: completed.resultado?.AtletaDesclassificadoId || null,
     }
     return {
       ...chave,
@@ -390,7 +390,7 @@ export function advanceWinner(
           lutaId: completed.id,
           vencedorAtletaId: winner.id,
           perdedorAtletaId: loser.id,
-          AtletaDesclassificadoId: null,
+          AtletaDesclassificadoId: completed.resultado?.AtletaDesclassificadoId || null,
         }
 
         if (isThreeCompetitors && areAllRound1FightsCompleted(chave)) {
@@ -505,7 +505,7 @@ export function advanceWinner(
         lutaId: luta.id,
         vencedorAtletaId: winner.id,
         perdedorAtletaId: loser.id,
-        AtletaDesclassificadoId: null,
+        AtletaDesclassificadoId: luta.resultado?.AtletaDesclassificadoId || null,
       }
       return { ...luta, resultado: novoResultado }
     }

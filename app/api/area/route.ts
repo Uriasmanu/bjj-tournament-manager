@@ -48,6 +48,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Area name is required" }, { status: 400 })
     }
 
+    if (!Array.isArray(chaves)) {
+      return NextResponse.json({ error: "Chaves must be an array" }, { status: 400 })
+    }
+
+    for (const chave of chaves) {
+      if (!chave.id || !chave.categoria || !Array.isArray(chave.lutas)) {
+        return NextResponse.json({
+          error: `Chave inválida: ${chave.categoria || "sem categoria"}`
+        }, { status: 400 })
+      }
+    }
+
     await ensureDataDir()
     const filePath = getAreaFilePath(area)
     
@@ -62,6 +74,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ success: true, message: "Area saved successfully" })
   } catch (error) {
+    console.error("POST /api/area error:", error)
     return NextResponse.json({ error: "Failed to save area data" }, { status: 500 })
   }
 }
