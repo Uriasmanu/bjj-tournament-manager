@@ -156,11 +156,17 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   const thirdPlace = useMemo(() => {
     if (!isThreeCompetitors) return undefined
     const round1RealFight = chave.lutas.find(l => l.round === 1 && l.atleta1?.id && l.atleta2?.id)
-    if (round1RealFight?.resultado?.status === "concluida") {
+    // Caso DSQ: atleta desclassificado é o terceiro lugar
+    if (round1RealFight?.resultado?.status === "concluida" && round1RealFight.resultado.desclassificacao) {
       const r = round1RealFight.resultado
       if (r.desclassificacao === "atleta1") return round1RealFight.atleta1
       if (r.desclassificacao === "atleta2") return round1RealFight.atleta2
-      return round1RealFight.atleta1?.id === r.vencedorAtletaId ? round1RealFight.atleta2 : round1RealFight.atleta1
+    }
+    // Caso normal: perdedor do Round 2 (consolação) é o terceiro lugar
+    const round2Fight = chave.lutas.find(l => l.round === 2 && l.atleta1?.id && l.atleta2?.id)
+    if (round2Fight?.resultado?.status === "concluida") {
+      const r = round2Fight.resultado
+      return round2Fight.atleta1?.id === r.vencedorAtletaId ? round2Fight.atleta2 : round2Fight.atleta1
     }
     return undefined
   }, [chave.lutas, isThreeCompetitors])

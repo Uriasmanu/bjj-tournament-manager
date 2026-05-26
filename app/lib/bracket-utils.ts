@@ -442,6 +442,22 @@ export function advanceWinner(
     }
   }
 
+  // Consolação para 3 atletas sem DSQ: perdedor do Round 1 vai para Round 2
+  if (isThreeCompetitors && !isDesclassificacao && round === 1 && isRealFight(completed)) {
+    const round2ByeLuta = chave.lutas.find(l =>
+      l.round === 2 && (!l.atleta1?.id || !l.atleta2?.id)
+    )
+    if (round2ByeLuta) {
+      const emptySlot = !round2ByeLuta.atleta1?.id ? ("atleta1" as const) : ("atleta2" as const)
+      chave = {
+        ...chave,
+        lutas: chave.lutas.map(luta =>
+          luta.id === round2ByeLuta.id ? { ...luta, [emptySlot]: loser } : luta
+        )
+      }
+    }
+  }
+
   // Para chaves com 3 competidores, o vencedor do Round 1 vai direto para Round 3
   let nextPos: { round: number; position: number; useAtleta1: boolean } | null
 
@@ -450,6 +466,19 @@ export function advanceWinner(
     if (round3Luta) {
       const isWinnerAtleta1 = completed.atleta1?.id === winner.id
       nextPos = { round: 3, position: 0, useAtleta1: isWinnerAtleta1 }
+    } else {
+      nextPos = null
+    }
+  } else if (isThreeCompetitors && round === 2) {
+    const round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+    if (round3Luta) {
+      const r1Fight = chave.lutas.find(l => l.round === 1 && l.atleta1?.id && l.atleta2?.id)
+      if (r1Fight?.resultado?.status === "concluida") {
+        const r1WinnerInAtleta1 = r1Fight.atleta1?.id === r1Fight.resultado.vencedorAtletaId
+        nextPos = { round: 3, position: 0, useAtleta1: !r1WinnerInAtleta1 }
+      } else {
+        nextPos = { round: 3, position: 0, useAtleta1: false }
+      }
     } else {
       nextPos = null
     }

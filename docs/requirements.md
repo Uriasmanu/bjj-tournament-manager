@@ -1,7 +1,7 @@
 # Requisitos do Sistema - BJJ Tournament Manager
 
-**Versão:** 8.0
-**Data:** 2026-05-20
+**Versão:** 8.1
+**Data:** 2026-05-25
 **Projeto:** Sistema de Gerenciamento de Competições de Jiu-Jitsu Brasileiro
 
 ---
@@ -406,13 +406,14 @@ docs/
 7. Dados persistem via `marcarLutaConcluida()` no hook `useStorage`
 8. `AtletaDesclassificadoId` é preservado durante `advanceWinner()` (não é mais sobrescrito com `null`)
 9. Atleta desclassificado recebe tag vermelha "DESCLASSIFICADO" no bracket
+10. **Em chaves de 3 atletas:** o fluxo DSQ cria Round 3 dinamicamente com vencedor do R1 vs atleta do BYE (Round 2 tag "AVANÇOU"). O fluxo não-DSQ (consolação) coloca o perdedor do R1 no Round 2, que enfrenta o atleta do BYE; o vencedor do Round 2 vai para a Final (Round 3). Ver seção 26.6.
 
 ### 8.6 Conclusão da Chave
 
 - Todas as lutas processadas
 - `ChaveLuta.vencedorAtletaId` preenchido com o UUID do campeão
 - `ChaveLuta.status` atualiza automaticamente (pendente → em_andamento → concluida)
-- Em chaves de 3 atletas: se a luta final do round 3 estiver concluída, o pódio é derivado mesmo com `chave.status === "em_andamento"`
+- Em chaves de 3 atletas: o Round 2 funciona como consolação (perdedor do R1 vs BYE); o Round 3 é a Final. Se o Round 3 estiver concluído, o pódio é derivado mesmo com `chave.status === "em_andamento"`
 - `advanceWinner()` define `status: "concluida"` quando a última luta (maior round) é finalizada
 
 ---
@@ -508,10 +509,12 @@ A exibição de 1º e 2º não depende estritamente de `chave.status === "conclu
 - Ambos os 3º lugares são exibidos
 
 **Para chaves com exatamente 3 competidores:**
-- `thirdPlace`: Calculado a partir da luta real do round 1 (com ambos atletas presentes)
-- O perdedor da luta do round 1 (ou o atleta desclassificado, se DSQ) é o terceiro lugar
+- `thirdPlace`: Calculado a partir da luta do Round 2 (consolação)
+- Se Round 1 teve **desclassificação (DSQ)**: o atleta desclassificado é o terceiro lugar (Round 2 não é disputado — atleta do BYE avança automaticamente para Round 3)
+- Se Round 1 foi **normal (sem DSQ)**: o perdedor do Round 2 (consolação) é o terceiro lugar
 - Apenas **um** 3º lugar é exibido
 - O perdedor da final **não** é usado como terceiro lugar (ele é o vice-campeão)
+- Enquanto Round 2 não estiver concluído, `thirdPlace` retorna `undefined` (sem medalha de 3º lugar)
 
 #### 9.4.3 Tratamento de Desclassificação no Pódio
 
@@ -860,7 +863,7 @@ O sistema possui utilitários em `app/lib/bracket-utils.ts`:
 | `getNextPosition(round, position, isWinnerAtleta1)` | Determina a próxima posição na chave (Round 1 → 2 → 3) |
 | `isRealFight(luta)` | Ambos atletas têm ID |
 | `areAllRound1FightsCompleted(chave)` | Todas as lutas do round 1 estão concluídas ou são BYE |
-| `advanceWinner(chave, completedFightId, winner, loser)` | Move automaticamente o vencedor para a próxima luta. Lógica completa: final → marca chave concluída; DSQ em R1 de 3 atletas → cria round 3 dinamicamente; normal → atualiza próxima luta com vencedor |
+| `advanceWinner(chave, completedFightId, winner, loser)` | Move automaticamente o vencedor para a próxima luta. Lógica completa: final → marca chave concluída; DSQ em R1 de 3 atletas → cria round 3 dinamicamente e marca R2 como AVANÇOU; **R1 normal em 3 atletas** → coloca perdedor no Round 2 (consolação) e usa nextPos para colocar vencedor no Round 3; Round 2 em 3 atletas → nextPos mapeia vencedor para slot oposto do Round 3; normal → atualiza próxima luta com vencedor |
 | `getFighterTags(resultado, fighter)` | Retorna tags de resultado: VENCEU (verde), PERDEU (vermelho), DESCLASS. (vermelho negrito), FINALIZOU (azul) |
 | `getFighterStatus(resultado, fighter)` | Retorna "winner", "loser", "disqualified" ou null |
 | `getRoundLabel(round)` | Mapeia 1→"Round 1", 2→"Quartas", 3→"Semifinal", 4→"Final" |
@@ -1167,50 +1170,104 @@ if (luta.position % 2 === 1) {
 
 - Documento detalhado: `docs/requisitos-correcao-position.md`
 
-### 26.6 Correção de Geração de Round 3 para 3 Atletas
+### 26.6 Regras de Consolação para Chaves de 3 Atletas
 
-#### 26.6.1 Problema
+#### 26.6.1 Problema Original
 
-Chaves com exatamente 3 atletas estavam criando `round 3` automaticamente durante a importação, resultando em uma final/semifinal precoce e em um estado inicial incorreto.
+Chaves com exatamente 3 atletas estavam criando `round 3` automaticamente durante a importação, resultando em uma final/semifinal precoce. Posteriormente, a consolação (perdedor do R1 vs BYE) não era implementada — o perdedor do R1 ficava sem luta extra e o Round 2 permanecia com um slot vazio.
 
 #### 26.6.2 Regras de Negócio
 
 Para `totalCompetidores === 3`:
 - durante a importação, criar apenas `round 1` e `round 2`;
 - `round 3` não deve ser gerado durante o processo de importação;
-- `round 3` deve ser criado dinamicamente durante o torneio apenas quando todas as condições a seguir forem atendidas:
-  1. a desclassificação ocorrer em uma luta real do `round 1` (ambos atletas presentes);
-  2. todas as lutas do `round 1` estiverem concluídas;
-  3. existir um atleta que avançou por BYE em `round 2`.
+- o Round 2 é a **luta de consolação**: o perdedor do Round 1 enfrenta o atleta que avançou por BYE;
+- o vencedor do Round 2 avança para a Final (Round 3);
+- o Round 3 (Final) é populado dinamicamente: vencedor do R1 em um slot, vencedor do R2 no outro.
 
-#### 26.6.3 Fluxo Correto
+#### 26.6.3 Dois Fluxos Possíveis
 
-1. Importação de dados
-   - criar apenas `round 1` e `round 2` para chaves de 3 atletas.
-2. Durante o torneio
-   - finalizar a luta real do `round 1` com desclassificação;
-   - verificar que todas as lutas do `round 1` estão concluídas;
-   - só então criar `round 3` com uma única luta.
+**Fluxo A — Sem Desclassificação (Consolação Normal):**
 
-#### 26.6.4 Arquivos Impactados
+```
+Round 1: [A vs B] → A vence
+         [C vs null] → C avança (BYE)
+
+advanceWinner(R1):
+  → isDesclassificacao = false
+  → Coloca B (perdedor) no slot vazio do Round 2
+    Round 2: [C vs B] ← agora é luta real!
+  → nextPos: vencedor A → Round 3 position 0 (slot preserve)
+
+Round 2: [C vs B] → C vence
+
+advanceWinner(R2):
+  → isThreeCompetitors && round === 2
+  → nextPos: vencedor C → Round 3 position 0 (slot OPOSTO ao do vencedor do R1)
+  → Round 3: [A vs C] FINAL pronta!
+```
+
+**Fluxo B — Com Desclassificação (DSQ):**
+
+```
+Round 1: [A vs B] → B desclassificado, A vence
+         [C vs null] → C avança (BYE)
+
+advanceWinner(R1):
+  → isDesclassificacao = true
+  → Cria Round 3 dinamicamente: atleta1 = A, atleta2 = C
+  → Round 2 marcado como AVANÇOU (não é disputado)
+  → Round 3: [A vs C] FINAL pronta!
+```
+
+#### 26.6.4 Detalhes de Implementação
+
+**Em `advanceWinner()` (`app/lib/bracket-utils.ts`):**
+
+1. **Bloco DSQ** (linhas ~358-443, inalterado): se `isDesclassificacao && round === 1 && isThreeCompetitors`, cria Round 3 e marca Round 2 como AVANÇOU.
+
+2. **Bloco Consolação** (linhas ~445-459, NOVO): se `!isDesclassificacao && round === 1 && isThreeCompetitors && isRealFight`:
+   - Encontra a luta do Round 2 com um slot vazio
+   - Detecta qual slot está vazio (`atleta1` ou `atleta2`) — **não assume** qual
+   - Coloca o perdedor (`loser`) no slot vazio
+   - O fluxo existente de `nextPos` (logo abaixo) coloca o vencedor no Round 3
+
+3. **Bloco nextPos** (linhas ~462-488, modificado): adicionado `else if (isThreeCompetitors && round === 2)`:
+   - Mapeia o vencedor do Round 2 para Round 3 position 0
+   - Usa o slot OPOSTO ao ocupado pelo vencedor do Round 1
+   - Se Round 1 ainda não concluído (fallback), usa `atleta2`
+
+**Em `BracketLayout.tsx` — `thirdPlace` (linhas ~156-172, modificado):**
+
+```
+Ordem de precedência:
+1. Se Round 1 tem DSQ → atleta desclassificado é 3º lugar
+2. Se Round 2 está concluído → perdedor do Round 2 é 3º lugar
+3. Caso contrário → undefined (sem medalha)
+```
+
+#### 26.6.5 Arquivos Impactados
 
 | Arquivo | Modificação |
 |---------|-------------|
 | `app/scoreboard/setup/page.tsx` | Garantir que a importação não gere `round 3` para 3 atletas |
 | `app/hooks/useImportacao.ts` | Normalizar importação e descartar rounds > 2 em chaves de 3 atletas |
-| `app/lib/bracket-utils.ts` | Criar `round 3` dinamicamente em `advanceWinner()` |
-| `app/hooks/useStorage.ts` | Usar `advanceWinner()` ao concluir luta |
+| `app/lib/bracket-utils.ts` | Bloco de consolação + nextPos para round 2 em `advanceWinner()` |
+| `app/components/bracket/BracketLayout.tsx` | `thirdPlace` lê do Round 2 (consolação) |
+| `app/hooks/useStorage.ts` | Usar `advanceWinner()` ao concluir luta (sem alterações) |
 
-#### 26.6.5 Comportamento Esperado
+#### 26.6.6 Comportamento Esperado
 
 | Situação | Resultado |
 |----------|-----------|
 | Importação de chave com 3 atletas | apenas `round 1` e `round 2` existem |
-| Desclassificação em luta real do `round 1` com todas as lutas de `round 1` concluídas | `round 3` é criado dinamicamente |
-| Desclassificação em BYE | `round 3` não é criado |
-| Round 1 ainda pendente | `round 3` não é criado |
+| Round 1 normal concluído | Perdedor vai para Round 2 (consolação); vencedor vai para Round 3 |
+| Round 2 (consolação) concluído | Vencedor vai para Round 3 (slot oposto); perdedor é 3º lugar |
+| Desclassificação em Round 1 | Round 3 criado dinamicamente com vencedor vs BYE; Round 2 AVANÇOU |
+| Desclassificação em BYE | Round 3 não é criado |
+| Round 1 ainda pendente | Nada acontece |
 
-#### 26.6.6 Observação
+#### 26.6.7 Observação
 
 Se o arquivo de importação já contiver lutas com `round >= 3`, essas lutas devem ser descartadas para chaves de 3 atletas, pois o bracket deve começar sem a fase final pré-gerada.
 
@@ -1313,33 +1370,13 @@ Cada card de competidor no bracket contém dois elementos posicionados nos canto
 
 ---
 
-*Documento atualizado em: 2026-05-20*
-*Versão: 8.0*
+*Documento atualizado em: 2026-05-25*
+*Versão: 8.1*
 *Mudanças principais:*
-*- Documento reestruturado e sincronizado com o código-fonte real*
-*- Seção 8.4: Fluxo de Finalização atualizado com detalhes de 2 etapas e chamada a advanceWinner()*
-*- Seção 8.5: Novo fluxo detalhado de Desclassificação (DSQ)*
-*- Seção 9.2: Componentes do Bracket atualizados com Round1PairRight, Round2PairRight, findChampion()*
-*- Seção 9.2: Adicionada lista de componentes legado não utilizados*
-*- Seção 9.4: Classificação Final reescrita com regras completas de derivação do pódio*
-*- Seção 9.4.1: Derivação de campeão/vice (não depende de chave.status)*
-*- Seção 9.4.2: Regras de terceiro lugar para 3+ e 3 competidores*
-*- Seção 9.4.3: Tratamento de desclassificação no pódio*
-*- Seção 9.3.1: ChampionModal marcado como não integrado*
-*- Seção 9.3.2: BracketChampion esclarecido como apenas para 1 competidor*
-*- Seção 14: Componentes Shadcn corrigidos (Dialog/Select/Toast não existem)*
-*- Seção 16: Utilitários expandidos com todas as funções reais + migrate-ids*
-*- Seção 17: Hooks detalhados com API completa + hook não utilizado (useScoreSound)*
-*- Seção 19: Novo — Componente de Timer (ScoreboardTimer)*
-*- Seção 20: Novo — Admin Controle de Lutas (com undo system)*
-*- Seção 21: Novo — Páginas de Teste (bracket-test + mock data)*
-*- Seção 22: Novo — Componentes Legado (não utilizados)*
-*- Seção 23: Novo — Padrões de Implementação (hydration guard, localStorage, luta manual, carregamento)*
-*- Seção 24: Novo — Exemplos de Dados (exemplos/ não existe; usar data/area-1.json)*
-*- Seção 25: Validação de UUID (era seção 19)*
-*- Seção 26: Correção de BYE renumerada (era seção 20)*
-*- Seção 27: Tags de Status renumerada (era seção 21)*
-*- Seção 28: Posicionamento renumerada (era seção 22)*
-*- API corrigida (DELETE não implementado, GET por UUID não existe)*
-*- Adicionados padrões: hydration guard, localStorage keys, diferenças entre LutaManualForm e AdicionarLutaModal*
-*- Adicionado alerta sobre IDs não-UUID em data/area-1.json*
+*- Seção 8.5: Nota sobre consolação de 3 atletas adicionada ao fluxo DSQ*
+*- Seção 8.6: Menção ao Round 2 como consolação em chaves de 3 atletas*
+*- Seção 9.4.2: Terceiro lugar para 3 atletas reescrito (perdedor do Round 2, não mais do Round 1)*
+*- Seção 16: Descrição de `advanceWinner` expandida com consolação de 3 atletas*
+*- Seção 26.6: Reescrita completa — agora cobre ambos os fluxos (DSQ e consolação normal)*
+*- Seção 26.6.3: Diagramas dos dois fluxos (A: sem DSQ, B: com DSQ)*
+*- Seção 26.6.4: Detalhes de implementação dos 3 blocos modificados em advanceWinner() + thirdPlace*
