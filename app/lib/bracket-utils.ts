@@ -16,6 +16,10 @@ export function isThreeCompetitorsChave(chave: ChaveLuta): boolean {
   return chave.totalCompetidores === 3
 }
 
+export function isFourCompetitorsChave(chave: ChaveLuta): boolean {
+  return chave.totalCompetidores === 4
+}
+
 // ============================================================
 // buildBracketFromChaveLuta
 // ============================================================
@@ -47,7 +51,8 @@ export function buildBracketFromChaveLuta(chave: ChaveLuta): BracketRound[] {
   const round3Lutas = rounds.get(3) || []
   if (round3Lutas.length > 0) {
     const isThreeCompetitors = isThreeCompetitorsChave(chave)
-    const label = isThreeCompetitors ? "Final" : "Semifinal"
+    const isFourCompetitors = isFourCompetitorsChave(chave)
+    const label = (isThreeCompetitors || isFourCompetitors) ? "Final" : "Semifinal"
     result.push({
       label,
       matchups: round3Lutas.map(l => toMatchup(l, label)),
@@ -306,6 +311,76 @@ export function advanceWinner(
 
   const round = completed.round
   const position = completed.position
+
+  // ============================================================
+  // Bloco específico para 4 competidores: R1 → R3 (Final), sem consolação
+  // ============================================================
+  if (isFourCompetitorsChave(chave) && round === 1 && isRealFight(completed)) {
+    const isLeftSide = position === 0
+
+    const novoResultado: ResultadoLuta = {
+      id: crypto.randomUUID(),
+      pontosAtleta1: completed.resultado?.pontosAtleta1 || 0,
+      pontosAtleta2: completed.resultado?.pontosAtleta2 || 0,
+      montadasAtleta1: completed.resultado?.montadasAtleta1 || 0,
+      montadasAtleta2: completed.resultado?.montadasAtleta2 || 0,
+      passagensAtleta1: completed.resultado?.passagensAtleta1 || 0,
+      passagensAtleta2: completed.resultado?.passagensAtleta2 || 0,
+      quedasAtleta1: completed.resultado?.quedasAtleta1 || 0,
+      quedasAtleta2: completed.resultado?.quedasAtleta2 || 0,
+      vantagensAtleta1: completed.resultado?.vantagensAtleta1 || 0,
+      vantagensAtleta2: completed.resultado?.vantagensAtleta2 || 0,
+      penalidadesAtleta1: completed.resultado?.penalidadesAtleta1 || 0,
+      penalidadesAtleta2: completed.resultado?.penalidadesAtleta2 || 0,
+      tempoDecorrido: completed.resultado?.tempoDecorrido || 0,
+      finalizacaoAtleta1: completed.resultado?.finalizacaoAtleta1 || false,
+      finalizacaoAtleta2: completed.resultado?.finalizacaoAtleta2 || false,
+      desclassificacao: completed.resultado?.desclassificacao || null,
+      vencedor: completed.resultado?.vencedor || null,
+      tipoVitoria: completed.resultado?.tipoVitoria || "pontos",
+      status: "concluida",
+      lutaId: completed.id,
+      vencedorAtletaId: winner.id,
+      perdedorAtletaId: loser.id,
+      AtletaDesclassificadoId: completed.resultado?.AtletaDesclassificadoId || null,
+    }
+
+    let round3Luta = chave.lutas.find(l => l.round === 3 && l.position === 0)
+    if (!round3Luta) {
+      const otherR1Luta = chave.lutas.find(l => l.round === 1 && l.position !== position)
+      const prevMatchIds = otherR1Luta ? [completed.id, otherR1Luta.id] : [completed.id]
+
+      round3Luta = {
+        id: crypto.randomUUID(),
+        round: 3,
+        position: 0,
+        previousMatchIds: prevMatchIds,
+        atleta1: null,
+        atleta2: null,
+        resultado: { status: "pendente" } as ResultadoLuta,
+      }
+    }
+
+    if (isLeftSide) {
+      round3Luta = { ...round3Luta, atleta1: winner }
+    } else {
+      round3Luta = { ...round3Luta, atleta2: winner }
+    }
+
+    const lutasAtualizadas = chave.lutas.map(l => {
+      if (l.id === completedFightId) {
+        return { ...l, resultado: novoResultado }
+      }
+      if (l.id === round3Luta.id) return round3Luta
+      return l
+    })
+
+    if (!chave.lutas.some(l => l.id === round3Luta.id)) {
+      lutasAtualizadas.push(round3Luta)
+    }
+
+    return { ...chave, lutas: lutasAtualizadas }
+  }
 
   // Verificar se é a final (round 3)
   const maxRound = Math.max(...chave.lutas.map(l => l.round))

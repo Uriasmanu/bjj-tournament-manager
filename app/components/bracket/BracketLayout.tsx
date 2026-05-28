@@ -78,17 +78,18 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [chave.lutas])
 
   const isThreeCompetitors = chave.totalCompetidores === 3
+  const isFourCompetitors = chave.totalCompetidores === 4
 
   const leftSemi = useMemo(() => {
     return chave.lutas.filter(l => l.round === 3 && l.position === 0)
   }, [chave.lutas])
 
   const rightSemi = useMemo(() => {
-    if (isThreeCompetitors && leftSemi[0]?.atleta2) {
+    if ((isThreeCompetitors || isFourCompetitors) && leftSemi[0]?.atleta2) {
       return [leftSemi[0]]
     }
     return chave.lutas.filter(l => l.round === 3 && l.position === 1)
-  }, [chave.lutas, isThreeCompetitors, leftSemi])
+  }, [chave.lutas, isThreeCompetitors, isFourCompetitors, leftSemi])
 
   const maxRound = useMemo(() => Math.max(...chave.lutas.map(l => l.round)), [chave.lutas])
   const finalLutas = useMemo(() => {
@@ -131,7 +132,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
   }, [finalLutas, finalChampion])
 
   const thirdPlaceLeft = useMemo(() => {
-    if (isThreeCompetitors) return undefined
+    if (isThreeCompetitors || isFourCompetitors) return undefined
     const leftSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 0)
     if (leftSemiLuta?.resultado?.status === "concluida") {
       const r = leftSemiLuta.resultado
@@ -140,9 +141,10 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       return leftSemiLuta.atleta1?.id === r.vencedorAtletaId ? leftSemiLuta.atleta2 : leftSemiLuta.atleta1
     }
     return undefined
-  }, [chave.lutas, isThreeCompetitors])
+  }, [chave.lutas, isThreeCompetitors, isFourCompetitors])
 
   const thirdPlaceRight = useMemo(() => {
+    if (isFourCompetitors) return undefined
     const rightSemiLuta = chave.lutas.find(l => l.round === 3 && l.position === 1)
     if (rightSemiLuta?.resultado?.status === "concluida") {
       const r = rightSemiLuta.resultado
@@ -151,7 +153,27 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       return rightSemiLuta.atleta1?.id === r.vencedorAtletaId ? rightSemiLuta.atleta2 : rightSemiLuta.atleta1
     }
     return undefined
-  }, [chave.lutas])
+  }, [chave.lutas, isFourCompetitors])
+
+  const thirdPlaceFourA = useMemo(() => {
+    if (!isFourCompetitors) return undefined
+    const r1Pos0 = chave.lutas.find(l => l.round === 1 && l.position === 0 && l.resultado?.status === "concluida")
+    if (!r1Pos0) return undefined
+    const r = r1Pos0.resultado!
+    if (r.desclassificacao === "atleta1") return r1Pos0.atleta1
+    if (r.desclassificacao === "atleta2") return r1Pos0.atleta2
+    return r1Pos0.atleta1?.id === r.vencedorAtletaId ? r1Pos0.atleta2 : r1Pos0.atleta1
+  }, [chave.lutas, isFourCompetitors])
+
+  const thirdPlaceFourB = useMemo(() => {
+    if (!isFourCompetitors) return undefined
+    const r1Pos1 = chave.lutas.find(l => l.round === 1 && l.position === 1 && l.resultado?.status === "concluida")
+    if (!r1Pos1) return undefined
+    const r = r1Pos1.resultado!
+    if (r.desclassificacao === "atleta1") return r1Pos1.atleta1
+    if (r.desclassificacao === "atleta2") return r1Pos1.atleta2
+    return r1Pos1.atleta1?.id === r.vencedorAtletaId ? r1Pos1.atleta2 : r1Pos1.atleta1
+  }, [chave.lutas, isFourCompetitors])
 
   const thirdPlace = useMemo(() => {
     if (!isThreeCompetitors) return undefined
@@ -169,7 +191,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
       return round2Fight.atleta1?.id === r.vencedorAtletaId ? round2Fight.atleta2 : round2Fight.atleta1
     }
     return undefined
-  }, [chave.lutas, isThreeCompetitors])
+  }, [chave.lutas, isThreeCompetitors, isFourCompetitors])
 
   const handleFightClick = useCallback((luta: Luta) => {
     if (mode !== "live") return
@@ -259,7 +281,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
                 onClick={handleFightClick} 
                 activeFightId={activeFightId} 
                 mode={mode} 
-                forceAtletaIndex={isThreeCompetitors ? 1 : undefined}
+                forceAtletaIndex={isThreeCompetitors || isFourCompetitors ? 1 : undefined}
               />
             </div>
           </div>
@@ -284,7 +306,7 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
                 onClick={handleFightClick} 
                 activeFightId={activeFightId} 
                 mode={mode}
-                forceAtletaIndex={isThreeCompetitors ? 2 : undefined}
+                forceAtletaIndex={isThreeCompetitors || isFourCompetitors ? 2 : undefined}
               />
             </div>
           </div>
@@ -315,11 +337,24 @@ export function BracketLayout({ rounds, chave, activeFightId, onFightClick, mode
                 colorClass="text-slate-400"
                 value={finalRunnerUp ? `${finalRunnerUp.nome} (${finalRunnerUp.equipe})` : "-- Aguardando disputa de ouro --"}
               />
-              {isThreeCompetitors ? (
+              {isFourCompetitors ? (
+                <>
+                  <PodiumLine
+                    label="3º"
+                    colorClass="text-amber-700"
+                    value={thirdPlaceFourA ? `${thirdPlaceFourA.nome} (${thirdPlaceFourA.equipe})` : "-- Aguardando definição do terceiro lugar --"}
+                  />
+                  <PodiumLine
+                    label="3º"
+                    colorClass="text-amber-700"
+                    value={thirdPlaceFourB ? `${thirdPlaceFourB.nome} (${thirdPlaceFourB.equipe})` : "-- Aguardando definição do terceiro lugar --"}
+                  />
+                </>
+              ) : isThreeCompetitors ? (
                 <PodiumLine
                   label="3º"
                   colorClass="text-amber-700"
-                  value={thirdPlace ? `${thirdPlace.nome} (${thirdPlace.equipe})` : "-- Aguardando definição do terceiro lugar --"}
+                  value={thirdPlace && !Array.isArray(thirdPlace) ? `${thirdPlace.nome} (${thirdPlace.equipe})` : "-- Aguardando definição do terceiro lugar --"}
                 />
               ) : (
                 <>
